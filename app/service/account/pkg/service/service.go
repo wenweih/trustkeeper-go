@@ -15,7 +15,8 @@ type basicAccountService struct{}
 
 func (b *basicAccountService) Create(ctx context.Context, email string, password string) (u0 uuid.UUID, e1 error) {
 	// TODO implement the business logic of Create
-	return u0, e1
+	id := uuid.NewV4()
+	return id, e1
 }
 
 // NewBasicAccountService returns a naive, stateless implementation of AccountService.

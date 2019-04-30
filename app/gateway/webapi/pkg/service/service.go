@@ -1,7 +1,11 @@
 package service
 
 import (
+	"log"
 	"context"
+	"trustkeeper-go/app/service/account/pkg/grpc/pb"
+	sdetcd "github.com/go-kit/kit/sd/etcdv3"
+	"google.golang.org/grpc"
 )
 
 // WebapiService describes the service.
@@ -19,11 +23,19 @@ type Credentials struct {
 	Password string `json:"password"`
 }
 
-type basicWebapiService struct{}
+type basicWebapiService struct{
+	accountServiceClient pb.AccountClient
+}
 
 func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (result bool, err error) {
-	// TODO implement the business logic of Signup
-	return result, err
+	resp, err := b.accountServiceClient.Create(ctx, &pb.CreateRequest{
+		Email: user.Email,
+		Password: user.Password,
+	})
+	if resp != nil {
+		log.Println("grpc result: ", resp.Result)
+	}
+	return false, err
 }
 func (b *basicWebapiService) Signin(ctx context.Context, user Credentials) (token string, err error) {
 	// TODO implement the business logic of Signin
@@ -36,7 +48,31 @@ func (b *basicWebapiService) Signout(ctx context.Context, token string) (result 
 
 // NewBasicWebapiService returns a naive, stateless implementation of WebapiService.
 func NewBasicWebapiService() WebapiService {
-	return &basicWebapiService{}
+	var etcdServer = "http://localhost:2379"
+	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
+	if err != nil {
+		log.Printf("unable to connect to etcd: %s", err.Error())
+		return new(basicWebapiService)
+	}
+	entries, err := client.GetEntries("/services/account/")
+	if err != nil {
+		log.Printf("unable to get prefix entries: %s", err.Error())
+		return new(basicWebapiService)
+	}
+
+	if len(entries) == 0 {
+		log.Printf("entries not eixst")
+		return new(basicWebapiService)
+	}
+	conn, err := grpc.Dial(entries[0], grpc.WithInsecure())
+	if err != nil {
+		log.Printf("unable to connect to : %s", err.Error())
+	}
+	log.Println("url: ", entries[0])
+
+	return &basicWebapiService{
+		accountServiceClient: pb.NewAccountClient(conn),
+	}
 }
 
 // New returns a WebapiService with all of the expected middleware wired in.

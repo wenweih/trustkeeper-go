@@ -1,6 +1,7 @@
 package endpoint
 
 import (
+	"log"
 	"context"
 	endpoint "github.com/go-kit/kit/endpoint"
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
@@ -99,7 +100,9 @@ type Failure interface {
 
 // Signup implements Service. Primarily useful in a client.
 func (e Endpoints) Signup(ctx context.Context, user service.Credentials) (result bool, err error) {
+	log.Println("yyy")
 	request := SignupRequest{User: user}
+	log.Println("xxxx", user)
 	response, err := e.SignupEndpoint(ctx, request)
 	if err != nil {
 		return

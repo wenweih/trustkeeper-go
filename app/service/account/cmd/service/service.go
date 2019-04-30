@@ -3,6 +3,7 @@ package service
 import (
 	"flag"
 	"fmt"
+	"context"
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
@@ -24,6 +25,7 @@ import (
 	grpc "trustkeeper-go/app/service/account/pkg/grpc"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/account/pkg/service"
+	sdetcd "github.com/go-kit/kit/sd/etcdv3"
 )
 
 var tracer opentracinggo.Tracer
@@ -86,6 +88,13 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
+
+	registrar, err := registerService(logger)
+	if err != nil {
+		logger.Log(err)
+		return
+	}
+	defer registrar.Deregister()
 	logger.Log("exit", g.Run())
 
 }
@@ -155,4 +164,27 @@ func initCancelInterrupt(g *group.Group) {
 	}, func(error) {
 		close(cancelInterrupt)
 	})
+}
+
+func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
+    var (
+        etcdServer = "http://localhost:2379"
+        prefix     = "/services/account/"
+        instance   = "localhost:8082"
+        key        = prefix + instance
+    )
+
+    client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
+    if err != nil {
+        return nil, err
+    }
+
+    registrar := sdetcd.NewRegistrar(client, sdetcd.Service{
+        Key:   key,
+        Value: instance,
+    }, logger)
+
+    registrar.Register()
+
+    return registrar, nil
 }
