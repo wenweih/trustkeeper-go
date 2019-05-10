@@ -27,9 +27,9 @@ func decodeCreateRequest(_ context.Context, r interface{}) (interface{}, error) 
 func encodeCreateResponse(_ context.Context, r interface{}) (interface{}, error) {
 	resp := r.(endpoint.CreateResponse)
 	if resp.E1 != nil {
-		return &pb.CreateReply{Result: true}, resp.E1
+		return &pb.CreateReply{Result: false}, resp.E1
 	}
-	return &pb.CreateReply{Result: false}, nil
+	return &pb.CreateReply{Result: true}, nil
 }
 func (g *grpcServer) Create(ctx context1.Context, req *pb.CreateRequest) (*pb.CreateReply, error) {
 	_, rep, err := g.create.ServeGRPC(ctx, req)

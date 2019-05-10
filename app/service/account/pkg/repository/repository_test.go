@@ -1,8 +1,7 @@
 package repository
 
 import (
-  // "time"
-  "regexp"
+  // "regexp"
   "testing"
   "database/sql"
   "github.com/jinzhu/gorm"
@@ -13,6 +12,9 @@ import (
   "github.com/stretchr/testify/suite"
   "trustkeeper-go/app/service/account/pkg/model"
 )
+
+// https://github.com/stretchr/testify/blob/master/suite/suite_test.go
+
 
 type Suite struct {
   suite.Suite
@@ -43,18 +45,27 @@ func (s *Suite) TestCreate() {
     uid = uuid.NewV4()
     email = "tesging@trustkeeper.io"
   )
-
-  row := sqlmock.NewRows([]string{"uuid", "email", "password"}).
-    AddRow(uid.String(), email, string(hashedPassword))
-  query := regexp.QuoteMeta(
-    `INSERT INTO account ("uuid", "email", "password") VALUES ($1,$1,$3)`)
-  s.mock.ExpectQuery(query).WithArgs(uid.String(), email, string(hashedPassword)).
-    WillReturnRows(row)
+  // query := regexp.QuoteMeta(
+  //   `INSERT INTO ACCOUNTS (uuid,email,password) VALUES ($1,$1,$3)`)
+  // prep := s.mock.ExpectPrepare(query)
+  // prep.ExpectExec().WithArgs(uid.String(), email, string(hashedPassword)).
+  //   WillReturnResult(sqlmock.NewResult(1,2))
 
   err = s.repo.Create(&model.Account{Email: email,
     UUID: uid.String(),
     Password: string(hashedPassword)})
+  // assert.NoError(s.T(), err)
   require.NoError(s.T(), err)
+
+  // s.mock.ExpectQuery(regexp.QuoteMeta(
+  //   `SELECT uuid, email FROM "accounts" WHERE (uuid = $1)`)).
+  //   WithArgs(uid.String()).
+  //   // WillReturnResult(sqlmock.NewResult(1,1))
+  //   WillReturnRows(sqlmock.NewRows([]string{"uid", "email"}).
+  //   AddRow(uid.String(), email))
+  //
+  // err = s.mock.ExpectationsWereMet()
+  // require.NoError(s.T(),err)
 }
 
 func (s *Suite) AfterTest(_, _ string) {

@@ -32,10 +32,10 @@ func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (resu
 		Email: user.Email,
 		Password: user.Password,
 	})
-	if resp != nil {
-		log.Println("grpc result: ", resp.Result)
+	if err != nil {
+		return false, err
 	}
-	return false, err
+	return resp.Result, nil
 }
 func (b *basicWebapiService) Signin(ctx context.Context, user Credentials) (token string, err error) {
 	// TODO implement the business logic of Signin
@@ -68,7 +68,6 @@ func NewBasicWebapiService() WebapiService {
 	if err != nil {
 		log.Printf("unable to connect to : %s", err.Error())
 	}
-	log.Println("url: ", entries[0])
 
 	return &basicWebapiService{
 		accountServiceClient: pb.NewAccountClient(conn),

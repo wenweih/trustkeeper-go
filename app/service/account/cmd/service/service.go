@@ -34,7 +34,7 @@ var logger log.Logger
 // Define our flags. Your service probably won't need to bind listeners for
 // all* supported transports, but we do it here for demonstration purposes.
 var fs = flag.NewFlagSet("account", flag.ExitOnError)
-var debugAddr = fs.String("debug.addr", ":8080", "Debug and metrics listen address")
+var debugAddr = fs.String("debug.addr", ":7777", "Debug and metrics listen address")
 var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
 var grpcAddr = fs.String("grpc-addr", ":8082", "gRPC listen address")
 var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
@@ -88,15 +88,13 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
-
 	registrar, err := registerService(logger)
 	if err != nil {
-		logger.Log(err)
+		logger.Log(err.Error())
 		return
 	}
 	defer registrar.Deregister()
 	logger.Log("exit", g.Run())
-
 }
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultGRPCOptions(logger, tracer)
@@ -178,7 +176,6 @@ func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
     if err != nil {
         return nil, err
     }
-
     registrar := sdetcd.NewRegistrar(client, sdetcd.Service{
         Key:   key,
         Value: instance,

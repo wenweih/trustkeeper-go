@@ -1,6 +1,7 @@
 package repository
 
 import(
+  // "regexp"
   "github.com/jinzhu/gorm"
   "trustkeeper-go/library/database/orm"
   "trustkeeper-go/app/service/account/pkg/model"
@@ -30,6 +31,9 @@ func New(db *gorm.DB) AccoutRepo {
 
 // Create save repo
 func (repo AccoutRepo) Create(acc *model.Account) error {
-  return repo.db.Raw(`INSERT INTO accounts (uuid, email, password) VALUES (?,?,?)`,
-    acc.UUID, acc.Email, acc.Password).Error
+  return repo.db.Create(acc).Error
+  // return repo.db.Raw("INSERT INTO accounts (uuid,email,password) VALUES ($1,$2,$3)",
+    // acc.UUID, acc.Email, acc.Password).Error
+    // `INSERT INTO "accounts" ("uuid", email, password) VALUES (?,?,?)`,
+    // acc.UUID, acc.Email, acc.Password).Error
 }

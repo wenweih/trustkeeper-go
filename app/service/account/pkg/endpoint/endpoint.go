@@ -3,7 +3,6 @@ package endpoint
 import (
 	"context"
 	endpoint "github.com/go-kit/kit/endpoint"
-	gouuid "github.com/satori/go.uuid"
 	service "trustkeeper-go/app/service/account/pkg/service"
 )
 
@@ -15,18 +14,17 @@ type CreateRequest struct {
 
 // CreateResponse collects the response parameters for the Create method.
 type CreateResponse struct {
-	U0 gouuid.UUID `json:"u0"`
-	E1 error       `json:"e1"`
+	Email	string		`json:"email"`
+	E1 		error			`json:"e1"`
 }
 
 // MakeCreateEndpoint returns an endpoint that invokes Create on the service.
 func MakeCreateEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateRequest)
-		u0, e1 := s.Create(ctx, req.Email, req.Password)
+		e1 := s.Create(ctx, req.Email, req.Password)
 		return CreateResponse{
 			E1: e1,
-			U0: u0,
 		}, nil
 	}
 }
@@ -44,14 +42,14 @@ type Failure interface {
 }
 
 // Create implements Service. Primarily useful in a client.
-func (e Endpoints) Create(ctx context.Context, email string, password string) (u0 gouuid.UUID, e1 error) {
+func (e Endpoints) Create(ctx context.Context, email string, password string) (string, error) {
 	request := CreateRequest{
 		Email:    email,
 		Password: password,
 	}
 	response, err := e.CreateEndpoint(ctx, request)
 	if err != nil {
-		return
+		return "", err
 	}
-	return response.(CreateResponse).U0, response.(CreateResponse).E1
+	return response.(CreateResponse).Email, response.(CreateResponse).E1
 }
