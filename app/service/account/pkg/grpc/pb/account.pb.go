@@ -35,7 +35,7 @@ func (m *CreateRequest) Reset()         { *m = CreateRequest{} }
 func (m *CreateRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateRequest) ProtoMessage()    {}
 func (*CreateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_8bb9dfe96487d9cf, []int{0}
+	return fileDescriptor_account_24a2acf9dbbacbcc, []int{0}
 }
 func (m *CreateRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateRequest.Unmarshal(m, b)
@@ -80,7 +80,7 @@ func (m *CreateReply) Reset()         { *m = CreateReply{} }
 func (m *CreateReply) String() string { return proto.CompactTextString(m) }
 func (*CreateReply) ProtoMessage()    {}
 func (*CreateReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_8bb9dfe96487d9cf, []int{1}
+	return fileDescriptor_account_24a2acf9dbbacbcc, []int{1}
 }
 func (m *CreateReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateReply.Unmarshal(m, b)
@@ -107,9 +107,95 @@ func (m *CreateReply) GetResult() bool {
 	return false
 }
 
+type SignRequest struct {
+	Email                string   `protobuf:"bytes,1,opt,name=email" json:"email,omitempty"`
+	Password             string   `protobuf:"bytes,2,opt,name=password" json:"password,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SignRequest) Reset()         { *m = SignRequest{} }
+func (m *SignRequest) String() string { return proto.CompactTextString(m) }
+func (*SignRequest) ProtoMessage()    {}
+func (*SignRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_account_24a2acf9dbbacbcc, []int{2}
+}
+func (m *SignRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SignRequest.Unmarshal(m, b)
+}
+func (m *SignRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SignRequest.Marshal(b, m, deterministic)
+}
+func (dst *SignRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SignRequest.Merge(dst, src)
+}
+func (m *SignRequest) XXX_Size() int {
+	return xxx_messageInfo_SignRequest.Size(m)
+}
+func (m *SignRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SignRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SignRequest proto.InternalMessageInfo
+
+func (m *SignRequest) GetEmail() string {
+	if m != nil {
+		return m.Email
+	}
+	return ""
+}
+
+func (m *SignRequest) GetPassword() string {
+	if m != nil {
+		return m.Password
+	}
+	return ""
+}
+
+type SignReply struct {
+	Token                string   `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SignReply) Reset()         { *m = SignReply{} }
+func (m *SignReply) String() string { return proto.CompactTextString(m) }
+func (*SignReply) ProtoMessage()    {}
+func (*SignReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_account_24a2acf9dbbacbcc, []int{3}
+}
+func (m *SignReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SignReply.Unmarshal(m, b)
+}
+func (m *SignReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SignReply.Marshal(b, m, deterministic)
+}
+func (dst *SignReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SignReply.Merge(dst, src)
+}
+func (m *SignReply) XXX_Size() int {
+	return xxx_messageInfo_SignReply.Size(m)
+}
+func (m *SignReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_SignReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SignReply proto.InternalMessageInfo
+
+func (m *SignReply) GetToken() string {
+	if m != nil {
+		return m.Token
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*CreateRequest)(nil), "pb.CreateRequest")
 	proto.RegisterType((*CreateReply)(nil), "pb.CreateReply")
+	proto.RegisterType((*SignRequest)(nil), "pb.SignRequest")
+	proto.RegisterType((*SignReply)(nil), "pb.SignReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -125,6 +211,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type AccountClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateReply, error)
+	Sign(ctx context.Context, in *SignRequest, opts ...grpc.CallOption) (*SignReply, error)
 }
 
 type accountClient struct {
@@ -144,9 +231,19 @@ func (c *accountClient) Create(ctx context.Context, in *CreateRequest, opts ...g
 	return out, nil
 }
 
+func (c *accountClient) Sign(ctx context.Context, in *SignRequest, opts ...grpc.CallOption) (*SignReply, error) {
+	out := new(SignReply)
+	err := c.cc.Invoke(ctx, "/pb.Account/Sign", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountServer is the server API for Account service.
 type AccountServer interface {
 	Create(context.Context, *CreateRequest) (*CreateReply, error)
+	Sign(context.Context, *SignRequest) (*SignReply, error)
 }
 
 func RegisterAccountServer(s *grpc.Server, srv AccountServer) {
@@ -171,6 +268,24 @@ func _Account_Create_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Account_Sign_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServer).Sign(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Account/Sign",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServer).Sign(ctx, req.(*SignRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Account_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.Account",
 	HandlerType: (*AccountServer)(nil),
@@ -179,23 +294,30 @@ var _Account_serviceDesc = grpc.ServiceDesc{
 			MethodName: "Create",
 			Handler:    _Account_Create_Handler,
 		},
+		{
+			MethodName: "Sign",
+			Handler:    _Account_Sign_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "account.proto",
 }
 
-func init() { proto.RegisterFile("account.proto", fileDescriptor_account_8bb9dfe96487d9cf) }
+func init() { proto.RegisterFile("account.proto", fileDescriptor_account_24a2acf9dbbacbcc) }
 
-var fileDescriptor_account_8bb9dfe96487d9cf = []byte{
-	// 154 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_account_24a2acf9dbbacbcc = []byte{
+	// 201 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4d, 0x4c, 0x4e, 0xce,
 	0x2f, 0xcd, 0x2b, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0x72, 0xe4,
 	0xe2, 0x75, 0x2e, 0x4a, 0x4d, 0x2c, 0x49, 0x0d, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x11, 0x12,
 	0xe1, 0x62, 0x4d, 0xcd, 0x4d, 0xcc, 0xcc, 0x91, 0x60, 0x54, 0x60, 0xd4, 0xe0, 0x0c, 0x82, 0x70,
 	0x84, 0xa4, 0xb8, 0x38, 0x0a, 0x12, 0x8b, 0x8b, 0xcb, 0xf3, 0x8b, 0x52, 0x24, 0x98, 0xc0, 0x12,
 	0x70, 0xbe, 0x92, 0x2a, 0x17, 0x37, 0xcc, 0x88, 0x82, 0x9c, 0x4a, 0x21, 0x31, 0x2e, 0xb6, 0xa2,
-	0xd4, 0xe2, 0xd2, 0x9c, 0x12, 0xb0, 0x09, 0x1c, 0x41, 0x50, 0x9e, 0x91, 0x39, 0x17, 0xbb, 0x23,
-	0xc4, 0x7a, 0x21, 0x1d, 0x2e, 0x36, 0x88, 0x0e, 0x21, 0x41, 0xbd, 0x82, 0x24, 0x3d, 0x14, 0x07,
-	0x48, 0xf1, 0x23, 0x0b, 0x15, 0xe4, 0x54, 0x26, 0xb1, 0x81, 0x5d, 0x6b, 0x0c, 0x08, 0x00, 0x00,
-	0xff, 0xff, 0x92, 0x44, 0x87, 0xce, 0xbe, 0x00, 0x00, 0x00,
+	0xd4, 0xe2, 0xd2, 0x9c, 0x12, 0xb0, 0x09, 0x1c, 0x41, 0x50, 0x9e, 0x92, 0x3d, 0x17, 0x77, 0x70,
+	0x66, 0x7a, 0x1e, 0xf9, 0xf6, 0x28, 0x72, 0x71, 0x42, 0x0c, 0x00, 0xd9, 0x22, 0xc2, 0xc5, 0x5a,
+	0x92, 0x9f, 0x9d, 0x9a, 0x07, 0xd3, 0x0e, 0xe6, 0x18, 0xc5, 0x73, 0xb1, 0x3b, 0x42, 0xbc, 0x28,
+	0xa4, 0xc3, 0xc5, 0x06, 0x71, 0x95, 0x90, 0xa0, 0x5e, 0x41, 0x92, 0x1e, 0x8a, 0x27, 0xa5, 0xf8,
+	0x91, 0x85, 0x40, 0xc6, 0xa9, 0x71, 0xb1, 0x80, 0xcc, 0x16, 0x02, 0x4b, 0x20, 0x39, 0x53, 0x8a,
+	0x17, 0x21, 0x50, 0x90, 0x53, 0x99, 0xc4, 0x06, 0x0e, 0x39, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0x30, 0x94, 0x50, 0x88, 0x4a, 0x01, 0x00, 0x00,
 }

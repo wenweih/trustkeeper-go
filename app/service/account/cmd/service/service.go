@@ -1,12 +1,23 @@
 package service
 
 import (
+	"context"
 	"flag"
 	"fmt"
-	"context"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
+	grpc "trustkeeper-go/app/service/account/pkg/grpc"
+	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
+	service "trustkeeper-go/app/service/account/pkg/service"
+
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
+	sdetcd "github.com/go-kit/kit/sd/etcdv3"
 	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
@@ -14,18 +25,8 @@ import (
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	grpc1 "google.golang.org/grpc"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"syscall"
-	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
-	grpc "trustkeeper-go/app/service/account/pkg/grpc"
-	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
-	service "trustkeeper-go/app/service/account/pkg/service"
-	sdetcd "github.com/go-kit/kit/sd/etcdv3"
 )
 
 var tracer opentracinggo.Tracer
@@ -165,23 +166,23 @@ func initCancelInterrupt(g *group.Group) {
 }
 
 func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
-    var (
-        etcdServer = "http://localhost:2379"
-        prefix     = "/services/account/"
-        instance   = "localhost:8082"
-        key        = prefix + instance
-    )
+	var (
+		etcdServer = "http://localhost:2379"
+		prefix     = "/services/account/"
+		instance   = "localhost:8082"
+		key        = prefix + instance
+	)
 
-    client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
-    if err != nil {
-        return nil, err
-    }
-    registrar := sdetcd.NewRegistrar(client, sdetcd.Service{
-        Key:   key,
-        Value: instance,
-    }, logger)
+	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
+	if err != nil {
+		return nil, err
+	}
+	registrar := sdetcd.NewRegistrar(client, sdetcd.Service{
+		Key:   key,
+		Value: instance,
+	}, logger)
 
-    registrar.Register()
+	registrar.Register()
 
-    return registrar, nil
+	return registrar, nil
 }

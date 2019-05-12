@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	log "github.com/go-kit/kit/log"
 )
 
@@ -24,4 +25,11 @@ func (l loggingMiddleware) Create(ctx context.Context, email string, password st
 		l.logger.Log("method", "Create", "email", email, "password", password, "e1", e1)
 	}()
 	return l.next.Create(ctx, email, password)
+}
+
+func (l loggingMiddleware) Sign(ctx context.Context, email string, password string) (s0 string, e1 error) {
+	defer func() {
+		l.logger.Log("method", "Sign", "email", email, "password", password, "s0", s0, "e1", e1)
+	}()
+	return l.next.Sign(ctx, email, password)
 }

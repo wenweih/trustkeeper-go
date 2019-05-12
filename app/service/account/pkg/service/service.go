@@ -1,25 +1,27 @@
 package service
 
 import (
-	"strings"
 	"context"
-	"golang.org/x/crypto/bcrypt"
-	uuid "github.com/satori/go.uuid"
+	"strings"
+	"trustkeeper-go/app/service/account/pkg/model"
 	"trustkeeper-go/app/service/account/pkg/repository"
 	"trustkeeper-go/library/vault"
-	"trustkeeper-go/app/service/account/pkg/model"
+
+	uuid "github.com/satori/go.uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // AccountService describes the service.
 type AccountService interface {
-	Create(ctx context.Context, email, password string) (error)
+	Create(ctx context.Context, email, password string) error
+	Sign(ctx context.Context, email, password string) (string, error)
 }
 
-type basicAccountService struct{
+type basicAccountService struct {
 	repo repository.AccoutRepo
 }
 
-func (b *basicAccountService) Create(ctx context.Context, email string, password string) (error) {
+func (b *basicAccountService) Create(ctx context.Context, email string, password string) error {
 	// Salt and hash the password using the bcrypt algorithm
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -27,9 +29,9 @@ func (b *basicAccountService) Create(ctx context.Context, email string, password
 	}
 	uid := uuid.NewV4()
 	acc := &model.Account{
-		Email: email,
+		Email:    email,
 		Password: string(hashedPassword),
-		UUID: uid.String()}
+		UUID:     uid.String()}
 
 	return b.repo.Create(acc)
 }
@@ -45,7 +47,6 @@ func NewBasicAccountService() AccountService {
 	if err != nil {
 		panic("vaule read error" + err.Error())
 	}
-
 
 	host := strings.Join([]string{"host", data.Data["host"].(string)}, "=")
 	port := strings.Join([]string{"port", data.Data["port"].(string)}, "=")
@@ -66,4 +67,9 @@ func New(middleware []Middleware) AccountService {
 		svc = m(svc)
 	}
 	return svc
+}
+
+func (b *basicAccountService) Sign(ctx context.Context, email string, password string) (s0 string, e1 error) {
+	// TODO implement the business logic of Sign
+	return s0, e1
 }

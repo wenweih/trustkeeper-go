@@ -11,14 +11,21 @@ import (
 // single parameter.
 type Endpoints struct {
 	CreateEndpoint endpoint.Endpoint
+	SignEndpoint   endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.AccountService, mdw map[string][]endpoint.Middleware) Endpoints {
-	eps := Endpoints{CreateEndpoint: MakeCreateEndpoint(s)}
+	eps := Endpoints{
+		CreateEndpoint: MakeCreateEndpoint(s),
+		SignEndpoint:   MakeSignEndpoint(s),
+	}
 	for _, m := range mdw["Create"] {
 		eps.CreateEndpoint = m(eps.CreateEndpoint)
+	}
+	for _, m := range mdw["Sign"] {
+		eps.SignEndpoint = m(eps.SignEndpoint)
 	}
 	return eps
 }

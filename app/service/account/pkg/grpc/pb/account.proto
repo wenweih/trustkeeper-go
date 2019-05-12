@@ -7,13 +7,23 @@ package pb;
 //The Account service definition.
 service Account {
  rpc Create (CreateRequest) returns (CreateReply);
+ rpc Sign   (SignRequest  ) returns (SignReply  );
 }
 
 message CreateRequest {
+ string email    = 1;
+ string password = 2;
+}
+
+message CreateReply {
+ bool result = 1;
+}
+
+message SignRequest {
   string email = 1;
   string password = 2;
 }
 
-message CreateReply {
-  bool result = 1;
+message SignReply {
+  string token = 1;
 }

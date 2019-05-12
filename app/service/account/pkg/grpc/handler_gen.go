@@ -10,8 +10,12 @@ import (
 // NewGRPCServer makes a set of endpoints available as a gRPC AddServer
 type grpcServer struct {
 	create grpc.Handler
+	sign   grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.AccountServer {
-	return &grpcServer{create: makeCreateHandler(endpoints, options["Create"])}
+	return &grpcServer{
+		create: makeCreateHandler(endpoints, options["Create"]),
+		sign:   makeSignHandler(endpoints, options["Sign"]),
+	}
 }
