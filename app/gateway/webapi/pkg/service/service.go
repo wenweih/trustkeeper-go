@@ -38,8 +38,14 @@ func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (resu
 	return resp.Result, nil
 }
 func (b *basicWebapiService) Signin(ctx context.Context, user Credentials) (token string, err error) {
-	// TODO implement the business logic of Signin
-	return token, err
+	resp, err := b.accountServiceClient.Signin(ctx, &pb.SigninRequest{
+		Email: user.Email,
+		Password: user.Password,
+	})
+	if err != nil {
+		return "", err
+	}
+	return resp.Token, err
 }
 func (b *basicWebapiService) Signout(ctx context.Context, token string) (result bool, err error) {
 	// TODO implement the business logic of Signout

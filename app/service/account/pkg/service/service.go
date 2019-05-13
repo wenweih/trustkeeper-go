@@ -45,7 +45,6 @@ func (b *basicAccountService) Create(ctx context.Context, email string, password
 }
 
 type Claims struct {
-	TokenID	string
 	jwt.StandardClaims
 }
 
@@ -61,9 +60,9 @@ func (b *basicAccountService) Signin(ctx context.Context, email string, password
 	expirationTime := time.Now().Add(5 * time.Minute)
 	tokenID := uuid.NewV4().String()
 	claims := &Claims {
-		TokenID: tokenID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
+			Id: tokenID,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
