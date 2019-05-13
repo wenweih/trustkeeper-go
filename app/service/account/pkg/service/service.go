@@ -1,15 +1,23 @@
 package service
 
 import (
+	"time"
 	"context"
 	"strings"
 	"trustkeeper-go/app/service/account/pkg/model"
 	"trustkeeper-go/app/service/account/pkg/repository"
 	"trustkeeper-go/library/vault"
-
+	"github.com/dgrijalva/jwt-go"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
+
+var conf Conf
+
+type Conf struct {
+	dbinfo string
+	jwtkey string
+}
 
 // AccountService describes the service.
 type AccountService interface {
@@ -36,8 +44,56 @@ func (b *basicAccountService) Create(ctx context.Context, email string, password
 	return b.repo.Create(acc)
 }
 
+type Claims struct {
+	TokenID	string
+	jwt.StandardClaims
+}
+
+func (b *basicAccountService) Signin(ctx context.Context, email string, password string) (s0 string, e1 error) {
+	acc, err := b.repo.FindByEmail(email)
+	if err != nil {
+		return "", err
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(acc.Password), []byte(password)); err != nil {
+		return "", err
+	}
+
+	expirationTime := time.Now().Add(5 * time.Minute)
+	tokenID := uuid.NewV4().String()
+	claims := &Claims {
+		TokenID: tokenID,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expirationTime.Unix(),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenStr, err := token.SignedString([]byte(conf.jwtkey))
+	if err != nil {
+		return "", err
+	}
+	if err := b.repo.Update(acc, map[string]interface{}{"token_id": tokenID}); err != nil {
+		return "", err
+	}
+	return tokenStr, e1
+}
+
 // NewBasicAccountService returns a naive, stateless implementation of AccountService.
 func NewBasicAccountService() AccountService {
+	return &basicAccountService{
+		repo: repository.New(repository.DB(conf.dbinfo)),
+	}
+}
+
+// New returns a AccountService with all of the expected middleware wired in.
+func New(middleware []Middleware) AccountService {
+	var svc AccountService = NewBasicAccountService()
+	for _, m := range middleware {
+		svc = m(svc)
+	}
+	return svc
+}
+
+func init()  {
 	vc, err := vault.NewVault()
 	if err != nil {
 		panic("fail to connect vault" + err.Error())
@@ -55,27 +111,9 @@ func NewBasicAccountService() AccountService {
 	dbname := strings.Join([]string{"dbname", data.Data["dbname"].(string)}, "=")
 	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
-	return &basicAccountService{
-		repo: repository.New(repository.DB(dbInfo)),
+	jwtkey := data.Data["jwtkey"].(string)
+	conf = Conf{
+		dbinfo: dbInfo,
+		jwtkey: jwtkey,
 	}
-}
-
-// New returns a AccountService with all of the expected middleware wired in.
-func New(middleware []Middleware) AccountService {
-	var svc AccountService = NewBasicAccountService()
-	for _, m := range middleware {
-		svc = m(svc)
-	}
-	return svc
-}
-
-func (b *basicAccountService) Signin(ctx context.Context, email string, password string) (s0 string, e1 error) {
-	acc, err := b.repo.FindByEmail(email)
-	if err != nil {
-		return "", err
-	}
-	if err := bcrypt.CompareHashAndPassword([]byte(acc.Password), []byte(password)); err != nil {
-		return "", err
-	}
-	return s0, e1
 }

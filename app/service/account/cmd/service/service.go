@@ -29,8 +29,10 @@ import (
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
 )
 
-var tracer opentracinggo.Tracer
-var logger log.Logger
+var (
+	logger log.Logger
+	tracer opentracinggo.Tracer
+)
 
 // Define our flags. Your service probably won't need to bind listeners for
 // all* supported transports, but we do it here for demonstration purposes.

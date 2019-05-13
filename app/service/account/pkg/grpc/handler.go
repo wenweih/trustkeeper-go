@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 
@@ -39,11 +38,16 @@ func makeSigninHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption
 }
 
 func decodeSignRequest(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Decoder is not impelemented")
+	req := r.(*pb.SigninRequest)
+	return endpoint.SigninRequest{Email: req.Email, Password: req.Password}, nil
 }
 
 func encodeSignResponse(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Encoder is not impelemented")
+	resp := r.(endpoint.SigninResponse)
+	if resp.E1 != nil {
+		return &pb.SigninReply{Token: resp.S0}, resp.E1
+	}
+	return &pb.SigninReply{Token: resp.S0}, nil
 }
 func (g *grpcServer) Signin(ctx context1.Context, req *pb.SigninRequest) (*pb.SigninReply, error) {
 	_, rep, err := g.sign.ServeGRPC(ctx, req)
