@@ -34,8 +34,8 @@ func (g *grpcServer) Create(ctx context1.Context, req *pb.CreateRequest) (*pb.Cr
 	return rep.(*pb.CreateReply), nil
 }
 
-func makeSignHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
-	return grpc.NewServer(endpoints.SignEndpoint, decodeSignRequest, encodeSignResponse, options...)
+func makeSigninHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.SigninEndpoint, decodeSignRequest, encodeSignResponse, options...)
 }
 
 func decodeSignRequest(_ context.Context, r interface{}) (interface{}, error) {
@@ -45,10 +45,10 @@ func decodeSignRequest(_ context.Context, r interface{}) (interface{}, error) {
 func encodeSignResponse(_ context.Context, r interface{}) (interface{}, error) {
 	return nil, errors.New("'Account' Encoder is not impelemented")
 }
-func (g *grpcServer) Sign(ctx context1.Context, req *pb.SignRequest) (*pb.SignReply, error) {
+func (g *grpcServer) Signin(ctx context1.Context, req *pb.SigninRequest) (*pb.SigninReply, error) {
 	_, rep, err := g.sign.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	return rep.(*pb.SignReply), nil
+	return rep.(*pb.SigninReply), nil
 }

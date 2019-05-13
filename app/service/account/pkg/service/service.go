@@ -14,7 +14,7 @@ import (
 // AccountService describes the service.
 type AccountService interface {
 	Create(ctx context.Context, email, password string) error
-	Sign(ctx context.Context, email, password string) (string, error)
+	Signin(ctx context.Context, email, password string) (string, error)
 }
 
 type basicAccountService struct {
@@ -69,7 +69,13 @@ func New(middleware []Middleware) AccountService {
 	return svc
 }
 
-func (b *basicAccountService) Sign(ctx context.Context, email string, password string) (s0 string, e1 error) {
-	// TODO implement the business logic of Sign
+func (b *basicAccountService) Signin(ctx context.Context, email string, password string) (s0 string, e1 error) {
+	acc, err := b.repo.FindByEmail(email)
+	if err != nil {
+		return "", err
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(acc.Password), []byte(password)); err != nil {
+		return "", err
+	}
 	return s0, e1
 }

@@ -56,23 +56,23 @@ func (e Endpoints) Create(ctx context.Context, email string, password string) (s
 }
 
 // SignRequest collects the request parameters for the Sign method.
-type SignRequest struct {
+type SigninRequest struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 // SignResponse collects the response parameters for the Sign method.
-type SignResponse struct {
+type SigninResponse struct {
 	S0 string `json:"s0"`
 	E1 error  `json:"e1"`
 }
 
 // MakeSignEndpoint returns an endpoint that invokes Sign on the service.
-func MakeSignEndpoint(s service.AccountService) endpoint.Endpoint {
+func MakeSigninEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(SignRequest)
-		s0, e1 := s.Sign(ctx, req.Email, req.Password)
-		return SignResponse{
+		req := request.(SigninRequest)
+		s0, e1 := s.Signin(ctx, req.Email, req.Password)
+		return SigninResponse{
 			E1: e1,
 			S0: s0,
 		}, nil
@@ -80,19 +80,19 @@ func MakeSignEndpoint(s service.AccountService) endpoint.Endpoint {
 }
 
 // Failed implements Failer.
-func (r SignResponse) Failed() error {
+func (r SigninResponse) Failed() error {
 	return r.E1
 }
 
-// Sign implements Service. Primarily useful in a client.
-func (e Endpoints) Sign(ctx context.Context, email string, password string) (s0 string, e1 error) {
-	request := SignRequest{
+// Signin implements Service. Primarily useful in a client.
+func (e Endpoints) Signin(ctx context.Context, email string, password string) (s0 string, e1 error) {
+	request := SigninRequest{
 		Email:    email,
 		Password: password,
 	}
-	response, err := e.SignEndpoint(ctx, request)
+	response, err := e.SigninEndpoint(ctx, request)
 	if err != nil {
 		return
 	}
-	return response.(SignResponse).S0, response.(SignResponse).E1
+	return response.(SigninResponse).S0, response.(SigninResponse).E1
 }

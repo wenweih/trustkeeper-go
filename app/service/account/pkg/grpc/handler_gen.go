@@ -16,6 +16,6 @@ type grpcServer struct {
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.AccountServer {
 	return &grpcServer{
 		create: makeCreateHandler(endpoints, options["Create"]),
-		sign:   makeSignHandler(endpoints, options["Sign"]),
+		sign:   makeSigninHandler(endpoints, options["Signin"]),
 	}
 }

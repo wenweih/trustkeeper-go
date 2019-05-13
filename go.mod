@@ -13,6 +13,7 @@ require (
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/coreos/etcd v3.3.13+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-kit/kit v0.8.0
 	github.com/go-ldap/ldap v3.0.3+incompatible // indirect
 	github.com/go-logfmt/logfmt v0.4.0 // indirect

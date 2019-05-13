@@ -11,7 +11,7 @@ import (
 // single parameter.
 type Endpoints struct {
 	CreateEndpoint endpoint.Endpoint
-	SignEndpoint   endpoint.Endpoint
+	SigninEndpoint   endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -19,13 +19,13 @@ type Endpoints struct {
 func New(s service.AccountService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
 		CreateEndpoint: MakeCreateEndpoint(s),
-		SignEndpoint:   MakeSignEndpoint(s),
+		SigninEndpoint:   MakeSigninEndpoint(s),
 	}
 	for _, m := range mdw["Create"] {
 		eps.CreateEndpoint = m(eps.CreateEndpoint)
 	}
-	for _, m := range mdw["Sign"] {
-		eps.SignEndpoint = m(eps.SignEndpoint)
+	for _, m := range mdw["Signin"] {
+		eps.SigninEndpoint = m(eps.SigninEndpoint)
 	}
 	return eps
 }

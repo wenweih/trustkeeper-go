@@ -24,16 +24,19 @@ func DB(dbInfo string) *gorm.DB {
 func New(db *gorm.DB) AccoutRepo {
   acc := AccoutRepo{db}
   acc.db.AutoMigrate(
-    &model.Account{})
-
+    model.Account{})
   return acc
 }
 
 // Create save repo
 func (repo AccoutRepo) Create(acc *model.Account) error {
   return repo.db.Create(acc).Error
-  // return repo.db.Raw("INSERT INTO accounts (uuid,email,password) VALUES ($1,$2,$3)",
-    // acc.UUID, acc.Email, acc.Password).Error
-    // `INSERT INTO "accounts" ("uuid", email, password) VALUES (?,?,?)`,
-    // acc.UUID, acc.Email, acc.Password).Error
+}
+
+func (repo AccoutRepo) FindByEmail(email string) (*model.Account, error) {
+  var acc model.Account
+  if err := repo.db.Find(&acc, "email = ?", email).Error; err != nil {
+    return nil, err
+  }
+  return &acc, nil
 }
