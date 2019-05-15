@@ -167,6 +167,7 @@ func initCancelInterrupt(g *group.Group) {
 	})
 }
 
+// https://dev.to/plutov/packagemain-13-microservices-with-go-kit-part-2-4lgh
 func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
 	var (
 		etcdServer = "http://localhost:2379"

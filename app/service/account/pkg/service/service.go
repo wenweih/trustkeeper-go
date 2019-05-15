@@ -32,6 +32,7 @@ type basicAccountService struct {
 	repo repository.AccoutRepo
 }
 
+// https://www.sohamkamani.com/blog/2018/02/25/golang-password-authentication-and-storage/
 func (b *basicAccountService) Create(ctx context.Context, email string, password string) error {
 	// Salt and hash the password using the bcrypt algorithm
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
@@ -51,6 +52,7 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
+// https://www.sohamkamani.com/blog/golang/2019-01-01-jwt-authentication/
 func (b *basicAccountService) Signin(ctx context.Context, email string, password string) (s0 string, e1 error) {
 	acc, err := b.repo.FindByEmail(email)
 	if err != nil {

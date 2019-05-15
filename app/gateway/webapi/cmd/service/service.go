@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"github.com/rs/cors"
 	endpoint "trustkeeper-go/app/gateway/webapi/pkg/endpoint"
 	http "trustkeeper-go/app/gateway/webapi/pkg/http"
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
@@ -92,19 +93,18 @@ func Run() {
 func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultHttpOptions(logger, tracer)
 	// Add your http options here
-
 	httpHandler := http.NewHTTPHandler(endpoints, options)
 	httpListener, err := net.Listen("tcp", *httpAddr)
 	if err != nil {
 		logger.Log("transport", "HTTP", "during", "Listen", "err", err)
 	}
+	handler := cors.Default().Handler(httpHandler)
 	g.Add(func() error {
 		logger.Log("transport", "HTTP", "addr", *httpAddr)
-		return http1.Serve(httpListener, httpHandler)
+		return http1.Serve(httpListener, handler)
 	}, func(error) {
 		httpListener.Close()
 	})
-
 }
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}

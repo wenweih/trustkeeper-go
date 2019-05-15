@@ -7,6 +7,7 @@ import(
   "trustkeeper-go/app/service/account/pkg/model"
 )
 
+// https://dzone.com/articles/go-microservices-blog-series-part-13-data-consiste
 // AccoutRepo account obj
 type AccoutRepo struct {
   db *gorm.DB
