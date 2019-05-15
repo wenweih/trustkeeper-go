@@ -3,6 +3,15 @@ package service
 import (
 	"flag"
 	"fmt"
+	"net"
+	http1 "net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	endpoint "trustkeeper-go/app/gateway/webapi/pkg/endpoint"
+	http "trustkeeper-go/app/gateway/webapi/pkg/http"
+	service "trustkeeper-go/app/gateway/webapi/pkg/service"
+
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
@@ -12,16 +21,8 @@ import (
 	zipkingoopentracing "github.com/openzipkin/zipkin-go-opentracing"
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
-	"net"
-	http1 "net/http"
-	"os"
-	"os/signal"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"syscall"
-	endpoint "trustkeeper-go/app/gateway/webapi/pkg/endpoint"
-	http "trustkeeper-go/app/gateway/webapi/pkg/http"
-	service "trustkeeper-go/app/gateway/webapi/pkg/service"
 )
 
 var tracer opentracinggo.Tracer
@@ -32,11 +33,12 @@ var logger log.Logger
 var fs = flag.NewFlagSet("webapi", flag.ExitOnError)
 var debugAddr = fs.String("debug.addr", ":7979", "Debug and metrics listen address")
 var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
+
 // var grpcAddr = fs.String("grpc-addr", ":8082", "gRPC listen address")
-var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
-var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
-var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
-var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
+// var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
+// var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
+// var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
+// var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
 var zipkinURL = fs.String("zipkin-url", "", "Enable Zipkin tracing via a collector URL e.g. http://localhost:9411/api/v1/spans")
 var lightstepToken = fs.String("lightstep-token", "", "Enable LightStep tracing via a LightStep access token")
 var appdashAddr = fs.String("appdash-addr", "", "Enable Appdash tracing via an Appdash server host:port")
@@ -120,9 +122,7 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 		Subsystem: "webapi",
 	}, []string{"method", "success"})
 	addDefaultEndpointMiddleware(logger, duration, mw)
-	// Add you endpoint middleware here
-
-	return
+	return mw
 }
 func initMetricsEndpoint(g *group.Group) {
 	http1.DefaultServeMux.Handle("/metrics", promhttp.Handler())

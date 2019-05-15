@@ -1,9 +1,10 @@
 package service
 
 import (
-	"log"
 	"context"
+	"log"
 	"trustkeeper-go/app/service/account/pkg/grpc/pb"
+
 	sdetcd "github.com/go-kit/kit/sd/etcdv3"
 	"google.golang.org/grpc"
 )
@@ -23,13 +24,13 @@ type Credentials struct {
 	Password string `json:"password"`
 }
 
-type basicWebapiService struct{
+type basicWebapiService struct {
 	accountServiceClient pb.AccountClient
 }
 
 func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (result bool, err error) {
 	resp, err := b.accountServiceClient.Create(ctx, &pb.CreateRequest{
-		Email: user.Email,
+		Email:    user.Email,
 		Password: user.Password,
 	})
 	if err != nil {
@@ -39,7 +40,7 @@ func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (resu
 }
 func (b *basicWebapiService) Signin(ctx context.Context, user Credentials) (token string, err error) {
 	resp, err := b.accountServiceClient.Signin(ctx, &pb.SigninRequest{
-		Email: user.Email,
+		Email:    user.Email,
 		Password: user.Password,
 	})
 	if err != nil {
@@ -48,8 +49,11 @@ func (b *basicWebapiService) Signin(ctx context.Context, user Credentials) (toke
 	return resp.Token, err
 }
 func (b *basicWebapiService) Signout(ctx context.Context, token string) (result bool, err error) {
-	// TODO implement the business logic of Signout
-	return result, err
+	resp, err := b.accountServiceClient.Signout(ctx, &pb.SignoutRequest{Token: token})
+	if err != nil {
+		return false, err
+	}
+	return resp.Result, nil
 }
 
 // NewBasicWebapiService returns a naive, stateless implementation of WebapiService.

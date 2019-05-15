@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	log "github.com/go-kit/kit/log"
 )
 
@@ -30,13 +31,13 @@ func (l loggingMiddleware) Signup(ctx context.Context, user Credentials) (result
 }
 func (l loggingMiddleware) Signin(ctx context.Context, user Credentials) (token string, err error) {
 	defer func() {
-		l.logger.Log("method", "Signin", "user", user, "token", token, "err", err)
+		l.logger.Log("method", "Signin", "user", user.Email, "err", err)
 	}()
 	return l.next.Signin(ctx, user)
 }
 func (l loggingMiddleware) Signout(ctx context.Context, token string) (result bool, err error) {
 	defer func() {
-		l.logger.Log("method", "Signout", "token", token, "result", result, "err", err)
+		l.logger.Log("method", "Signout", "result", result, "err", err)
 	}()
 	return l.next.Signout(ctx, token)
 }

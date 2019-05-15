@@ -2,8 +2,9 @@ package endpoint
 
 import (
 	"context"
-	endpoint "github.com/go-kit/kit/endpoint"
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
+
+	endpoint "github.com/go-kit/kit/endpoint"
 )
 
 // SignupRequest collects the request parameters for the Signup method.
@@ -63,8 +64,8 @@ func (r SigninResponse) Failed() error {
 }
 
 // SignoutRequest collects the request parameters for the Signout method.
-type SignoutRequest struct {
-	Token string `json:"token"`
+type SignoutRequest struct{
+	Token	string `json:"token"`
 }
 
 // SignoutResponse collects the response parameters for the Signout method.

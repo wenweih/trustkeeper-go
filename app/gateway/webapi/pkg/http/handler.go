@@ -1,12 +1,14 @@
 package http
 
 import (
+	"strings"
 	"context"
 	"encoding/json"
 	"errors"
-	http1 "github.com/go-kit/kit/transport/http"
 	"net/http"
 	endpoint "trustkeeper-go/app/gateway/webapi/pkg/endpoint"
+
+	http1 "github.com/go-kit/kit/transport/http"
 )
 
 // makeSignupHandler creates the handler logic
@@ -68,8 +70,14 @@ func makeSignoutHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options 
 // JSON-encoded request from the HTTP request body.
 func decodeSignoutRequest(_ context.Context, r *http.Request) (interface{}, error) {
 	req := endpoint.SignoutRequest{}
-	err := json.NewDecoder(r.Body).Decode(&req)
-	return req, err
+	val := r.Header.Get("Authorization")
+	authHeaderParts := strings.Split(val, " ")
+	if len(authHeaderParts) == 2 && strings.ToLower(authHeaderParts[0]) == "bearer" {
+		req.Token = authHeaderParts[1]
+	}else {
+		return nil, errors.New("Empty Token in request header")
+	}
+	return req, nil
 }
 
 // encodeSignoutResponse is a transport/http.EncodeResponseFunc that encodes
