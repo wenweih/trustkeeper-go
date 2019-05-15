@@ -29,7 +29,14 @@ func (l loggingMiddleware) Create(ctx context.Context, email string, password st
 
 func (l loggingMiddleware) Signin(ctx context.Context, email string, password string) (s0 string, e1 error) {
 	defer func() {
-		l.logger.Log("method", "Signin", "email", email, "password", password, "s0", s0, "e1", e1)
+		l.logger.Log("method", "Signin", "email", email, "e1", e1)
 	}()
 	return l.next.Signin(ctx, email, password)
+}
+
+func (l loggingMiddleware) Signout(ctx context.Context, token string) (e0 error) {
+	defer func() {
+		l.logger.Log("method", "Signout", "e0", e0)
+	}()
+	return l.next.Signout(ctx, token)
 }

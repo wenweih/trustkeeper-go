@@ -41,6 +41,14 @@ func (repo AccoutRepo) FindByEmail(email string) (*model.Account, error) {
   return &acc, nil
 }
 
+func (repo AccoutRepo) FindByTokenID(id string) (*model.Account, error) {
+  var acc model.Account
+  if err := repo.db.Find(&acc, "token_id = ?", id).Error; err != nil {
+    return nil, err
+  }
+  return &acc, nil
+}
+
 func (repo AccoutRepo) Update(acc *model.Account, colums map[string]interface{}) error {
   return repo.db.Model(acc).Update(colums).Error
 }

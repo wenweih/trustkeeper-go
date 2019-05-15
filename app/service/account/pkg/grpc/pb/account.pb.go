@@ -35,7 +35,7 @@ func (m *CreateRequest) Reset()         { *m = CreateRequest{} }
 func (m *CreateRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateRequest) ProtoMessage()    {}
 func (*CreateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c2d1905464537c47, []int{0}
+	return fileDescriptor_account_9a7c9f519f921888, []int{0}
 }
 func (m *CreateRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateRequest.Unmarshal(m, b)
@@ -80,7 +80,7 @@ func (m *CreateReply) Reset()         { *m = CreateReply{} }
 func (m *CreateReply) String() string { return proto.CompactTextString(m) }
 func (*CreateReply) ProtoMessage()    {}
 func (*CreateReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c2d1905464537c47, []int{1}
+	return fileDescriptor_account_9a7c9f519f921888, []int{1}
 }
 func (m *CreateReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateReply.Unmarshal(m, b)
@@ -119,7 +119,7 @@ func (m *SigninRequest) Reset()         { *m = SigninRequest{} }
 func (m *SigninRequest) String() string { return proto.CompactTextString(m) }
 func (*SigninRequest) ProtoMessage()    {}
 func (*SigninRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c2d1905464537c47, []int{2}
+	return fileDescriptor_account_9a7c9f519f921888, []int{2}
 }
 func (m *SigninRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SigninRequest.Unmarshal(m, b)
@@ -164,7 +164,7 @@ func (m *SigninReply) Reset()         { *m = SigninReply{} }
 func (m *SigninReply) String() string { return proto.CompactTextString(m) }
 func (*SigninReply) ProtoMessage()    {}
 func (*SigninReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c2d1905464537c47, []int{3}
+	return fileDescriptor_account_9a7c9f519f921888, []int{3}
 }
 func (m *SigninReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SigninReply.Unmarshal(m, b)
@@ -191,11 +191,89 @@ func (m *SigninReply) GetToken() string {
 	return ""
 }
 
+type SignoutRequest struct {
+	Token                string   `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SignoutRequest) Reset()         { *m = SignoutRequest{} }
+func (m *SignoutRequest) String() string { return proto.CompactTextString(m) }
+func (*SignoutRequest) ProtoMessage()    {}
+func (*SignoutRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_account_9a7c9f519f921888, []int{4}
+}
+func (m *SignoutRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SignoutRequest.Unmarshal(m, b)
+}
+func (m *SignoutRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SignoutRequest.Marshal(b, m, deterministic)
+}
+func (dst *SignoutRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SignoutRequest.Merge(dst, src)
+}
+func (m *SignoutRequest) XXX_Size() int {
+	return xxx_messageInfo_SignoutRequest.Size(m)
+}
+func (m *SignoutRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SignoutRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SignoutRequest proto.InternalMessageInfo
+
+func (m *SignoutRequest) GetToken() string {
+	if m != nil {
+		return m.Token
+	}
+	return ""
+}
+
+type SignoutReply struct {
+	Result               bool     `protobuf:"varint,1,opt,name=result" json:"result,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SignoutReply) Reset()         { *m = SignoutReply{} }
+func (m *SignoutReply) String() string { return proto.CompactTextString(m) }
+func (*SignoutReply) ProtoMessage()    {}
+func (*SignoutReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_account_9a7c9f519f921888, []int{5}
+}
+func (m *SignoutReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SignoutReply.Unmarshal(m, b)
+}
+func (m *SignoutReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SignoutReply.Marshal(b, m, deterministic)
+}
+func (dst *SignoutReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SignoutReply.Merge(dst, src)
+}
+func (m *SignoutReply) XXX_Size() int {
+	return xxx_messageInfo_SignoutReply.Size(m)
+}
+func (m *SignoutReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_SignoutReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SignoutReply proto.InternalMessageInfo
+
+func (m *SignoutReply) GetResult() bool {
+	if m != nil {
+		return m.Result
+	}
+	return false
+}
+
 func init() {
 	proto.RegisterType((*CreateRequest)(nil), "pb.CreateRequest")
 	proto.RegisterType((*CreateReply)(nil), "pb.CreateReply")
 	proto.RegisterType((*SigninRequest)(nil), "pb.SigninRequest")
 	proto.RegisterType((*SigninReply)(nil), "pb.SigninReply")
+	proto.RegisterType((*SignoutRequest)(nil), "pb.SignoutRequest")
+	proto.RegisterType((*SignoutReply)(nil), "pb.SignoutReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -212,6 +290,7 @@ const _ = grpc.SupportPackageIsVersion4
 type AccountClient interface {
 	Create(ctx context.Context, in *CreateRequest, opts ...grpc.CallOption) (*CreateReply, error)
 	Signin(ctx context.Context, in *SigninRequest, opts ...grpc.CallOption) (*SigninReply, error)
+	Signout(ctx context.Context, in *SignoutRequest, opts ...grpc.CallOption) (*SignoutReply, error)
 }
 
 type accountClient struct {
@@ -240,10 +319,20 @@ func (c *accountClient) Signin(ctx context.Context, in *SigninRequest, opts ...g
 	return out, nil
 }
 
+func (c *accountClient) Signout(ctx context.Context, in *SignoutRequest, opts ...grpc.CallOption) (*SignoutReply, error) {
+	out := new(SignoutReply)
+	err := c.cc.Invoke(ctx, "/pb.Account/Signout", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AccountServer is the server API for Account service.
 type AccountServer interface {
 	Create(context.Context, *CreateRequest) (*CreateReply, error)
 	Signin(context.Context, *SigninRequest) (*SigninReply, error)
+	Signout(context.Context, *SignoutRequest) (*SignoutReply, error)
 }
 
 func RegisterAccountServer(s *grpc.Server, srv AccountServer) {
@@ -286,6 +375,24 @@ func _Account_Signin_Handler(srv interface{}, ctx context.Context, dec func(inte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Account_Signout_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignoutRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AccountServer).Signout(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Account/Signout",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AccountServer).Signout(ctx, req.(*SignoutRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Account_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.Account",
 	HandlerType: (*AccountServer)(nil),
@@ -298,15 +405,19 @@ var _Account_serviceDesc = grpc.ServiceDesc{
 			MethodName: "Signin",
 			Handler:    _Account_Signin_Handler,
 		},
+		{
+			MethodName: "Signout",
+			Handler:    _Account_Signout_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "account.proto",
 }
 
-func init() { proto.RegisterFile("account.proto", fileDescriptor_account_c2d1905464537c47) }
+func init() { proto.RegisterFile("account.proto", fileDescriptor_account_9a7c9f519f921888) }
 
-var fileDescriptor_account_c2d1905464537c47 = []byte{
-	// 197 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_account_9a7c9f519f921888 = []byte{
+	// 236 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4d, 0x4c, 0x4e, 0xce,
 	0x2f, 0xcd, 0x2b, 0xd1, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2a, 0x48, 0x52, 0x72, 0xe4,
 	0xe2, 0x75, 0x2e, 0x4a, 0x4d, 0x2c, 0x49, 0x0d, 0x4a, 0x2d, 0x2c, 0x4d, 0x2d, 0x2e, 0x11, 0x12,
@@ -315,9 +426,11 @@ var fileDescriptor_account_c2d1905464537c47 = []byte{
 	0x70, 0xbe, 0x92, 0x2a, 0x17, 0x37, 0xcc, 0x88, 0x82, 0x9c, 0x4a, 0x21, 0x31, 0x2e, 0xb6, 0xa2,
 	0xd4, 0xe2, 0xd2, 0x9c, 0x12, 0xb0, 0x09, 0x1c, 0x41, 0x50, 0x1e, 0xc8, 0xa6, 0xe0, 0xcc, 0xf4,
 	0xbc, 0xcc, 0x3c, 0xf2, 0x6d, 0x52, 0xe6, 0xe2, 0x86, 0x19, 0x01, 0xb2, 0x49, 0x84, 0x8b, 0xb5,
-	0x24, 0x3f, 0x3b, 0x35, 0x0f, 0x66, 0x00, 0x98, 0x63, 0x94, 0xca, 0xc5, 0xee, 0x08, 0xf1, 0xa6,
-	0x90, 0x0e, 0x17, 0x1b, 0xc4, 0x65, 0x42, 0x82, 0x7a, 0x05, 0x49, 0x7a, 0x28, 0x1e, 0x95, 0xe2,
-	0x47, 0x16, 0x02, 0x19, 0xa7, 0xc3, 0xc5, 0x06, 0x31, 0x1d, 0xa2, 0x1a, 0xc5, 0xb1, 0x10, 0xd5,
-	0x48, 0x96, 0x27, 0xb1, 0x81, 0xc3, 0xd0, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x69, 0x1a, 0x93,
-	0x95, 0x54, 0x01, 0x00, 0x00,
+	0x24, 0x3f, 0x3b, 0x35, 0x0f, 0x66, 0x00, 0x98, 0xa3, 0xa4, 0xc6, 0xc5, 0x07, 0x52, 0x94, 0x5f,
+	0x5a, 0x82, 0x64, 0x11, 0x56, 0x75, 0x3c, 0x70, 0x75, 0x78, 0xdc, 0x6d, 0x34, 0x8d, 0x91, 0x8b,
+	0xdd, 0x11, 0x12, 0x6e, 0x42, 0x3a, 0x5c, 0x6c, 0x10, 0xaf, 0x0a, 0x09, 0xea, 0x15, 0x24, 0xe9,
+	0xa1, 0x84, 0x9c, 0x14, 0x3f, 0xb2, 0x10, 0xc8, 0x44, 0x1d, 0x2e, 0x36, 0x88, 0x73, 0x21, 0xaa,
+	0x51, 0x7c, 0x0f, 0x51, 0x8d, 0xec, 0x1b, 0x7d, 0x2e, 0x76, 0xa8, 0x7b, 0x84, 0x84, 0x60, 0x72,
+	0x08, 0x4f, 0x48, 0x09, 0xa0, 0x88, 0x15, 0xe4, 0x54, 0x26, 0xb1, 0x81, 0x63, 0xd1, 0x18, 0x10,
+	0x00, 0x00, 0xff, 0xff, 0x1a, 0xe0, 0xb3, 0xc3, 0xd6, 0x01, 0x00, 0x00,
 }

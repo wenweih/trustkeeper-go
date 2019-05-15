@@ -34,15 +34,15 @@ func (g *grpcServer) Create(ctx context1.Context, req *pb.CreateRequest) (*pb.Cr
 }
 
 func makeSigninHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
-	return grpc.NewServer(endpoints.SigninEndpoint, decodeSignRequest, encodeSignResponse, options...)
+	return grpc.NewServer(endpoints.SigninEndpoint, decodeSigninRequest, encodeSigninResponse, options...)
 }
 
-func decodeSignRequest(_ context.Context, r interface{}) (interface{}, error) {
+func decodeSigninRequest(_ context.Context, r interface{}) (interface{}, error) {
 	req := r.(*pb.SigninRequest)
 	return endpoint.SigninRequest{Email: req.Email, Password: req.Password}, nil
 }
 
-func encodeSignResponse(_ context.Context, r interface{}) (interface{}, error) {
+func encodeSigninResponse(_ context.Context, r interface{}) (interface{}, error) {
 	resp := r.(endpoint.SigninResponse)
 	if resp.E1 != nil {
 		return &pb.SigninReply{Token: resp.S0}, resp.E1
@@ -50,9 +50,33 @@ func encodeSignResponse(_ context.Context, r interface{}) (interface{}, error) {
 	return &pb.SigninReply{Token: resp.S0}, nil
 }
 func (g *grpcServer) Signin(ctx context1.Context, req *pb.SigninRequest) (*pb.SigninReply, error) {
-	_, rep, err := g.sign.ServeGRPC(ctx, req)
+	_, rep, err := g.signin.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return rep.(*pb.SigninReply), nil
+}
+
+func makeSignoutHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.SignoutEndpoint, decodeSignoutRequest, encodeSignoutResponse, options...)
+}
+
+func decodeSignoutRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req := r.(*pb.SignoutRequest)
+	return endpoint.SignoutRequest{Token: req.Token}, nil
+}
+
+func encodeSignoutResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp := r.(endpoint.SignoutResponse)
+	if resp.E0 != nil {
+		return nil, resp.E0
+	}
+	return &pb.SignoutReply{Result: true}, nil
+}
+func (g *grpcServer) Signout(ctx context1.Context, req *pb.SignoutRequest) (*pb.SignoutReply, error) {
+	_, rep, err := g.signout.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.SignoutReply), nil
 }

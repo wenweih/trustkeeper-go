@@ -10,22 +10,27 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	CreateEndpoint endpoint.Endpoint
-	SigninEndpoint   endpoint.Endpoint
+	CreateEndpoint  endpoint.Endpoint
+	SigninEndpoint  endpoint.Endpoint
+	SignoutEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.AccountService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
-		CreateEndpoint: MakeCreateEndpoint(s),
-		SigninEndpoint:   MakeSigninEndpoint(s),
+		CreateEndpoint:  MakeCreateEndpoint(s),
+		SigninEndpoint:  MakeSigninEndpoint(s),
+		SignoutEndpoint: MakeSignoutEndpoint(s),
 	}
 	for _, m := range mdw["Create"] {
 		eps.CreateEndpoint = m(eps.CreateEndpoint)
 	}
 	for _, m := range mdw["Signin"] {
 		eps.SigninEndpoint = m(eps.SigninEndpoint)
+	}
+	for _, m := range mdw["Signout"] {
+		eps.SignoutEndpoint = m(eps.SignoutEndpoint)
 	}
 	return eps
 }

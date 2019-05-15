@@ -6,8 +6,9 @@ package pb;
 
 //The Account service definition.
 service Account {
- rpc Create (CreateRequest) returns (CreateReply);
- rpc Signin   (SigninRequest  ) returns (SigninReply  );
+ rpc Create  (CreateRequest ) returns (CreateReply );
+ rpc Signin  (SigninRequest ) returns (SigninReply );
+ rpc Signout (SignoutRequest) returns (SignoutReply);
 }
 
 message CreateRequest {
@@ -20,10 +21,18 @@ message CreateReply {
 }
 
 message SigninRequest {
-  string email = 1;
-  string password = 2;
+ string email    = 1;
+ string password = 2;
 }
 
 message SigninReply {
+ string token = 1;
+}
+
+message SignoutRequest {
   string token = 1;
+}
+
+message SignoutReply {
+  bool result = 1;
 }

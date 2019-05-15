@@ -1,12 +1,14 @@
 package service
 
 import (
-	"time"
+	"fmt"
 	"context"
 	"strings"
+	"time"
 	"trustkeeper-go/app/service/account/pkg/model"
 	"trustkeeper-go/app/service/account/pkg/repository"
 	"trustkeeper-go/library/vault"
+
 	"github.com/dgrijalva/jwt-go"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
@@ -23,6 +25,7 @@ type Conf struct {
 type AccountService interface {
 	Create(ctx context.Context, email, password string) error
 	Signin(ctx context.Context, email, password string) (string, error)
+	Signout(ctx context.Context, token string) error
 }
 
 type basicAccountService struct {
@@ -57,12 +60,12 @@ func (b *basicAccountService) Signin(ctx context.Context, email string, password
 		return "", err
 	}
 
-	expirationTime := time.Now().Add(5 * time.Minute)
+	expirationTime := time.Now().Add(100 * time.Minute)
 	tokenID := uuid.NewV4().String()
-	claims := &Claims {
+	claims := &Claims{
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: expirationTime.Unix(),
-			Id: tokenID,
+			Id:        tokenID,
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -76,6 +79,24 @@ func (b *basicAccountService) Signin(ctx context.Context, email string, password
 	return tokenStr, e1
 }
 
+
+func (b *basicAccountService) Signout(ctx context.Context, token string) (e0 error) {
+	claims := &Claims{}
+	tkn, err := jwt.ParseWithClaims(token, claims, func (token *jwt.Token) (interface{}, error){
+		return []byte(conf.jwtkey), nil
+	})
+
+	if err != nil  || !tkn.Valid{
+		return fmt.Errorf(err.Error())
+	}
+
+	acc, err := b.repo.FindByTokenID(claims.Id)
+	if err != nil {
+		return fmt.Errorf("token was reset" + err.Error())
+	}
+	b.repo.Update(acc, map[string]interface{}{"token_id": nil})
+	return nil
+}
 // NewBasicAccountService returns a naive, stateless implementation of AccountService.
 func NewBasicAccountService() AccountService {
 	return &basicAccountService{
@@ -92,7 +113,7 @@ func New(middleware []Middleware) AccountService {
 	return svc
 }
 
-func init()  {
+func init() {
 	vc, err := vault.NewVault()
 	if err != nil {
 		panic("fail to connect vault" + err.Error())
