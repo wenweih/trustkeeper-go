@@ -101,9 +101,11 @@ func (b *basicAccountService) Signout(ctx context.Context, token string) (e0 err
 }
 // NewBasicAccountService returns a naive, stateless implementation of AccountService.
 func NewBasicAccountService() AccountService {
-	return &basicAccountService{
-		repo: repository.New(repository.DB(conf.dbinfo)),
+	db := repository.DB(conf.dbinfo)
+	bas := basicAccountService{
+		repo: repository.New(db),
 	}
+	return &bas
 }
 
 // New returns a AccountService with all of the expected middleware wired in.

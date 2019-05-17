@@ -17,7 +17,6 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 	return func(next AccountService) AccountService {
 		return &loggingMiddleware{logger, next}
 	}
-
 }
 
 func (l loggingMiddleware) Create(ctx context.Context, email string, password string) (e1 error) {

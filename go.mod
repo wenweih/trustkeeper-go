@@ -11,6 +11,9 @@ require (
 	github.com/armon/go-radix v1.0.0 // indirect
 	github.com/beorn7/perks v1.0.0 // indirect
 	github.com/caarlos0/env v3.5.0+incompatible
+	github.com/casbin/casbin v1.8.2
+	github.com/casbin/gorm-adapter v0.0.0-20190318080705-e74a050c51a4
+	github.com/casbin/xorm-adapter v0.0.0-20190318235344-8e63783e2864 // indirect
 	github.com/coreos/etcd v3.3.13+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20190514213226-23b29e59681b // indirect
@@ -18,6 +21,7 @@ require (
 	github.com/go-kit/kit v0.8.0
 	github.com/go-ldap/ldap v3.0.3+incompatible // indirect
 	github.com/go-logfmt/logfmt v0.4.0 // indirect
+	github.com/go-xorm/xorm v0.7.1 // indirect
 	github.com/golang/mock v1.3.1 // indirect
 	github.com/golang/protobuf v1.3.1
 	github.com/google/btree v1.0.0 // indirect

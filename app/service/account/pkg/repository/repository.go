@@ -5,12 +5,15 @@ import(
   "github.com/jinzhu/gorm"
   "trustkeeper-go/library/database/orm"
   "trustkeeper-go/app/service/account/pkg/model"
+  stdcasbin "github.com/casbin/casbin"
+  "trustkeeper-go/app/service/account/pkg/enforcer"
 )
 
 // https://dzone.com/articles/go-microservices-blog-series-part-13-data-consiste
 // AccoutRepo account obj
 type AccoutRepo struct {
   db *gorm.DB
+  *stdcasbin.Enforcer						// authorization service
 }
 
 func DB(dbInfo string) *gorm.DB {
@@ -23,9 +26,11 @@ func DB(dbInfo string) *gorm.DB {
 
 // New new
 func New(db *gorm.DB) AccoutRepo {
-  acc := AccoutRepo{db}
+  acc := AccoutRepo{db: db,
+    Enforcer: enforcer.NewCasbinEnforcer(db)}
   acc.db.AutoMigrate(
     model.Account{})
+  acc.Enforcer.LoadPolicy()
   return acc
 }
 
