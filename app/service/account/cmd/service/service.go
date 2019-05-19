@@ -9,10 +9,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"strings"
 	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
+	"trustkeeper-go/app/service/account/pkg/configure"
 	grpc "trustkeeper-go/app/service/account/pkg/grpc"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/account/pkg/service"
+	"trustkeeper-go/library/vault"
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
@@ -32,6 +35,7 @@ import (
 var (
 	logger log.Logger
 	tracer opentracinggo.Tracer
+	conf configure.Conf
 )
 
 // Define our flags. Your service probably won't need to bind listeners for
@@ -40,6 +44,7 @@ var fs = flag.NewFlagSet("account", flag.ExitOnError)
 var debugAddr = fs.String("debug.addr", ":7777", "Debug and metrics listen address")
 var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
 var grpcAddr = fs.String("grpc-addr", ":8082", "gRPC listen address")
+
 // var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
 // var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
 // var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
@@ -86,8 +91,8 @@ func Run() {
 		tracer = opentracinggo.GlobalTracer()
 	}
 
-	svc := service.New(getServiceMiddleware(logger))
-	eps := endpoint.New(svc, getEndpointMiddleware(logger))
+	svc := service.New(conf, getServiceMiddleware(logger))
+	eps := endpoint.New(svc, getEndpointMiddleware(logger, svc))
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
@@ -123,9 +128,9 @@ func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = addDefaultServiceMiddleware(logger, mw)
 	// Append your middleware here
 
-	return
+	return mw
 }
-func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middleware) {
+func getEndpointMiddleware(logger log.Logger, s service.AccountService) (mw map[string][]endpoint1.Middleware) {
 	mw = map[string][]endpoint1.Middleware{}
 	duration := prometheus.NewSummaryFrom(prometheus1.SummaryOpts{
 		Help:      "Request duration in seconds.",
@@ -135,8 +140,10 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 	}, []string{"method", "success"})
 	addDefaultEndpointMiddleware(logger, duration, mw)
 	// Add you endpoint middleware here
+	mw["Roles"] = append(mw["Roles"], endpoint.AuthMiddleware(conf, s))
+	mw["Signout"] = append(mw["Signout"], endpoint.AuthMiddleware(conf, s))
 
-	return
+	return mw
 }
 func initMetricsEndpoint(g *group.Group) {
 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
@@ -167,6 +174,10 @@ func initCancelInterrupt(g *group.Group) {
 	})
 }
 
+func addAuthMiddlerware(svc service.AccountService)  {
+
+}
+
 // https://dev.to/plutov/packagemain-13-microservices-with-go-kit-part-2-4lgh
 func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
 	var (
@@ -188,4 +199,29 @@ func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
 	registrar.Register()
 
 	return registrar, nil
+}
+
+func init() {
+	vc, err := vault.NewVault()
+	if err != nil {
+		panic("fail to connect vault" + err.Error())
+	}
+	// ListSecret
+	data, err := vc.Logical().Read("kv1/db_trustkeeper_account")
+	if err != nil {
+		panic("vaule read error" + err.Error())
+	}
+
+	host := strings.Join([]string{"host", data.Data["host"].(string)}, "=")
+	port := strings.Join([]string{"port", data.Data["port"].(string)}, "=")
+	user := strings.Join([]string{"user", data.Data["username"].(string)}, "=")
+	password := strings.Join([]string{"password", data.Data["password"].(string)}, "=")
+	dbname := strings.Join([]string{"dbname", data.Data["dbname"].(string)}, "=")
+	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
+	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
+	jwtkey := data.Data["jwtkey"].(string)
+	conf = configure.Conf{
+		DBInfo: dbInfo,
+		JWTKey: jwtkey,
+	}
 }

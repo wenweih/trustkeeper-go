@@ -8,7 +8,14 @@ import (
 	endpoint "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	metrics "github.com/go-kit/kit/metrics"
+	service "trustkeeper-go/app/service/account/pkg/service"
+	"github.com/dgrijalva/jwt-go"
+	"trustkeeper-go/app/service/account/pkg/configure"
 )
+
+type Claims struct {
+	jwt.StandardClaims
+}
 
 // InstrumentingMiddleware returns an endpoint middleware that records
 // the duration of each invocation to the passed histogram. The middleware adds
@@ -34,6 +41,29 @@ func LoggingMiddleware(logger log.Logger) endpoint.Middleware {
 				logger.Log("transport_error", err, "took", time.Since(begin))
 			}(time.Now())
 			return next(ctx, request)
+		}
+	}
+}
+
+// AuthMiddleware returns an endpoint middleware
+func AuthMiddleware(conf configure.Conf, s service.AccountService) endpoint.Middleware {
+	return func(next endpoint.Endpoint) endpoint.Endpoint {
+		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
+			claims := &Claims{}
+			req := request.(SignoutRequest)
+			tkn, err := jwt.ParseWithClaims(req.Token, claims, func(token *jwt.Token) (interface{}, error) {
+				return []byte(conf.JWTKey), nil
+			})
+
+			if err != nil || !tkn.Valid {
+				return nil, fmt.Errorf(err.Error())
+			}
+
+			acc ,err := s.FindByTokenID(ctx, claims.Id)
+			if err != nil {
+				return nil, fmt.Errorf("token was reset" + err.Error())
+			}
+			return next(context.WithValue(ctx, "account", acc), request)
 		}
 	}
 }

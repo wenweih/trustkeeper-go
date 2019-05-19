@@ -110,8 +110,8 @@ type SignoutResponse struct {
 // MakeSignoutEndpoint returns an endpoint that invokes Signout on the service.
 func MakeSignoutEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(SignoutRequest)
-		e0 := s.Signout(ctx, req.Token)
+		// req := request.(SignoutRequest)
+		e0 := s.Signout(ctx)
 		return SignoutResponse{E0: e0}, nil
 	}
 }
@@ -129,4 +129,42 @@ func (e Endpoints) Signout(ctx context.Context, token string) (e0 error) {
 		return
 	}
 	return response.(SignoutResponse).E0
+}
+
+// RolesRequest collects the request parameters for the Roles method.
+type RolesRequest struct {
+	Token string `json:"token"`
+}
+
+// RolesResponse collects the response parameters for the Roles method.
+type RolesResponse struct {
+	S0 []string `json:"s0"`
+	E1 error    `json:"e1"`
+}
+
+// MakeRolesEndpoint returns an endpoint that invokes Roles on the service.
+func MakeRolesEndpoint(s service.AccountService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(RolesRequest)
+		s0, e1 := s.Roles(ctx, req.Token)
+		return RolesResponse{
+			E1: e1,
+			S0: s0,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r RolesResponse) Failed() error {
+	return r.E1
+}
+
+// Roles implements Service. Primarily useful in a client.
+func (e Endpoints) Roles(ctx context.Context, token string) (s0 []string, e1 error) {
+	request := RolesRequest{Token: token}
+	response, err := e.RolesEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(RolesResponse).S0, response.(RolesResponse).E1
 }

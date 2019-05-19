@@ -1,35 +1,34 @@
 package service
 
 import (
-	"fmt"
 	"context"
-	"strings"
+	"fmt"
 	"time"
 	"trustkeeper-go/app/service/account/pkg/model"
 	"trustkeeper-go/app/service/account/pkg/repository"
-	"trustkeeper-go/library/vault"
+	"trustkeeper-go/app/service/account/pkg/configure"
 
 	"github.com/dgrijalva/jwt-go"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
-var conf Conf
-
-type Conf struct {
-	dbinfo string
-	jwtkey string
-}
-
 // AccountService describes the service.
 type AccountService interface {
 	Create(ctx context.Context, email, password string) error
 	Signin(ctx context.Context, email, password string) (string, error)
-	Signout(ctx context.Context, token string) error
+	Signout(ctx context.Context) error
+	Roles(ctx context.Context, token string) ([]string, error)
+	FindByTokenID(ctx context.Context, tokenID string) (*model.Account, error)
 }
 
 type basicAccountService struct {
 	repo repository.AccoutRepo
+	conf configure.Conf
+}
+
+func (b *basicAccountService) FindByTokenID(ctx context.Context, tokenID string) (*model.Account, error) {
+	return b.repo.FindByTokenID(tokenID)
 }
 
 // https://www.sohamkamani.com/blog/2018/02/25/golang-password-authentication-and-storage/
@@ -71,7 +70,7 @@ func (b *basicAccountService) Signin(ctx context.Context, email string, password
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStr, err := token.SignedString([]byte(conf.jwtkey))
+	tokenStr, err := token.SignedString([]byte(b.conf.JWTKey))
 	if err != nil {
 		return "", err
 	}
@@ -81,63 +80,35 @@ func (b *basicAccountService) Signin(ctx context.Context, email string, password
 	return tokenStr, e1
 }
 
-
-func (b *basicAccountService) Signout(ctx context.Context, token string) (e0 error) {
-	claims := &Claims{}
-	tkn, err := jwt.ParseWithClaims(token, claims, func (token *jwt.Token) (interface{}, error){
-		return []byte(conf.jwtkey), nil
-	})
-
-	if err != nil  || !tkn.Valid{
-		return fmt.Errorf(err.Error())
-	}
-
-	acc, err := b.repo.FindByTokenID(claims.Id)
-	if err != nil {
-		return fmt.Errorf("token was reset" + err.Error())
+func (b *basicAccountService) Signout(ctx context.Context) (e0 error) {
+	acc, ok := ctx.Value("account").(*model.Account)
+	if !ok {
+		return fmt.Errorf("acount not found in context")
 	}
 	b.repo.Update(acc, map[string]interface{}{"token_id": nil})
 	return nil
 }
+
+func (b *basicAccountService) Roles(ctx context.Context, token string) (s0 []string, e1 error) {
+
+	return s0, e1
+}
+
 // NewBasicAccountService returns a naive, stateless implementation of AccountService.
-func NewBasicAccountService() AccountService {
-	db := repository.DB(conf.dbinfo)
+func NewBasicAccountService(conf configure.Conf) AccountService {
+	db := repository.DB(conf.DBInfo)
 	bas := basicAccountService{
 		repo: repository.New(db),
+		conf: conf,
 	}
 	return &bas
 }
 
 // New returns a AccountService with all of the expected middleware wired in.
-func New(middleware []Middleware) AccountService {
-	var svc AccountService = NewBasicAccountService()
+func New(conf configure.Conf, middleware []Middleware) AccountService {
+	var svc AccountService = NewBasicAccountService(conf)
 	for _, m := range middleware {
 		svc = m(svc)
 	}
 	return svc
-}
-
-func init() {
-	vc, err := vault.NewVault()
-	if err != nil {
-		panic("fail to connect vault" + err.Error())
-	}
-	// ListSecret
-	data, err := vc.Logical().Read("kv1/db_trustkeeper_account")
-	if err != nil {
-		panic("vaule read error" + err.Error())
-	}
-
-	host := strings.Join([]string{"host", data.Data["host"].(string)}, "=")
-	port := strings.Join([]string{"port", data.Data["port"].(string)}, "=")
-	user := strings.Join([]string{"user", data.Data["username"].(string)}, "=")
-	password := strings.Join([]string{"password", data.Data["password"].(string)}, "=")
-	dbname := strings.Join([]string{"dbname", data.Data["dbname"].(string)}, "=")
-	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
-	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
-	jwtkey := data.Data["jwtkey"].(string)
-	conf = Conf{
-		dbinfo: dbInfo,
-		jwtkey: jwtkey,
-	}
 }

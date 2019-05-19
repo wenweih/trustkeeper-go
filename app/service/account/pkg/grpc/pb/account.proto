@@ -9,6 +9,7 @@ service Account {
  rpc Create  (CreateRequest ) returns (CreateReply );
  rpc Signin  (SigninRequest ) returns (SigninReply );
  rpc Signout (SignoutRequest) returns (SignoutReply);
+ rpc Roles   (RolesRequest  ) returns (RolesReply  );
 }
 
 message CreateRequest {
@@ -30,9 +31,17 @@ message SigninReply {
 }
 
 message SignoutRequest {
-  string token = 1;
+ string token = 1;
 }
 
 message SignoutReply {
-  bool result = 1;
+ bool result = 1;
+}
+
+message RolesRequest {
+  string token = 1;
+}
+
+message RolesReply {
+  repeated string roles = 1;
 }

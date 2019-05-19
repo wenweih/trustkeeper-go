@@ -21,6 +21,7 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
 	options := map[string][]grpc.ServerOption{
 		"Create":  {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "Create", logger))},
+		"Roles":   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "Roles", logger))},
 		"Signin":  {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "Signin", logger))},
 		"Signout": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "Signout", logger))},
 	}
@@ -30,12 +31,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["Create"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Create")), endpoint.InstrumentingMiddleware(duration.With("method", "Create"))}
 	mw["Signin"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Signin")), endpoint.InstrumentingMiddleware(duration.With("method", "Signin"))}
 	mw["Signout"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Signout")), endpoint.InstrumentingMiddleware(duration.With("method", "Signout"))}
+	mw["Roles"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Roles")), endpoint.InstrumentingMiddleware(duration.With("method", "Roles"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"Create", "Signin", "Signout"}
+	methods := []string{"Create", "Signin", "Signout", "Roles"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

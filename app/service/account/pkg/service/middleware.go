@@ -4,6 +4,7 @@ import (
 	"context"
 
 	log "github.com/go-kit/kit/log"
+	"trustkeeper-go/app/service/account/pkg/model"
 )
 
 type Middleware func(AccountService) AccountService
@@ -33,9 +34,23 @@ func (l loggingMiddleware) Signin(ctx context.Context, email string, password st
 	return l.next.Signin(ctx, email, password)
 }
 
-func (l loggingMiddleware) Signout(ctx context.Context, token string) (e0 error) {
+func (l loggingMiddleware) Signout(ctx context.Context) (e0 error) {
 	defer func() {
 		l.logger.Log("method", "Signout", "e0", e0)
 	}()
-	return l.next.Signout(ctx, token)
+	return l.next.Signout(ctx)
+}
+
+func (l loggingMiddleware) Roles(ctx context.Context, token string) (s0 []string, e1 error) {
+	defer func() {
+		l.logger.Log("method", "Roles", "token", token, "s0", s0, "e1", e1)
+	}()
+	return l.next.Roles(ctx, token)
+}
+
+func (l loggingMiddleware) FindByTokenID(ctx context.Context, tokenID string) (acc *model.Account, e0 error) {
+	defer func() {
+		l.logger.Log("method", "FindByTokenID", "e0", e0)
+	}()
+	return l.next.FindByTokenID(ctx, tokenID)
 }

@@ -13,6 +13,7 @@ type Endpoints struct {
 	CreateEndpoint  endpoint.Endpoint
 	SigninEndpoint  endpoint.Endpoint
 	SignoutEndpoint endpoint.Endpoint
+	RolesEndpoint   endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -20,6 +21,7 @@ type Endpoints struct {
 func New(s service.AccountService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
 		CreateEndpoint:  MakeCreateEndpoint(s),
+		RolesEndpoint:   MakeRolesEndpoint(s),
 		SigninEndpoint:  MakeSigninEndpoint(s),
 		SignoutEndpoint: MakeSignoutEndpoint(s),
 	}
@@ -31,6 +33,9 @@ func New(s service.AccountService, mdw map[string][]endpoint.Middleware) Endpoin
 	}
 	for _, m := range mdw["Signout"] {
 		eps.SignoutEndpoint = m(eps.SignoutEndpoint)
+	}
+	for _, m := range mdw["Roles"] {
+		eps.RolesEndpoint = m(eps.RolesEndpoint)
 	}
 	return eps
 }

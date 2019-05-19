@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 
@@ -79,4 +80,23 @@ func (g *grpcServer) Signout(ctx context1.Context, req *pb.SignoutRequest) (*pb.
 		return nil, err
 	}
 	return rep.(*pb.SignoutReply), nil
+}
+
+func makeRolesHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.RolesEndpoint, decodeRolesRequest, encodeRolesResponse, options...)
+}
+
+func decodeRolesRequest(_ context.Context, r interface{}) (interface{}, error) {
+	return nil, errors.New("'Account' Decoder is not impelemented")
+}
+
+func encodeRolesResponse(_ context.Context, r interface{}) (interface{}, error) {
+	return nil, errors.New("'Account' Encoder is not impelemented")
+}
+func (g *grpcServer) Roles(ctx context1.Context, req *pb.RolesRequest) (*pb.RolesReply, error) {
+	_, rep, err := g.roles.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.RolesReply), nil
 }
