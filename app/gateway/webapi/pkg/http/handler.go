@@ -1,7 +1,6 @@
 package http
 
 import (
-	"strings"
 	"context"
 	"encoding/json"
 	"errors"
@@ -69,15 +68,7 @@ func makeSignoutHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options 
 // decodeSignoutRequest is a transport/http.DecodeRequestFunc that decodes a
 // JSON-encoded request from the HTTP request body.
 func decodeSignoutRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	req := endpoint.SignoutRequest{}
-	val := r.Header.Get("Authorization")
-	authHeaderParts := strings.Split(val, " ")
-	if len(authHeaderParts) == 2 && strings.ToLower(authHeaderParts[0]) == "bearer" {
-		req.Token = authHeaderParts[1]
-	}else {
-		return nil, errors.New("Empty Token in request header")
-	}
-	return req, nil
+	return nil, nil
 }
 
 // encodeSignoutResponse is a transport/http.EncodeResponseFunc that encodes
@@ -111,4 +102,27 @@ func err2code(err error) int {
 
 type errorWrapper struct {
 	Error string `json:"error"`
+}
+
+// makeGetRolesHandler creates the handler logic
+func makeGetRolesHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/get-roles", http1.NewServer(endpoints.GetRolesEndpoint, decodeGetRolesRequest, encodeGetRolesResponse, options...))
+}
+
+// decodeGetRolesRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeGetRolesRequest(ctx context.Context, r *http.Request) (interface{}, error) {
+	return nil, nil
+}
+
+// encodeGetRolesResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeGetRolesResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
 }

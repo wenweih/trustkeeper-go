@@ -41,3 +41,10 @@ func (l loggingMiddleware) Signout(ctx context.Context, token string) (result bo
 	}()
 	return l.next.Signout(ctx, token)
 }
+
+func (l loggingMiddleware) GetRoles(ctx context.Context, token string) (s0 []string, e1 error) {
+	defer func() {
+		l.logger.Log("method", "GetRoles", "s0", s0, "e1", e1)
+	}()
+	return l.next.GetRoles(ctx, token)
+}

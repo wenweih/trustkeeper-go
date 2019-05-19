@@ -5,6 +5,7 @@ import (
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
 
 	endpoint "github.com/go-kit/kit/endpoint"
+	stdjwt "github.com/go-kit/kit/auth/jwt"
 )
 
 // SignupRequest collects the request parameters for the Signup method.
@@ -64,8 +65,8 @@ func (r SigninResponse) Failed() error {
 }
 
 // SignoutRequest collects the request parameters for the Signout method.
-type SignoutRequest struct{
-	Token	string `json:"token"`
+type SignoutRequest struct {
+	// Token string `json:"token"`
 }
 
 // SignoutResponse collects the response parameters for the Signout method.
@@ -77,8 +78,7 @@ type SignoutResponse struct {
 // MakeSignoutEndpoint returns an endpoint that invokes Signout on the service.
 func MakeSignoutEndpoint(s service.WebapiService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(SignoutRequest)
-		result, err := s.Signout(ctx, req.Token)
+		result, err := s.Signout(ctx, ctx.Value(stdjwt.JWTTokenContextKey).(string))
 		return SignoutResponse{
 			Err:    err,
 			Result: result,
@@ -119,11 +119,46 @@ func (e Endpoints) Signin(ctx context.Context, user service.Credentials) (token 
 }
 
 // Signout implements Service. Primarily useful in a client.
-func (e Endpoints) Signout(ctx context.Context, token string) (result bool, err error) {
-	request := SignoutRequest{Token: token}
+func (e Endpoints) Signout(ctx context.Context) (result bool, err error) {
+	request := SignoutRequest{}
 	response, err := e.SignoutEndpoint(ctx, request)
 	if err != nil {
 		return
 	}
 	return response.(SignoutResponse).Result, response.(SignoutResponse).Err
+}
+
+// GetRolesRequest collects the request parameters for the GetRoles method.
+type GetRolesRequest struct {}
+
+// GetRolesResponse collects the response parameters for the GetRoles method.
+type GetRolesResponse struct {
+	S0 []string `json:"s0"`
+	E1 error    `json:"e1"`
+}
+
+// MakeGetRolesEndpoint returns an endpoint that invokes GetRoles on the service.
+func MakeGetRolesEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		s0, e1 := s.GetRoles(ctx, ctx.Value(stdjwt.JWTTokenContextKey).(string))
+		return GetRolesResponse{
+			E1: e1,
+			S0: s0,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r GetRolesResponse) Failed() error {
+	return r.E1
+}
+
+// GetRoles implements Service. Primarily useful in a client.
+func (e Endpoints) GetRoles(ctx context.Context, token string) (s0 []string, e1 error) {
+	request := GetRolesRequest{}
+	response, err := e.GetRolesEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(GetRolesResponse).S0, response.(GetRolesResponse).E1
 }
