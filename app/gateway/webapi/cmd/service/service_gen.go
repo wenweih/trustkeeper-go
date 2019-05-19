@@ -21,9 +21,10 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 }
 func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]http.ServerOption {
 	options := map[string][]http.ServerOption{
-		"Signin":  {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signin", logger))},
-		"Signout": {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signout", logger))},
-		"Signup":  {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signup", logger))},
+		"GetRoles": {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "GetRoles", logger))},
+		"Signin":   {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signin", logger))},
+		"Signout":  {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signout", logger))},
+		"Signup":   {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signup", logger))},
 	}
 	return options
 }
@@ -31,12 +32,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["Signup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Signup")), endpoint.InstrumentingMiddleware(duration.With("method", "Signup"))}
 	mw["Signin"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Signin")), endpoint.InstrumentingMiddleware(duration.With("method", "Signin"))}
 	mw["Signout"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "Signout")), endpoint.InstrumentingMiddleware(duration.With("method", "Signout"))}
+	mw["GetRoles"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetRoles")), endpoint.InstrumentingMiddleware(duration.With("method", "GetRoles"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"Signup", "Signin", "Signout"}
+	methods := []string{"Signup", "Signin", "Signout", "GetRoles"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

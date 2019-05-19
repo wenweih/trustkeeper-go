@@ -8,10 +8,11 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"github.com/rs/cors"
 	endpoint "trustkeeper-go/app/gateway/webapi/pkg/endpoint"
 	http "trustkeeper-go/app/gateway/webapi/pkg/http"
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
+
+	"github.com/rs/cors"
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
@@ -24,6 +25,9 @@ import (
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
+
+	httptransport "github.com/go-kit/kit/transport/http"
+	stdjwt "github.com/go-kit/kit/auth/jwt"
 )
 
 var tracer opentracinggo.Tracer
@@ -92,7 +96,12 @@ func Run() {
 }
 func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultHttpOptions(logger, tracer)
+
 	// Add your http options here
+	// 为了添加 Auth endpoint middleware, 并且 middleware 中拿不到 raw request 的信息的情况下
+	// 避免网关过滤鉴权接口都要在 decodeXXXRequest 时 extract request header Authorization
+	// 所以需要把请求头的 Authorization 参数到请求上下文中
+	options["GetRoles"] = append(options["GetRoles"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	httpHandler := http.NewHTTPHandler(endpoints, options)
 	httpListener, err := net.Listen("tcp", *httpAddr)
 	if err != nil {
@@ -122,6 +131,9 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 		Subsystem: "webapi",
 	}, []string{"method", "success"})
 	addDefaultEndpointMiddleware(logger, duration, mw)
+
+	// 添加 Auth endpoint middleware
+	mw["GetRoles"] = append(mw["GetRoles"], endpoint.AuthMiddleware())
 	return mw
 }
 func initMetricsEndpoint(g *group.Group) {
