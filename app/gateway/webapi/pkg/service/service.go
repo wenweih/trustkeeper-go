@@ -4,9 +4,14 @@ import (
 	"context"
 	"log"
 	"trustkeeper-go/app/service/account/pkg/grpc/pb"
+	accountService "trustkeeper-go/app/service/account/pkg/service"
 
 	sdetcd "github.com/go-kit/kit/sd/etcdv3"
 	"google.golang.org/grpc"
+	grpctransport "github.com/go-kit/kit/transport/grpc"
+	stdjwt "github.com/go-kit/kit/auth/jwt"
+
+	grpcClient "trustkeeper-go/app/service/account/client/grpc"
 )
 
 // WebapiService describes the service.
@@ -27,27 +32,18 @@ type Credentials struct {
 
 type basicWebapiService struct {
 	accountServiceClient pb.AccountClient
+	accountServices accountService.AccountService
 }
 
 func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (result bool, err error) {
-	resp, err := b.accountServiceClient.Create(ctx, &pb.CreateRequest{
-		Email:    user.Email,
-		Password: user.Password,
-	})
-	if err != nil {
+	if err := b.accountServices.Create(ctx, user.Email, user.Password); err != nil {
 		return false, err
 	}
-	return resp.Result, nil
+	return true, nil
 }
 func (b *basicWebapiService) Signin(ctx context.Context, user Credentials) (token string, err error) {
-	resp, err := b.accountServiceClient.Signin(ctx, &pb.SigninRequest{
-		Email:    user.Email,
-		Password: user.Password,
-	})
-	if err != nil {
-		return "", err
-	}
-	return resp.Token, err
+	token, err = b.accountServices.Signin(ctx, user.Email, user.Password)
+	return
 }
 func (b *basicWebapiService) Signout(ctx context.Context, token string) (result bool, err error) {
 	resp, err := b.accountServiceClient.Signout(ctx, &pb.SignoutRequest{Token: token})
@@ -86,13 +82,20 @@ func NewBasicWebapiService() WebapiService {
 		log.Printf("entries not eixst")
 		return new(basicWebapiService)
 	}
+
 	conn, err := grpc.Dial(entries[0], grpc.WithInsecure())
 	if err != nil {
 		log.Printf("unable to connect to : %s", err.Error())
 	}
 
+	accountServiceclient, err := grpcClient.New(conn, []grpctransport.ClientOption{(grpctransport.ClientBefore(stdjwt.ContextToGRPC()))})
+	if err != nil {
+		log.Println(err.Error())
+	}
+
 	return &basicWebapiService{
 		accountServiceClient: pb.NewAccountClient(conn),
+		accountServices: accountServiceclient,
 	}
 }
 

@@ -103,7 +103,7 @@ func (e Endpoints) Signup(ctx context.Context, user service.Credentials) (result
 	request := SignupRequest{User: user}
 	response, err := e.SignupEndpoint(ctx, request)
 	if err != nil {
-		return
+		return false, err
 	}
 	return response.(SignupResponse).Result, response.(SignupResponse).Err
 }
@@ -113,7 +113,7 @@ func (e Endpoints) Signin(ctx context.Context, user service.Credentials) (token 
 	request := SigninRequest{User: user}
 	response, err := e.SigninEndpoint(ctx, request)
 	if err != nil {
-		return
+		return "", err
 	}
 	return response.(SigninResponse).Token, response.(SigninResponse).Err
 }
