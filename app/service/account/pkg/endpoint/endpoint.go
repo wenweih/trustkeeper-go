@@ -15,7 +15,7 @@ type CreateRequest struct {
 
 // CreateResponse collects the response parameters for the Create method.
 type CreateResponse struct {
-	Email string `json:"email"`
+	Result	bool
 	E1    error  `json:"e1"`
 }
 
@@ -26,7 +26,7 @@ func MakeCreateEndpoint(s service.AccountService) endpoint.Endpoint {
 		e1 := s.Create(ctx, req.Email, req.Password)
 		return CreateResponse{
 			E1: e1,
-		}, nil
+		}, e1
 	}
 }
 
@@ -43,16 +43,16 @@ type Failure interface {
 }
 
 // Create implements Service. Primarily useful in a client.
-func (e Endpoints) Create(ctx context.Context, email string, password string) (string, error) {
+func (e Endpoints) Create(ctx context.Context, email string, password string) (error) {
 	request := CreateRequest{
 		Email:    email,
 		Password: password,
 	}
-	response, err := e.CreateEndpoint(ctx, request)
+	_, err := e.CreateEndpoint(ctx, request)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return response.(CreateResponse).Email, response.(CreateResponse).E1
+	return nil
 }
 
 // SignRequest collects the request parameters for the Sign method.
@@ -72,6 +72,12 @@ func MakeSigninEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SigninRequest)
 		s0, e1 := s.Signin(ctx, req.Email, req.Password)
+		if e1 != nil {
+			return SigninResponse{
+				E1: e1,
+				S0: "",
+			}, e1
+		}
 		return SigninResponse{
 			E1: e1,
 			S0: s0,
@@ -92,9 +98,9 @@ func (e Endpoints) Signin(ctx context.Context, email string, password string) (s
 	}
 	response, err := e.SigninEndpoint(ctx, request)
 	if err != nil {
-		return
+		return "", err
 	}
-	return response.(SigninResponse).S0, response.(SigninResponse).E1
+	return response.(*SigninResponse).S0, response.(*SigninResponse).E1
 }
 
 // SignoutRequest collects the request parameters for the Signout method.
@@ -110,9 +116,8 @@ type SignoutResponse struct {
 // MakeSignoutEndpoint returns an endpoint that invokes Signout on the service.
 func MakeSignoutEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		// req := request.(SignoutRequest)
-		e0 := s.Signout(ctx)
-		return SignoutResponse{E0: e0}, nil
+		err := s.Signout(ctx)
+		return SignoutResponse{E0: err}, err
 	}
 }
 
@@ -122,13 +127,13 @@ func (r SignoutResponse) Failed() error {
 }
 
 // Signout implements Service. Primarily useful in a client.
-func (e Endpoints) Signout(ctx context.Context, token string) (e0 error) {
-	request := SignoutRequest{Token: token}
-	response, err := e.SignoutEndpoint(ctx, request)
+func (e Endpoints) Signout(ctx context.Context) (e0 error) {
+	request := SignoutRequest{}
+	_, err := e.SignoutEndpoint(ctx, request)
 	if err != nil {
-		return
+		return err
 	}
-	return response.(SignoutResponse).E0
+	return nil
 }
 
 // RolesRequest collects the request parameters for the Roles method.

@@ -11,6 +11,8 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	uuid "github.com/satori/go.uuid"
 	"golang.org/x/crypto/bcrypt"
+
+	stdjwt "github.com/go-kit/kit/auth/jwt"
 )
 
 // AccountService describes the service.
@@ -19,7 +21,6 @@ type AccountService interface {
 	Signin(ctx context.Context, email, password string) (string, error)
 	Signout(ctx context.Context) error
 	Roles(ctx context.Context, token string) ([]string, error)
-	FindByTokenID(ctx context.Context, tokenID string) (*model.Account, error)
 }
 
 type basicAccountService struct {
@@ -27,8 +28,16 @@ type basicAccountService struct {
 	conf configure.Conf
 }
 
-func (b *basicAccountService) FindByTokenID(ctx context.Context, tokenID string) (*model.Account, error) {
-	return b.repo.FindByTokenID(tokenID)
+func (b *basicAccountService) findByTokenID(ctx context.Context) (*model.Account, error){
+	token := ctx.Value(stdjwt.JWTTokenContextKey).(string)
+	claims := &Claims{}
+	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+		return []byte(b.conf.JWTKey), nil
+	})
+	if err != nil || !tkn.Valid {
+		return nil, fmt.Errorf(err.Error())
+	}
+	return b.repo.FindByTokenID(claims.Id)
 }
 
 // https://www.sohamkamani.com/blog/2018/02/25/golang-password-authentication-and-storage/
@@ -80,10 +89,10 @@ func (b *basicAccountService) Signin(ctx context.Context, email string, password
 	return tokenStr, e1
 }
 
-func (b *basicAccountService) Signout(ctx context.Context) (e0 error) {
-	acc, ok := ctx.Value("account").(*model.Account)
-	if !ok {
-		return fmt.Errorf("acount not found in context")
+func (b *basicAccountService) Signout(ctx context.Context) (error) {
+	acc, err := b.findByTokenID(ctx)
+	if err != nil {
+		return err
 	}
 	b.repo.Update(acc, map[string]interface{}{"token_id": nil})
 	return nil

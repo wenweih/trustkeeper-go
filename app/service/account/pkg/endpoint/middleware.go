@@ -5,12 +5,14 @@ import (
 	"fmt"
 	"time"
 
+	"trustkeeper-go/app/service/account/pkg/configure"
+	service "trustkeeper-go/app/service/account/pkg/service"
+
+	"github.com/dgrijalva/jwt-go"
+	stdjwt "github.com/go-kit/kit/auth/jwt"
 	endpoint "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	metrics "github.com/go-kit/kit/metrics"
-	service "trustkeeper-go/app/service/account/pkg/service"
-	"github.com/dgrijalva/jwt-go"
-	"trustkeeper-go/app/service/account/pkg/configure"
 )
 
 type Claims struct {
@@ -49,21 +51,10 @@ func LoggingMiddleware(logger log.Logger) endpoint.Middleware {
 func AuthMiddleware(conf configure.Conf, s service.AccountService) endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
-			claims := &Claims{}
-			req := request.(SignoutRequest)
-			tkn, err := jwt.ParseWithClaims(req.Token, claims, func(token *jwt.Token) (interface{}, error) {
-				return []byte(conf.JWTKey), nil
-			})
-
-			if err != nil || !tkn.Valid {
-				return nil, fmt.Errorf(err.Error())
+			if _, ok := ctx.Value(stdjwt.JWTTokenContextKey).(string); !ok {
+				return nil, fmt.Errorf("Authorization Token Empty")
 			}
-
-			acc ,err := s.FindByTokenID(ctx, claims.Id)
-			if err != nil {
-				return nil, fmt.Errorf("token was reset" + err.Error())
-			}
-			return next(context.WithValue(ctx, "account", acc), request)
+			return next(ctx, request)
 		}
 	}
 }

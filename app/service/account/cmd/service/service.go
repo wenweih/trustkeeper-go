@@ -13,6 +13,8 @@ import (
 	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
 	"trustkeeper-go/app/service/account/pkg/configure"
 	grpc "trustkeeper-go/app/service/account/pkg/grpc"
+	grpctransport "github.com/go-kit/kit/transport/grpc"
+	stdjwt "github.com/go-kit/kit/auth/jwt"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/account/pkg/service"
 	"trustkeeper-go/library/vault"
@@ -107,6 +109,8 @@ func Run() {
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultGRPCOptions(logger, tracer)
 	// Add your GRPC options here
+	options["Roles"] = append(options["Roles"], grpctransport.ServerBefore(stdjwt.GRPCToContext()))
+	options["Signout"] = append(options["Signout"], grpctransport.ServerBefore(stdjwt.GRPCToContext()))
 
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
 	grpcListener, err := net.Listen("tcp", *grpcAddr)

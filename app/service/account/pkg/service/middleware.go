@@ -4,7 +4,6 @@ import (
 	"context"
 
 	log "github.com/go-kit/kit/log"
-	"trustkeeper-go/app/service/account/pkg/model"
 )
 
 type Middleware func(AccountService) AccountService
@@ -46,11 +45,4 @@ func (l loggingMiddleware) Roles(ctx context.Context, token string) (s0 []string
 		l.logger.Log("method", "Roles", "token", token, "s0", s0, "e1", e1)
 	}()
 	return l.next.Roles(ctx, token)
-}
-
-func (l loggingMiddleware) FindByTokenID(ctx context.Context, tokenID string) (acc *model.Account, e0 error) {
-	defer func() {
-		l.logger.Log("method", "FindByTokenID", "e0", e0)
-	}()
-	return l.next.FindByTokenID(ctx, tokenID)
 }
