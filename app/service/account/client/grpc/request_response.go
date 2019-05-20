@@ -52,12 +52,16 @@ func decodeSigninResponse(_ context.Context, reply interface{}) (interface{}, er
 // encodeSignoutRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain Signout request to a gRPC request.
 func encodeSignoutRequest(_ context.Context, request interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Encoder is not impelemented")
+  return nil, nil
 }
 
 // decodeSignoutResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeSignoutResponse(_ context.Context, reply interface{}) (interface{}, error) {
+  r := reply.(*pb.SignoutReply)
+  if r.Result{
+    return &endpoint.SignoutResponse{E0: nil}, nil
+  }
 	return nil, errors.New("'Account' Decoder is not impelemented")
 }
 

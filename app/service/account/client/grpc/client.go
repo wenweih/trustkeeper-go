@@ -7,7 +7,6 @@ import (
 	endpoint1 "trustkeeper-go/app/service/account/pkg/endpoint"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/account/pkg/service"
-	// grpctransport "github.com/go-kit/kit/transport/grpc"
 )
 
 // New returns an AddService backed by a gRPC server at the other end
@@ -15,7 +14,6 @@ import (
 // eventually closing the underlying transport. We bake-in certain middlewares,
 // implementing the client library pattern.
 func New(conn *grpc.ClientConn, options []grpc1.ClientOption) (service.AccountService, error) {
-	// grpctransport.ClientBefore()
 	var createEndpoint endpoint.Endpoint
 	{
 		createEndpoint = grpc1.NewClient(conn, "pb.Account", "Create", encodeCreateRequest, decodeCreateResponse, pb.CreateReply{}, options...).Endpoint()
@@ -36,15 +34,8 @@ func New(conn *grpc.ClientConn, options []grpc1.ClientOption) (service.AccountSe
 		rolesEndpoint = grpc1.NewClient(conn, "pb.Account", "Roles", encodeRolesRequest, decodeRolesResponse, pb.RolesReply{}, options...).Endpoint()
 	}
 
-	// var findByTokenIDEndpoint endpoint.Endpoint
-	// {
-		// findByTokenIDEndpoint = grpc1.NewClient(conn, "pb.Account", "FindByTokenID", encodeFindByTokenIDRequest, decodeFindByTokenIDResponse, pb.FindByTokenIDReply{}, options["FindByTokenID"]...).Endpoint()
-	// }
-	// grpctransport.NewClient(cc, serviceName, method, enc, dec, grpcReply)
-
 	return endpoint1.Endpoints{
 		CreateEndpoint:        createEndpoint,
-		// FindByTokenIDEndpoint: findByTokenIDEndpoint,
 		RolesEndpoint:         rolesEndpoint,
 		SigninEndpoint:        signinEndpoint,
 		SignoutEndpoint:       signoutEndpoint,
