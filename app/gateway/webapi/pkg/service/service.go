@@ -21,7 +21,7 @@ type WebapiService interface {
 	Signup(ctx context.Context, user Credentials) (result bool, err error)
 	Signin(ctx context.Context, user Credentials) (token string, err error)
 	Signout(ctx context.Context) (result bool, err error)
-	GetRoles(ctx context.Context, token string) ([]string, error)
+	GetRoles(ctx context.Context) ([]string, error)
 }
 
 // Credentials Signup Signin params
@@ -53,14 +53,12 @@ func (b *basicWebapiService) Signout(ctx context.Context) (result bool, err erro
 }
 
 
-func (b *basicWebapiService) GetRoles(ctx context.Context, token string) (s0 []string, e1 error) {
-	resp, err := b.accountServiceClient.Roles(ctx, &pb.RolesRequest{
-		Token: token,
-	})
+func (b *basicWebapiService) GetRoles(ctx context.Context) (s0 []string, e1 error) {
+	roles, err := b.accountServices.Roles(ctx)
 	if err != nil {
 		return nil, err
 	}
-	return resp.Roles, nil
+	return roles, nil
 }
 
 // NewBasicWebapiService returns a naive, stateless implementation of WebapiService.

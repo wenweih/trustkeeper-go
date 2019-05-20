@@ -5,7 +5,6 @@ import (
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
 
 	endpoint "github.com/go-kit/kit/endpoint"
-	stdjwt "github.com/go-kit/kit/auth/jwt"
 )
 
 // SignupRequest collects the request parameters for the Signup method.
@@ -140,7 +139,7 @@ type GetRolesResponse struct {
 // MakeGetRolesEndpoint returns an endpoint that invokes GetRoles on the service.
 func MakeGetRolesEndpoint(s service.WebapiService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		s0, e1 := s.GetRoles(ctx, ctx.Value(stdjwt.JWTTokenContextKey).(string))
+		s0, e1 := s.GetRoles(ctx)
 		return GetRolesResponse{
 			E1: e1,
 			S0: s0,
@@ -158,7 +157,7 @@ func (e Endpoints) GetRoles(ctx context.Context, token string) (s0 []string, e1 
 	request := GetRolesRequest{}
 	response, err := e.GetRolesEndpoint(ctx, request)
 	if err != nil {
-		return
+		return nil, err
 	}
 	return response.(GetRolesResponse).S0, response.(GetRolesResponse).E1
 }
