@@ -102,6 +102,7 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	// 避免网关过滤鉴权接口都要在 decodeXXXRequest 时 extract request header Authorization
 	// 所以需要把请求头的 Authorization 参数到请求上下文中
 	options["GetRoles"] = append(options["GetRoles"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
+	options["Signout"] = append(options["Signout"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	httpHandler := http.NewHTTPHandler(endpoints, options)
 	httpListener, err := net.Listen("tcp", *httpAddr)
 	if err != nil {
@@ -134,6 +135,7 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 
 	// 添加 Auth endpoint middleware
 	mw["GetRoles"] = append(mw["GetRoles"], endpoint.AuthMiddleware())
+	mw["Signout"] = append(mw["Signout"], endpoint.AuthMiddleware())
 	return mw
 }
 func initMetricsEndpoint(g *group.Group) {

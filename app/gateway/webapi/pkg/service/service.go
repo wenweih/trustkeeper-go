@@ -20,7 +20,7 @@ type WebapiService interface {
 	// e.x: Foo(ctx context.Context,s string)(rs string, err error)
 	Signup(ctx context.Context, user Credentials) (result bool, err error)
 	Signin(ctx context.Context, user Credentials) (token string, err error)
-	Signout(ctx context.Context, token string) (result bool, err error)
+	Signout(ctx context.Context) (result bool, err error)
 	GetRoles(ctx context.Context, token string) ([]string, error)
 }
 
@@ -45,12 +45,11 @@ func (b *basicWebapiService) Signin(ctx context.Context, user Credentials) (toke
 	token, err = b.accountServices.Signin(ctx, user.Email, user.Password)
 	return
 }
-func (b *basicWebapiService) Signout(ctx context.Context, token string) (result bool, err error) {
-	resp, err := b.accountServiceClient.Signout(ctx, &pb.SignoutRequest{Token: token})
-	if err != nil {
+func (b *basicWebapiService) Signout(ctx context.Context) (result bool, err error) {
+	if err := b.accountServices.Signout(ctx); err != nil {
 		return false, err
 	}
-	return resp.Result, nil
+	return true, nil
 }
 
 
@@ -88,6 +87,7 @@ func NewBasicWebapiService() WebapiService {
 		log.Printf("unable to connect to : %s", err.Error())
 	}
 
+	// 把带有 jwt token 的上下文设置到 grpc 请求的上下文中
 	accountServiceclient, err := grpcClient.New(conn, []grpctransport.ClientOption{(grpctransport.ClientBefore(stdjwt.ContextToGRPC()))})
 	if err != nil {
 		log.Println(err.Error())

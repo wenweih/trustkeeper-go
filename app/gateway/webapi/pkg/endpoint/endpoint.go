@@ -78,11 +78,11 @@ type SignoutResponse struct {
 // MakeSignoutEndpoint returns an endpoint that invokes Signout on the service.
 func MakeSignoutEndpoint(s service.WebapiService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		result, err := s.Signout(ctx, ctx.Value(stdjwt.JWTTokenContextKey).(string))
+		result, err := s.Signout(ctx)
 		return SignoutResponse{
 			Err:    err,
 			Result: result,
-		}, nil
+		}, err
 	}
 }
 
@@ -123,7 +123,7 @@ func (e Endpoints) Signout(ctx context.Context) (result bool, err error) {
 	request := SignoutRequest{}
 	response, err := e.SignoutEndpoint(ctx, request)
 	if err != nil {
-		return
+		return false, err
 	}
 	return response.(SignoutResponse).Result, response.(SignoutResponse).Err
 }

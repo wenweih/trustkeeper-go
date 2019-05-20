@@ -35,11 +35,11 @@ func (l loggingMiddleware) Signin(ctx context.Context, user Credentials) (token 
 	}()
 	return l.next.Signin(ctx, user)
 }
-func (l loggingMiddleware) Signout(ctx context.Context, token string) (result bool, err error) {
+func (l loggingMiddleware) Signout(ctx context.Context) (result bool, err error) {
 	defer func() {
 		l.logger.Log("method", "Signout", "result", result, "err", err)
 	}()
-	return l.next.Signout(ctx, token)
+	return l.next.Signout(ctx)
 }
 
 func (l loggingMiddleware) GetRoles(ctx context.Context, token string) (s0 []string, e1 error) {
