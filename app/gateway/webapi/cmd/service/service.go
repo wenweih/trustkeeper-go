@@ -101,6 +101,7 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	// 为了添加 Auth endpoint middleware, 并且 middleware 中拿不到 raw request 的信息的情况下
 	// 避免网关过滤鉴权接口都要在 decodeXXXRequest 时 extract request header Authorization
 	// 所以需要把请求头的 Authorization 参数到请求上下文中
+	// https://github.com/go-kit/kit/blob/master/auth/jwt/README.md  HTTPToContext
 	options["GetRoles"] = append(options["GetRoles"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["Signout"] = append(options["Signout"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	httpHandler := http.NewHTTPHandler(endpoints, options)

@@ -68,23 +68,16 @@ func decodeSignoutResponse(_ context.Context, reply interface{}) (interface{}, e
 // encodeRolesRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain Roles request to a gRPC request.
 func encodeRolesRequest(_ context.Context, request interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Encoder is not impelemented")
+  return nil, nil
 }
 
 // decodeRolesResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeRolesResponse(_ context.Context, reply interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Decoder is not impelemented")
-}
-
-// encodeFindByTokenIDRequest is a transport/grpc.EncodeRequestFunc that converts a
-//  user-domain FindByTokenID request to a gRPC request.
-func encodeFindByTokenIDRequest(_ context.Context, request interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Encoder is not impelemented")
-}
-
-// decodeFindByTokenIDResponse is a transport/grpc.DecodeResponseFunc that converts
-// a gRPC concat reply to a user-domain concat response.
-func decodeFindByTokenIDResponse(_ context.Context, reply interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Decoder is not impelemented")
+  r, ok := reply.(*pb.RolesReply)
+  if !ok {
+    e := errors.New("'Account' Decoder is not impelemented")
+    return &endpoint.RolesResponse{E1: e}, e
+  }
+  return &endpoint.RolesResponse{S0: r.Roles}, nil
 }

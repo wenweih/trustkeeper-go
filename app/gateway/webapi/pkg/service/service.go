@@ -86,6 +86,7 @@ func NewBasicWebapiService() WebapiService {
 	}
 
 	// 把带有 jwt token 的上下文设置到 grpc 请求的上下文中
+	// https://github.com/go-kit/kit/blob/master/auth/jwt/README.md ContextToGRPC
 	accountServiceclient, err := grpcClient.New(conn, []grpctransport.ClientOption{(grpctransport.ClientBefore(stdjwt.ContextToGRPC()))})
 	if err != nil {
 		log.Println(err.Error())
