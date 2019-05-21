@@ -109,6 +109,7 @@ func Run() {
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultGRPCOptions(logger, tracer)
 	// Add your GRPC options here
+	// https://github.com/go-kit/kit/blob/master/auth/jwt/README.md GRPCToContext
 	options["Roles"] = append(options["Roles"], grpctransport.ServerBefore(stdjwt.GRPCToContext()))
 	options["Signout"] = append(options["Signout"], grpctransport.ServerBefore(stdjwt.GRPCToContext()))
 

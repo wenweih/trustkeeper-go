@@ -64,3 +64,7 @@ func (repo AccoutRepo) FindByTokenID(id string) (*model.Account, error) {
 func (repo AccoutRepo) Update(acc *model.Account, colums map[string]interface{}) error {
   return repo.db.Model(acc).Update(colums).Error
 }
+
+func (repo AccoutRepo) GetRoles(acc *model.Account) ([]string) {
+  return repo.Enforcer.GetRolesForUser(acc.UUID)
+}

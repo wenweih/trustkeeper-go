@@ -13,6 +13,7 @@ import (
 //  of the conn. The caller is responsible for constructing the conn, and
 // eventually closing the underlying transport. We bake-in certain middlewares,
 // implementing the client library pattern.
+// 查阅 https://github.com/kujtimiihoxha/kit#generate-the-client-library
 func New(conn *grpc.ClientConn, options []grpc1.ClientOption) (service.AccountService, error) {
 	var createEndpoint endpoint.Endpoint
 	{

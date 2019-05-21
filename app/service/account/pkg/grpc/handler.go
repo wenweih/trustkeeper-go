@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 
@@ -87,11 +86,16 @@ func makeRolesHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption)
 }
 
 func decodeRolesRequest(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Decoder is not impelemented")
+	// req := r.(*pb.RolesRequest)
+	return endpoint.RolesRequest{}, nil
 }
 
 func encodeRolesResponse(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Encoder is not impelemented")
+	resp := r.(endpoint.RolesResponse)
+	if resp.E1 != nil {
+		return nil, resp.E1
+	}
+	return &pb.RolesReply{Roles: resp.S0}, nil
 }
 func (g *grpcServer) Roles(ctx context1.Context, req *pb.RolesRequest) (*pb.RolesReply, error) {
 	_, rep, err := g.roles.ServeGRPC(ctx, req)

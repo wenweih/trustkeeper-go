@@ -9,7 +9,7 @@ service Account {
  rpc Create  (CreateRequest ) returns (CreateReply );
  rpc Signin  (SigninRequest ) returns (SigninReply );
  rpc Signout (SignoutRequest) returns (SignoutReply);
- rpc Roles   (RolesRequest  ) returns (RolesReply  );
+ rpc Roles   (RolesRequest) returns (RolesReply  );
 }
 
 message CreateRequest {

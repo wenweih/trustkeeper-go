@@ -20,7 +20,7 @@ type AccountService interface {
 	Create(ctx context.Context, email, password string) error
 	Signin(ctx context.Context, email, password string) (string, error)
 	Signout(ctx context.Context) error
-	Roles(ctx context.Context, token string) ([]string, error)
+	Roles(ctx context.Context) ([]string, error)
 }
 
 type basicAccountService struct {
@@ -98,9 +98,13 @@ func (b *basicAccountService) Signout(ctx context.Context) (error) {
 	return nil
 }
 
-func (b *basicAccountService) Roles(ctx context.Context, token string) (s0 []string, e1 error) {
-
-	return s0, e1
+func (b *basicAccountService) Roles(ctx context.Context) ([]string, error) {
+	acc, err := b.findByTokenID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	roles := b.repo.GetRoles(acc)
+	return roles, nil
 }
 
 // NewBasicAccountService returns a naive, stateless implementation of AccountService.
