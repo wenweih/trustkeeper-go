@@ -109,7 +109,13 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	if err != nil {
 		logger.Log("transport", "HTTP", "during", "Listen", "err", err)
 	}
-	handler := cors.Default().Handler(httpHandler)
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+		AllowCredentials: true,
+		AllowedHeaders: []string{"Authorization", "Content-Type"},
+	})
+	handler := c.Handler(httpHandler)
+	// handler := cors.Default().Handler(httpHandler)
 	g.Add(func() error {
 		logger.Log("transport", "HTTP", "addr", *httpAddr)
 		return http1.Serve(httpListener, handler)
