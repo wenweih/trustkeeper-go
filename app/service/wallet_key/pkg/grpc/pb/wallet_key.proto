@@ -10,10 +10,11 @@ service WalletKey {
 }
 
 message GenerateMnemonicRequest {
-  string uuid = 1;
-  string email = 2;
+ string uuid  = 1;
+ string email = 2;
 }
 
 message GenerateMnemonicReply {
-  string xpub = 1;
+ string xpub = 1;
 }
+

@@ -3,10 +3,11 @@ package grpc
 import (
 	"context"
 	"errors"
-	grpc "github.com/go-kit/kit/transport/grpc"
-	context1 "golang.org/x/net/context"
 	endpoint "trustkeeper-go/app/service/wallet_key/pkg/endpoint"
 	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
+
+	grpc "github.com/go-kit/kit/transport/grpc"
+	context1 "golang.org/x/net/context"
 )
 
 // makeGenerateMnemonicHandler creates the handler logic

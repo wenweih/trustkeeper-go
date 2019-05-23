@@ -2,8 +2,9 @@ package endpoint
 
 import (
 	"context"
-	endpoint "github.com/go-kit/kit/endpoint"
 	service "trustkeeper-go/app/service/wallet_key/pkg/service"
+
+	endpoint "github.com/go-kit/kit/endpoint"
 )
 
 // GenerateMnemonicRequest collects the request parameters for the GenerateMnemonic method.

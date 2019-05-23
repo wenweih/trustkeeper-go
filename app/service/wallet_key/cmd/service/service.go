@@ -3,6 +3,16 @@ package service
 import (
 	"flag"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	endpoint "trustkeeper-go/app/service/wallet_key/pkg/endpoint"
+	grpc "trustkeeper-go/app/service/wallet_key/pkg/grpc"
+	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
+	service "trustkeeper-go/app/service/wallet_key/pkg/service"
+
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
@@ -11,17 +21,8 @@ import (
 	zipkingoopentracing "github.com/openzipkin/zipkin-go-opentracing"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	grpc1 "google.golang.org/grpc"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"syscall"
-	endpoint "trustkeeper-go/app/service/wallet_key/pkg/endpoint"
-	grpc "trustkeeper-go/app/service/wallet_key/pkg/grpc"
-	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
-	service "trustkeeper-go/app/service/wallet_key/pkg/service"
 )
 
 var tracer opentracinggo.Tracer
