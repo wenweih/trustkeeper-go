@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"net"
@@ -18,11 +17,11 @@ import (
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/account/pkg/service"
 	"trustkeeper-go/library/vault"
+	"trustkeeper-go/library/etcd"
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
-	sdetcd "github.com/go-kit/kit/sd/etcdv3"
 	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
@@ -98,7 +97,7 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
-	registrar, err := registerService(logger)
+	registrar, err := etcd.RegisterService(conf.EtcdServer, "/services/account/", conf.AccountInstance, logger)
 	if err != nil {
 		logger.Log(err.Error())
 		return
@@ -179,33 +178,6 @@ func initCancelInterrupt(g *group.Group) {
 	})
 }
 
-func addAuthMiddlerware(svc service.AccountService)  {
-
-}
-
-// https://dev.to/plutov/packagemain-13-microservices-with-go-kit-part-2-4lgh
-func registerService(logger log.Logger) (*sdetcd.Registrar, error) {
-	var (
-		etcdServer = "http://localhost:2379"
-		prefix     = "/services/account/"
-		instance   = "localhost:8082"
-		key        = prefix + instance
-	)
-
-	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
-	if err != nil {
-		return nil, err
-	}
-	registrar := sdetcd.NewRegistrar(client, sdetcd.Service{
-		Key:   key,
-		Value: instance,
-	}, logger)
-
-	registrar.Register()
-
-	return registrar, nil
-}
-
 func init() {
 	vc, err := vault.NewVault()
 	if err != nil {
@@ -225,8 +197,12 @@ func init() {
 	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
 	jwtkey := data.Data["jwtkey"].(string)
+	etcdServer := data.Data["etcdserver"].(string)
+	accountInstance := data.Data["accountinstance"].(string)
 	conf = configure.Conf{
-		DBInfo: dbInfo,
-		JWTKey: jwtkey,
+		DBInfo:			dbInfo,
+		JWTKey: 		jwtkey,
+		EtcdServer: etcdServer,
+		AccountInstance: accountInstance,
 	}
 }
