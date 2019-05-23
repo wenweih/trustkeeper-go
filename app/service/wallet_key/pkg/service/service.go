@@ -7,12 +7,12 @@ import (
 // WalletKeyService describes the service.
 type WalletKeyService interface {
 	// e.x: Foo(ctx context.Context,s string)(rs string, err error)
-	GenerateMnemonic(ctx context.Context, email, uuid string) (xpub string, err error)
+	GenerateMnemonic(ctx context.Context, uuid string) (xpub string, err error)
 }
 
 type basicWalletKeyService struct{}
 
-func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, email string, uuid string) (xpub string, err error) {
+func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, uuid string) (xpub string, err error) {
 	// TODO implement the business logic of GenerateMnemonic
 	return xpub, err
 }

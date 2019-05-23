@@ -9,7 +9,6 @@ import (
 
 // GenerateMnemonicRequest collects the request parameters for the GenerateMnemonic method.
 type GenerateMnemonicRequest struct {
-	Email string `json:"email"`
 	Uuid  string `json:"uuid"`
 }
 
@@ -23,7 +22,7 @@ type GenerateMnemonicResponse struct {
 func MakeGenerateMnemonicEndpoint(s service.WalletKeyService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GenerateMnemonicRequest)
-		xpub, err := s.GenerateMnemonic(ctx, req.Email, req.Uuid)
+		xpub, err := s.GenerateMnemonic(ctx, req.Uuid)
 		return GenerateMnemonicResponse{
 			Err:  err,
 			Xpub: xpub,
@@ -46,7 +45,6 @@ type Failure interface {
 // GenerateMnemonic implements Service. Primarily useful in a client.
 func (e Endpoints) GenerateMnemonic(ctx context.Context, email string, uuid string) (xpub string, err error) {
 	request := GenerateMnemonicRequest{
-		Email: email,
 		Uuid:  uuid,
 	}
 	response, err := e.GenerateMnemonicEndpoint(ctx, request)
