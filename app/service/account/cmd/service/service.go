@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"strings"
 	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
 	"trustkeeper-go/app/service/account/pkg/configure"
 	grpc "trustkeeper-go/app/service/account/pkg/grpc"
@@ -16,7 +15,6 @@ import (
 	stdjwt "github.com/go-kit/kit/auth/jwt"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/account/pkg/service"
-	"trustkeeper-go/library/vault"
 	"trustkeeper-go/library/etcd"
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
@@ -37,6 +35,7 @@ var (
 	logger log.Logger
 	tracer opentracinggo.Tracer
 	conf configure.Conf
+	// err error
 )
 
 // Define our flags. Your service probably won't need to bind listeners for
@@ -56,7 +55,6 @@ var appdashAddr = fs.String("appdash-addr", "", "Enable Appdash tracing via an A
 
 func Run() {
 	fs.Parse(os.Args[1:])
-
 	// Create a single logger, which we'll use and give to other components.
 	logger = log.NewLogfmtLogger(os.Stderr)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
@@ -91,6 +89,12 @@ func Run() {
 		logger.Log("tracer", "none")
 		tracer = opentracinggo.GlobalTracer()
 	}
+
+	c, err := configure.New()
+	if err != nil {
+		logger.Log(err)
+	}
+	conf = *c
 
 	svc := service.New(conf, getServiceMiddleware(logger))
 	eps := endpoint.New(svc, getEndpointMiddleware(logger, svc))
@@ -176,33 +180,4 @@ func initCancelInterrupt(g *group.Group) {
 	}, func(error) {
 		close(cancelInterrupt)
 	})
-}
-
-func init() {
-	vc, err := vault.NewVault()
-	if err != nil {
-		panic("fail to connect vault" + err.Error())
-	}
-	// ListSecret
-	data, err := vc.Logical().Read("kv1/db_trustkeeper_account")
-	if err != nil {
-		panic("vaule read error" + err.Error())
-	}
-
-	host := strings.Join([]string{"host", data.Data["host"].(string)}, "=")
-	port := strings.Join([]string{"port", data.Data["port"].(string)}, "=")
-	user := strings.Join([]string{"user", data.Data["username"].(string)}, "=")
-	password := strings.Join([]string{"password", data.Data["password"].(string)}, "=")
-	dbname := strings.Join([]string{"dbname", data.Data["dbname"].(string)}, "=")
-	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
-	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
-	jwtkey := data.Data["jwtkey"].(string)
-	etcdServer := data.Data["etcdserver"].(string)
-	accountInstance := data.Data["accountinstance"].(string)
-	conf = configure.Conf{
-		DBInfo:			dbInfo,
-		JWTKey: 		jwtkey,
-		EtcdServer: etcdServer,
-		AccountInstance: accountInstance,
-	}
 }
