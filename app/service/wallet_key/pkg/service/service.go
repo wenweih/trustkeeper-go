@@ -14,6 +14,7 @@ type basicWalletKeyService struct{}
 
 func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, uuid string) (xpub string, err error) {
 	// TODO implement the business logic of GenerateMnemonic
+	// https://matthewdowney.github.io/extract-xpub-ethereum-bitcoin-ledger-nano-s.html
 	return xpub, err
 }
 
