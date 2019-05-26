@@ -14,12 +14,14 @@ type Endpoints struct {
 	SigninEndpoint  endpoint.Endpoint
 	SignoutEndpoint endpoint.Endpoint
 	RolesEndpoint   endpoint.Endpoint
+	AuthEndpoint    endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.AccountService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
+		AuthEndpoint:    MakeAuthEndpoint(s),
 		CreateEndpoint:  MakeCreateEndpoint(s),
 		RolesEndpoint:   MakeRolesEndpoint(s),
 		SigninEndpoint:  MakeSigninEndpoint(s),
@@ -36,6 +38,9 @@ func New(s service.AccountService, mdw map[string][]endpoint.Middleware) Endpoin
 	}
 	for _, m := range mdw["Roles"] {
 		eps.RolesEndpoint = m(eps.RolesEndpoint)
+	}
+	for _, m := range mdw["Auth"] {
+		eps.AuthEndpoint = m(eps.AuthEndpoint)
 	}
 	return eps
 }

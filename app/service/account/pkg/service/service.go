@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"time"
+	"trustkeeper-go/app/service/account/pkg/configure"
 	"trustkeeper-go/app/service/account/pkg/model"
 	"trustkeeper-go/app/service/account/pkg/repository"
-	"trustkeeper-go/app/service/account/pkg/configure"
 
 	"github.com/dgrijalva/jwt-go"
 	uuid "github.com/satori/go.uuid"
@@ -21,6 +21,7 @@ type AccountService interface {
 	Signin(ctx context.Context, email, password string) (string, error)
 	Signout(ctx context.Context) error
 	Roles(ctx context.Context) ([]string, error)
+	Auth(ctx context.Context) (uuid string, err error)
 }
 
 type basicAccountService struct {
@@ -28,7 +29,7 @@ type basicAccountService struct {
 	conf configure.Conf
 }
 
-func (b *basicAccountService) findByTokenID(ctx context.Context) (*model.Account, error){
+func (b *basicAccountService) findByTokenID(ctx context.Context) (*model.Account, error) {
 	token := ctx.Value(stdjwt.JWTTokenContextKey).(string)
 	claims := &Claims{}
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
@@ -89,7 +90,7 @@ func (b *basicAccountService) Signin(ctx context.Context, email string, password
 	return tokenStr, e1
 }
 
-func (b *basicAccountService) Signout(ctx context.Context) (error) {
+func (b *basicAccountService) Signout(ctx context.Context) error {
 	acc, err := b.findByTokenID(ctx)
 	if err != nil {
 		return err
@@ -124,4 +125,8 @@ func New(conf configure.Conf, middleware []Middleware) AccountService {
 		svc = m(svc)
 	}
 	return svc
+}
+
+func (b *basicAccountService) Auth(ctx context.Context) (uuid string, err error) {
+	return uuid, err
 }

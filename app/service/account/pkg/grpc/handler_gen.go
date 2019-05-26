@@ -13,10 +13,12 @@ type grpcServer struct {
 	signin  grpc.Handler
 	signout grpc.Handler
 	roles   grpc.Handler
+	auth    grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.AccountServer {
 	return &grpcServer{
+		auth:    makeAuthHandler(endpoints, options["Auth"]),
 		create:  makeCreateHandler(endpoints, options["Create"]),
 		roles:   makeRolesHandler(endpoints, options["Roles"]),
 		signin:  makeSigninHandler(endpoints, options["Signin"]),

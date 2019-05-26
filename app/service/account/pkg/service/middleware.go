@@ -46,3 +46,10 @@ func (l loggingMiddleware) Roles(ctx context.Context) (s0 []string, e1 error) {
 	}()
 	return l.next.Roles(ctx)
 }
+
+func (l loggingMiddleware) Auth(ctx context.Context) (uuid string, err error) {
+	defer func() {
+		l.logger.Log("method", "Auth", "uuid", uuid, "err", err)
+	}()
+	return l.next.Auth(ctx)
+}

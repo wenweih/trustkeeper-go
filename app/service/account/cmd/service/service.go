@@ -8,14 +8,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
 	"trustkeeper-go/app/service/account/pkg/configure"
+	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
 	grpc "trustkeeper-go/app/service/account/pkg/grpc"
-	grpctransport "github.com/go-kit/kit/transport/grpc"
-	stdjwt "github.com/go-kit/kit/auth/jwt"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/account/pkg/service"
 	"trustkeeper-go/library/etcd"
+
+	stdjwt "github.com/go-kit/kit/auth/jwt"
+	grpctransport "github.com/go-kit/kit/transport/grpc"
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
@@ -34,7 +35,7 @@ import (
 var (
 	logger log.Logger
 	tracer opentracinggo.Tracer
-	conf configure.Conf
+	conf   configure.Conf
 	// err error
 )
 

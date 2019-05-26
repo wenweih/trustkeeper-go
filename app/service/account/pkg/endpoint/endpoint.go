@@ -15,8 +15,8 @@ type CreateRequest struct {
 
 // CreateResponse collects the response parameters for the Create method.
 type CreateResponse struct {
-	Result	bool
-	E1    error  `json:"e1"`
+	Result bool
+	E1     error `json:"e1"`
 }
 
 // MakeCreateEndpoint returns an endpoint that invokes Create on the service.
@@ -43,7 +43,7 @@ type Failure interface {
 }
 
 // Create implements Service. Primarily useful in a client.
-func (e Endpoints) Create(ctx context.Context, email string, password string) (error) {
+func (e Endpoints) Create(ctx context.Context, email string, password string) error {
 	request := CreateRequest{
 		Email:    email,
 		Password: password,
@@ -137,7 +137,7 @@ func (e Endpoints) Signout(ctx context.Context) (e0 error) {
 }
 
 // RolesRequest collects the request parameters for the Roles method.
-type RolesRequest struct {}
+type RolesRequest struct{}
 
 // RolesResponse collects the response parameters for the Roles method.
 type RolesResponse struct {
@@ -168,4 +168,39 @@ func (e Endpoints) Roles(ctx context.Context) (s0 []string, e1 error) {
 		return nil, err
 	}
 	return response.(*RolesResponse).S0, nil
+}
+
+// AuthRequest collects the request parameters for the Auth method.
+type AuthRequest struct{}
+
+// AuthResponse collects the response parameters for the Auth method.
+type AuthResponse struct {
+	Uuid string `json:"uuid"`
+	Err  error  `json:"err"`
+}
+
+// MakeAuthEndpoint returns an endpoint that invokes Auth on the service.
+func MakeAuthEndpoint(s service.AccountService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		uuid, err := s.Auth(ctx)
+		return AuthResponse{
+			Err:  err,
+			Uuid: uuid,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r AuthResponse) Failed() error {
+	return r.Err
+}
+
+// Auth implements Service. Primarily useful in a client.
+func (e Endpoints) Auth(ctx context.Context) (uuid string, err error) {
+	request := AuthRequest{}
+	response, err := e.AuthEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(AuthResponse).Uuid, response.(AuthResponse).Err
 }
