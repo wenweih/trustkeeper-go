@@ -5,9 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"trustkeeper-go/app/service/account/pkg/configure"
-	service "trustkeeper-go/app/service/account/pkg/service"
-
 	"github.com/dgrijalva/jwt-go"
 	stdjwt "github.com/go-kit/kit/auth/jwt"
 	endpoint "github.com/go-kit/kit/endpoint"
@@ -48,7 +45,7 @@ func LoggingMiddleware(logger log.Logger) endpoint.Middleware {
 }
 
 // AuthMiddleware returns an endpoint middleware
-func AuthMiddleware(conf configure.Conf, s service.AccountService) endpoint.Middleware {
+func AuthMiddleware() endpoint.Middleware {
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 			if _, ok := ctx.Value(stdjwt.JWTTokenContextKey).(string); !ok {

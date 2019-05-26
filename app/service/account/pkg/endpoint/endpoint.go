@@ -200,7 +200,7 @@ func (e Endpoints) Auth(ctx context.Context) (uuid string, err error) {
 	request := AuthRequest{}
 	response, err := e.AuthEndpoint(ctx, request)
 	if err != nil {
-		return
+		return "", err
 	}
-	return response.(AuthResponse).Uuid, response.(AuthResponse).Err
+	return response.(AuthResponse).Uuid, nil
 }

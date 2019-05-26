@@ -116,6 +116,7 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	// https://github.com/go-kit/kit/blob/master/auth/jwt/README.md GRPCToContext
 	options["Roles"] = append(options["Roles"], grpctransport.ServerBefore(stdjwt.GRPCToContext()))
 	options["Signout"] = append(options["Signout"], grpctransport.ServerBefore(stdjwt.GRPCToContext()))
+	options["Auth"] = append(options["Auth"], grpctransport.ServerBefore(stdjwt.GRPCToContext()))
 
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
 	grpcListener, err := net.Listen("tcp", *grpcAddr)
@@ -149,8 +150,9 @@ func getEndpointMiddleware(logger log.Logger, s service.AccountService) (mw map[
 	}, []string{"method", "success"})
 	addDefaultEndpointMiddleware(logger, duration, mw)
 	// Add you endpoint middleware here
-	mw["Roles"] = append(mw["Roles"], endpoint.AuthMiddleware(conf, s))
-	mw["Signout"] = append(mw["Signout"], endpoint.AuthMiddleware(conf, s))
+	mw["Roles"] = append(mw["Roles"], endpoint.AuthMiddleware())
+	mw["Signout"] = append(mw["Signout"], endpoint.AuthMiddleware())
+	mw["Auth"] = append(mw["Auth"], endpoint.AuthMiddleware())
 
 	return mw
 }

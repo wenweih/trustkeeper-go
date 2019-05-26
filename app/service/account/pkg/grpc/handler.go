@@ -87,7 +87,6 @@ func makeRolesHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption)
 }
 
 func decodeRolesRequest(_ context.Context, r interface{}) (interface{}, error) {
-
 	return endpoint.RolesRequest{}, nil
 }
 

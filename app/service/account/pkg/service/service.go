@@ -128,5 +128,9 @@ func New(conf configure.Conf, middleware []Middleware) AccountService {
 }
 
 func (b *basicAccountService) Auth(ctx context.Context) (uuid string, err error) {
-	return uuid, err
+	acc, err := b.findByTokenID(ctx)
+	if err != nil {
+		return "", err
+	}
+	return acc.UUID, nil
 }
