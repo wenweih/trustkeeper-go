@@ -16,8 +16,6 @@ import (
 
 // WebapiService describes the service.
 type WebapiService interface {
-	// Add your methods here
-	// e.x: Foo(ctx context.Context,s string)(rs string, err error)
 	Signup(ctx context.Context, user Credentials) (result bool, err error)
 	Signin(ctx context.Context, user Credentials) (token string, err error)
 	Signout(ctx context.Context) (result bool, err error)

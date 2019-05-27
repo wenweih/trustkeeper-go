@@ -36,7 +36,6 @@ var (
 	logger log.Logger
 	tracer opentracinggo.Tracer
 	conf   configure.Conf
-	// err error
 )
 
 // Define our flags. Your service probably won't need to bind listeners for

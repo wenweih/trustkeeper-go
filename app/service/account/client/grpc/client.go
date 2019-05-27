@@ -35,7 +35,13 @@ func New(conn *grpc.ClientConn, options []grpc1.ClientOption) (service.AccountSe
 		rolesEndpoint = grpc1.NewClient(conn, "pb.Account", "Roles", encodeRolesRequest, decodeRolesResponse, pb.RolesReply{}, options...).Endpoint()
 	}
 
+	var authEndpoint endpoint.Endpoint
+	{
+		authEndpoint = grpc1.NewClient(conn, "pb.Account", "Auth", encodeAuthRequest, decodeAuthResponse, pb.AuthReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
+		AuthEndpoint:    authEndpoint,
 		CreateEndpoint:        createEndpoint,
 		RolesEndpoint:         rolesEndpoint,
 		SigninEndpoint:        signinEndpoint,

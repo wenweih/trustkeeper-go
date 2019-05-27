@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 
@@ -110,11 +109,15 @@ func makeAuthHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) 
 }
 
 func decodeAuthRequest(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Decoder is not impelemented")
+	return endpoint.AuthRequest{}, nil
 }
 
 func encodeAuthResponse(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Account' Encoder is not impelemented")
+	resp := r.(endpoint.AuthResponse)
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.AuthReply{Uuid: resp.Uuid}, nil
 }
 func (g *grpcServer) Auth(ctx context1.Context, req *pb.AuthRequest) (*pb.AuthReply, error) {
 	_, rep, err := g.auth.ServeGRPC(ctx, req)

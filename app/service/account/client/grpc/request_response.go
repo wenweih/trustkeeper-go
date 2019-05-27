@@ -81,3 +81,20 @@ func decodeRolesResponse(_ context.Context, reply interface{}) (interface{}, err
   }
   return &endpoint.RolesResponse{S0: r.Roles}, nil
 }
+
+// encodeAuthRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain Auth request to a gRPC request.
+func encodeAuthRequest(_ context.Context, request interface{}) (interface{}, error) {
+  return &pb.AuthRequest{}, nil
+}
+
+// decodeAuthResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeAuthResponse(_ context.Context, reply interface{}) (interface{}, error) {
+  r, ok := reply.(*pb.AuthReply)
+  if !ok {
+    e := errors.New("'AuthReply' Decoder is not impelemented")
+    return &endpoint.AuthResponse{Err: e}, e
+  }
+  return &endpoint.AuthResponse{Uuid: r.Uuid}, nil
+}
