@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package pb;
+
+
+
+//The Dashboard service definition.
+service Dashboard {
+ rpc GetGroups (GetGroupsRequest) returns (GetGroupsReply);
+}
+
+message GetGroupsRequest {
+  string uuid = 1;
+}
+
+message GetGroupsReply {
+  repeated Group groups = 1;
+}
+
+message Group {
+  string name = 1;
+}
