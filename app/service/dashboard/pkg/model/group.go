@@ -2,7 +2,6 @@ package model
 
 import (
   "github.com/jinzhu/gorm"
-  // "github.com/qor/transition"
 )
 
 // Group group
@@ -13,7 +12,6 @@ type Group struct {
   Key       string    `gorm:"type:varchar(255);index"`
   CreatorID string    `gorm:"index;not null"`
   Roles     []Role
-  // transition.Transition
 }
 
 type Role struct {

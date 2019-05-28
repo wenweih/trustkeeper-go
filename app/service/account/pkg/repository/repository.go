@@ -1,7 +1,6 @@
 package repository
 
 import(
-  // "regexp"
   "github.com/jinzhu/gorm"
   "trustkeeper-go/library/database/orm"
   "trustkeeper-go/app/service/account/pkg/model"
@@ -31,7 +30,6 @@ func New(db *gorm.DB) AccoutRepo {
   acc.db.AutoMigrate(
     model.Account{},
     model.Role{})
-  // acc.Enforcer.LoadPolicy()
   return acc
 }
 

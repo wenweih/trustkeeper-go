@@ -18,7 +18,7 @@ func New() (*Conf, error) {
 		return nil, fmt.Errorf("fail to connect vault" + err.Error())
 	}
 	// ListSecret
-	data, err := vc.Logical().Read("kv1/db_trustkeeper_account")
+	data, err := vc.Logical().Read("kv1/trustkeeper-dashboard")
 	if err != nil {
 		return nil, fmt.Errorf("vaule read error" + err.Error())
 	}
@@ -31,7 +31,7 @@ func New() (*Conf, error) {
 	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
 	etcdServer := data.Data["etcdserver"].(string)
-	instance := data.Data["accountinstance"].(string)
+	instance := data.Data["dashboardinstance"].(string)
 	return &Conf{
 		DBInfo:			dbInfo,
 		EtcdServer: etcdServer,
