@@ -119,6 +119,7 @@ func encodeAuthResponse(_ context.Context, r interface{}) (interface{}, error) {
 	}
 	return &pb.AuthReply{Uuid: resp.Uuid}, nil
 }
+
 func (g *grpcServer) Auth(ctx context1.Context, req *pb.AuthRequest) (*pb.AuthReply, error) {
 	_, rep, err := g.auth.ServeGRPC(ctx, req)
 	if err != nil {

@@ -55,7 +55,6 @@ func decodeCreateGroupRequest(_ context.Context, r interface{}) (interface{}, er
 
 // encodeCreateGroupResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeCreateGroupResponse(_ context.Context, r interface{}) (interface{}, error) {
 	resp := r.(endpoint.CreateGroupResponse)
 	if resp.Err != nil {

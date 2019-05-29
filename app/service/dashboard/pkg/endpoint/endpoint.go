@@ -83,8 +83,8 @@ func (r CreateGroupResponse) Failed() error {
 }
 
 // CreateGroup implements Service. Primarily useful in a client.
-func (e Endpoints) CreateGroup(ctx context.Context, uuid string) (result bool, err error) {
-	request := CreateGroupRequest{UUID: uuid}
+func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc string) (result bool, err error) {
+	request := CreateGroupRequest{UUID: uuid, Name: name, Desc: desc}
 	response, err := e.CreateGroupEndpoint(ctx, request)
 	if err != nil {
 		return
