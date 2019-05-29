@@ -13,15 +13,15 @@ import (
 //  of the conn. The caller is responsible for constructing the conn, and
 // eventually closing the underlying transport. We bake-in certain middlewares,
 // implementing the client library pattern.
-func New(conn *grpc.ClientConn, options map[string][]grpc1.ClientOption) (service.DashboardService, error) {
+func New(conn *grpc.ClientConn, options []grpc1.ClientOption) (service.DashboardService, error) {
 	var createGroupEndpoint endpoint.Endpoint
 	{
-		createGroupEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "CreateGroup", encodeCreateGroupRequest, decodeCreateGroupResponse, pb.CreateGroupReply{}, options["CreateGroup"]...).Endpoint()
+		createGroupEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "CreateGroup", encodeCreateGroupRequest, decodeCreateGroupResponse, pb.CreateGroupReply{}, options...).Endpoint()
 	}
 
 	var getGroupsEndpoint endpoint.Endpoint
 	{
-		getGroupsEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "GetGroups", encodeGetGroupsRequest, decodeGetGroupsResponse, pb.GetGroupsReply{}, options["GetGroups"]...).Endpoint()
+		getGroupsEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "GetGroups", encodeGetGroupsRequest, decodeGetGroupsResponse, pb.GetGroupsReply{}, options...).Endpoint()
 	}
 
 	return endpoint1.Endpoints{
