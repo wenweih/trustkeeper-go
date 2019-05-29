@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"fmt"
 	"context"
 	"errors"
 	endpoint "trustkeeper-go/app/service/dashboard/pkg/endpoint"
@@ -45,15 +46,24 @@ func makeCreateGroupHandler(endpoints endpoint.Endpoints, options []grpc.ServerO
 // gRPC request to a user-domain CreateGroup request.
 // TODO implement the decoder
 func decodeCreateGroupRequest(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Dashboard' Decoder is not impelemented")
+	req, ok := r.(*pb.CreateGroupRequest)
+	if !ok {
+		return nil, fmt.Errorf("interface{} to pb CreateGroupRequest type assertion error")
+	}
+	return endpoint.CreateGroupRequest{UUID: req.Uuid, Name: req.Name, Desc: req.Desc}, nil
 }
 
 // encodeCreateGroupResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
 // TODO implement the encoder
 func encodeCreateGroupResponse(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Dashboard' Encoder is not impelemented")
+	resp := r.(endpoint.CreateGroupResponse)
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.CreateGroupReply{Result: resp.Result}, nil
 }
+
 func (g *grpcServer) CreateGroup(ctx context1.Context, req *pb.CreateGroupRequest) (*pb.CreateGroupReply, error) {
 	_, rep, err := g.createGroup.ServeGRPC(ctx, req)
 	if err != nil {

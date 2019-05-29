@@ -4,6 +4,7 @@ import (
 	"context"
 	"trustkeeper-go/app/service/dashboard/pkg/configure"
 	"trustkeeper-go/app/service/dashboard/pkg/repository"
+	"trustkeeper-go/app/service/dashboard/pkg/model"
 )
 
 type Group struct {
@@ -12,7 +13,7 @@ type Group struct {
 
 // DashboardService describes the service.
 type DashboardService interface {
-	CreateGroup(ctx context.Context, uuid string) (result bool, err error)
+	CreateGroup(ctx context.Context, uuid, name, desc string) (result bool, err error)
 	GetGroups(ctx context.Context, uuid string) (groups []*Group, err error)
 }
 
@@ -23,6 +24,15 @@ type basicDashboardService struct {
 
 func (b *basicDashboardService) GetGroups(ctx context.Context, uuid string) (groups []*Group, err error) {
 	return groups, err
+}
+
+func (b *basicDashboardService) CreateGroup(ctx context.Context, uuid, name, desc string) (bool, error) {
+	group := &model.Group{CreatorID: uuid, Name: name, Desc: desc}
+	err := b.repo.Create(group)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
 }
 
 // NewBasicDashboardService returns a naive, stateless implementation of DashboardService.
@@ -42,9 +52,4 @@ func New(conf configure.Conf, middleware []Middleware) DashboardService {
 		svc = m(svc)
 	}
 	return svc
-}
-
-func (b *basicDashboardService) CreateGroup(ctx context.Context, uuid string) (result bool, err error) {
-	// TODO implement the business logic of CreateGroup
-	return result, err
 }
