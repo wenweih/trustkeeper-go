@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	log "github.com/go-kit/kit/log"
 )
 
@@ -27,4 +28,11 @@ func (l loggingMiddleware) GetGroups(ctx context.Context, uuid string) (groups [
 		l.logger.Log("method", "GetGroups", "uuid", uuid, "groups", groups, "err", err)
 	}()
 	return l.next.GetGroups(ctx, uuid)
+}
+
+func (l loggingMiddleware) CreateGroup(ctx context.Context, uuid string) (result bool, err error) {
+	defer func() {
+		l.logger.Log("method", "CreateGroup", "uuid", uuid, "result", result, "err", err)
+	}()
+	return l.next.CreateGroup(ctx, uuid)
 }

@@ -7,15 +7,16 @@ import (
 )
 
 type Group struct {
-  Name string
+	Name string
 }
 
 // DashboardService describes the service.
 type DashboardService interface {
+	CreateGroup(ctx context.Context, uuid string) (result bool, err error)
 	GetGroups(ctx context.Context, uuid string) (groups []*Group, err error)
 }
 
-type basicDashboardService struct{
+type basicDashboardService struct {
 	repo repository.DashboardRepo
 	conf configure.Conf
 }
@@ -41,4 +42,9 @@ func New(conf configure.Conf, middleware []Middleware) DashboardService {
 		svc = m(svc)
 	}
 	return svc
+}
+
+func (b *basicDashboardService) CreateGroup(ctx context.Context, uuid string) (result bool, err error) {
+	// TODO implement the business logic of CreateGroup
+	return result, err
 }

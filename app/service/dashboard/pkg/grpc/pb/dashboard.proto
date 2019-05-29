@@ -6,17 +6,26 @@ package pb;
 
 //The Dashboard service definition.
 service Dashboard {
- rpc GetGroups (GetGroupsRequest) returns (GetGroupsReply);
+ rpc GetGroups   (GetGroupsRequest  ) returns (GetGroupsReply  );
+ rpc CreateGroup (CreateGroupRequest) returns (CreateGroupReply);
 }
 
 message GetGroupsRequest {
-  string uuid = 1;
+ string uuid = 1;
 }
 
 message GetGroupsReply {
-  repeated Group groups = 1;
+ repeated Group groups = 1;
 }
 
 message Group {
-  string name = 1;
+ string name = 1;
+}
+
+message CreateGroupRequest {
+  string uuid = 1;
+}
+
+message CreateGroupReply {
+  bool result = 1;
 }

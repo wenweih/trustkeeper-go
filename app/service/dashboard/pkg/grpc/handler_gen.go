@@ -9,9 +9,13 @@ import (
 
 // NewGRPCServer makes a set of endpoints available as a gRPC AddServer
 type grpcServer struct {
-	getGroups grpc.Handler
+	createGroup grpc.Handler
+	getGroups   grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.DashboardServer {
-	return &grpcServer{getGroups: makeGetGroupsHandler(endpoints, options["GetGroups"])}
+	return &grpcServer{
+		createGroup: makeCreateGroupHandler(endpoints, options["CreateGroup"]),
+		getGroups:   makeGetGroupsHandler(endpoints, options["GetGroups"]),
+	}
 }
