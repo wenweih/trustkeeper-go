@@ -29,9 +29,9 @@ func (l loggingMiddleware) GetGroups(ctx context.Context, uuid string) (groups [
 	return l.next.GetGroups(ctx, uuid)
 }
 
-func (l loggingMiddleware) CreateGroup(ctx context.Context, uuid, name, desc string) (result bool, err error) {
+func (l loggingMiddleware) CreateGroup(ctx context.Context, uuid, name, desc, parentID string) (result bool, err error) {
 	defer func() {
 		l.logger.Log("method", "CreateGroup", "uuid", uuid, "result", result, "err", err)
 	}()
-	return l.next.CreateGroup(ctx, uuid, name, desc)
+	return l.next.CreateGroup(ctx, uuid, name, desc, parentID)
 }

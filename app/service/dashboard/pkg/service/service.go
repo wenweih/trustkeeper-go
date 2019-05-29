@@ -13,7 +13,7 @@ type Group struct {
 
 // DashboardService describes the service.
 type DashboardService interface {
-	CreateGroup(ctx context.Context, uuid, name, desc string) (result bool, err error)
+	CreateGroup(ctx context.Context, uuid, name, desc, parentID string) (result bool, err error)
 	GetGroups(ctx context.Context, uuid string) (groups []*Group, err error)
 }
 
@@ -26,8 +26,8 @@ func (b *basicDashboardService) GetGroups(ctx context.Context, uuid string) (gro
 	return groups, err
 }
 
-func (b *basicDashboardService) CreateGroup(ctx context.Context, uuid, name, desc string) (bool, error) {
-	group := &model.Group{CreatorID: uuid, Name: name, Desc: desc}
+func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc, parentID string) (bool, error) {
+	group := &model.Group{CreatorID: usrID, Name: name, Desc: desc, ParentID: parentID}
 	err := b.repo.Create(group)
 	if err != nil {
 		return false, err

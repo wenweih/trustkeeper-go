@@ -54,9 +54,10 @@ func (e Endpoints) GetGroups(ctx context.Context, uuid string) (groups []*servic
 
 // CreateGroupRequest collects the request parameters for the CreateGroup method.
 type CreateGroupRequest struct {
-	UUID string `json:"uuid"`
-	Name string `json:"name"`
-	Desc string `json:"desc"`
+	UUID 			string `json:"uuid"`
+	Name 			string `json:"name"`
+	Desc			string `json:"desc"`
+	ParentID	string `json:"parentid"`
 }
 
 // CreateGroupResponse collects the response parameters for the CreateGroup method.
@@ -69,7 +70,7 @@ type CreateGroupResponse struct {
 func MakeCreateGroupEndpoint(s service.DashboardService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateGroupRequest)
-		result, err := s.CreateGroup(ctx, req.UUID, req.Name, req.Desc)
+		result, err := s.CreateGroup(ctx, req.UUID, req.Name, req.Desc, req.ParentID)
 		return CreateGroupResponse{
 			Err:    err,
 			Result: result,
@@ -83,8 +84,8 @@ func (r CreateGroupResponse) Failed() error {
 }
 
 // CreateGroup implements Service. Primarily useful in a client.
-func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc string) (result bool, err error) {
-	request := CreateGroupRequest{UUID: uuid, Name: name, Desc: desc}
+func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc, parentID string) (result bool, err error) {
+	request := CreateGroupRequest{UUID: uuid, Name: name, Desc: desc, ParentID: parentID}
 	response, err := e.CreateGroupEndpoint(ctx, request)
 	if err != nil {
 		return

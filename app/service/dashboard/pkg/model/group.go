@@ -11,6 +11,7 @@ type Group struct {
   Desc      string    `sql:"type:text;"`
   Key       string    `gorm:"type:varchar(255);index"`
   CreatorID string    `gorm:"index;not null"`
+  ParentID  string    `grom:"index"`
   Roles     []Role
 }
 
