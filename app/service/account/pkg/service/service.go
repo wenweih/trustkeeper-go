@@ -17,7 +17,7 @@ import (
 
 // AccountService describes the service.
 type AccountService interface {
-	Create(ctx context.Context, email, password string) error
+	Create(ctx context.Context, email, password string) (string, error)
 	Signin(ctx context.Context, email, password string) (string, error)
 	Signout(ctx context.Context) error
 	Roles(ctx context.Context) ([]string, error)
@@ -42,11 +42,11 @@ func (b *basicAccountService) findByTokenID(ctx context.Context) (*model.Account
 }
 
 // https://www.sohamkamani.com/blog/2018/02/25/golang-password-authentication-and-storage/
-func (b *basicAccountService) Create(ctx context.Context, email string, password string) error {
+func (b *basicAccountService) Create(ctx context.Context, email string, password string) (string, error) {
 	// Salt and hash the password using the bcrypt algorithm
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return err
+		return "", err
 	}
 	uid := uuid.NewV4()
 	acc := &model.Account{
@@ -54,7 +54,10 @@ func (b *basicAccountService) Create(ctx context.Context, email string, password
 		Password: string(hashedPassword),
 		UUID:     uid.String()}
 
-	return b.repo.Create(acc)
+		if err := b.repo.Create(acc); err != nil {
+			return "", err
+		}
+		return acc.UUID, nil
 }
 
 type Claims struct {

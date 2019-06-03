@@ -19,7 +19,7 @@ message CreateRequest {
 }
 
 message CreateReply {
- bool result = 1;
+ string uuid = 1;
 }
 
 message SigninRequest {

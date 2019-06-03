@@ -15,18 +15,23 @@ type CreateRequest struct {
 
 // CreateResponse collects the response parameters for the Create method.
 type CreateResponse struct {
-	Result bool
-	E1     error `json:"e1"`
+	UUID		string
+	E1     	error `json:"e1"`
 }
 
 // MakeCreateEndpoint returns an endpoint that invokes Create on the service.
 func MakeCreateEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateRequest)
-		e1 := s.Create(ctx, req.Email, req.Password)
+		uuid, err := s.Create(ctx, req.Email, req.Password)
+		if err != nil {
+			return CreateResponse{
+				E1: err,
+			},nil
+		}
 		return CreateResponse{
-			E1: e1,
-		}, e1
+			UUID: uuid,
+		}, nil
 	}
 }
 
@@ -43,16 +48,16 @@ type Failure interface {
 }
 
 // Create implements Service. Primarily useful in a client.
-func (e Endpoints) Create(ctx context.Context, email string, password string) error {
+func (e Endpoints) Create(ctx context.Context, email string, password string) (string, error) {
 	request := CreateRequest{
 		Email:    email,
 		Password: password,
 	}
-	_, err := e.CreateEndpoint(ctx, request)
+	resp, err := e.CreateEndpoint(ctx, request)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return resp.(CreateResponse).UUID, nil
 }
 
 // SignRequest collects the request parameters for the Sign method.
