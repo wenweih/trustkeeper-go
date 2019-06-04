@@ -8,8 +8,9 @@ import (
 
 type Conf struct {
 	DBInfo			string
+	Redis				string
 	EtcdServer	string
-	Instance string
+	Instance 		string
 }
 
 func New() (*Conf, error) {
@@ -32,9 +33,11 @@ func New() (*Conf, error) {
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
 	etcdServer := data.Data["etcdserver"].(string)
 	instance := data.Data["dashboardinstance"].(string)
+	redis := data.Data["redis"].(string)
 	return &Conf{
 		DBInfo:			dbInfo,
 		EtcdServer: etcdServer,
 		Instance: instance,
+		Redis: redis,
 	}, nil
 }

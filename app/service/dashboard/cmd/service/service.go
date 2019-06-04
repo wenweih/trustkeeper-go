@@ -9,6 +9,7 @@ import (
 	"os/signal"
 	"syscall"
 	"trustkeeper-go/app/service/dashboard/pkg/configure"
+	"trustkeeper-go/app/service/dashboard/pkg/jobs"
 	endpoint "trustkeeper-go/app/service/dashboard/pkg/endpoint"
 	grpc "trustkeeper-go/app/service/dashboard/pkg/grpc"
 	pb "trustkeeper-go/app/service/dashboard/pkg/grpc/pb"
@@ -28,6 +29,8 @@ import (
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
 )
+
+const srvName = "/services/dashboard/"
 
 var (
 	conf   configure.Conf
@@ -99,16 +102,31 @@ func Run() {
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initMetricsEndpoint(g)
+	initJobs(g)
 	initCancelInterrupt(g)
-	registrar, err := etcd.RegisterService(conf.EtcdServer, "/services/dashboard/", conf.Instance, logger)
+	registrar, err := etcd.RegisterService(conf.EtcdServer, srvName, conf.Instance, logger)
 	if err != nil {
-		logger.Log(err.Error())
+		logger.Log("dashboard srv registrar error: ", err.Error())
 		return
 	}
 	defer registrar.Deregister()
 	logger.Log("exit", g.Run())
 
 }
+
+func initJobs(g *group.Group) {
+	workPool := jobs.New(conf.Redis)
+	signalChan := make(chan os.Signal, 1)
+	g.Add(func() error {
+		workPool.Start()
+		signal.Notify(signalChan, os.Interrupt, os.Kill)
+		return nil
+	}, func(err error) {
+		<-signalChan
+		workPool.Stop()
+	})
+}
+
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultGRPCOptions(logger, tracer)
 	// Add your GRPC options here
