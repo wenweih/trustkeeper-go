@@ -30,6 +30,7 @@ import (
 	grpc1 "google.golang.org/grpc"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
+	"trustkeeper-go/library/common"
 )
 
 var (
@@ -101,7 +102,7 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
-	registrar, err := etcd.RegisterService(conf.EtcdServer, "/services/account/", conf.AccountInstance, logger)
+	registrar, err := etcd.RegisterService(conf.EtcdServer, common.AccountSrv, conf.AccountInstance, logger)
 	if err != nil {
 		logger.Log(err.Error())
 		return

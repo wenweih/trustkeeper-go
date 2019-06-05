@@ -28,9 +28,8 @@ import (
 	grpc1 "google.golang.org/grpc"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
+	"trustkeeper-go/library/common"
 )
-
-const srvName = "/services/dashboard/"
 
 var (
 	conf   configure.Conf
@@ -104,7 +103,7 @@ func Run() {
 	initMetricsEndpoint(g)
 	initJobs(g)
 	initCancelInterrupt(g)
-	registrar, err := etcd.RegisterService(conf.EtcdServer, srvName, conf.Instance, logger)
+	registrar, err := etcd.RegisterService(conf.EtcdServer, common.DashboardSrv, conf.Instance, logger)
 	if err != nil {
 		logger.Log("dashboard srv registrar error: ", err.Error())
 		return

@@ -19,10 +19,10 @@ require (
 	github.com/dgryski/go-sip13 v0.0.0-20190329191031-25c5027a8c7b // indirect
 	github.com/go-kit/kit v0.8.0
 	github.com/go-ldap/ldap v3.0.3+incompatible // indirect
-	github.com/gocraft/work v0.5.1 // indirect
+	github.com/gocraft/work v0.5.1
 	github.com/golang/mock v1.3.1 // indirect
 	github.com/golang/protobuf v1.3.1
-	github.com/gomodule/redigo v2.0.0+incompatible // indirect
+	github.com/gomodule/redigo v2.0.0+incompatible
 	github.com/google/btree v1.0.0 // indirect
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/google/pprof v0.0.0-20190515194954-54271f7e092f // indirect

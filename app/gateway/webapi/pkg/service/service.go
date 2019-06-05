@@ -14,6 +14,7 @@ import (
 	accountGrpcClient "trustkeeper-go/app/service/account/client/grpc"
 	dashboardGrpcClient "trustkeeper-go/app/service/dashboard/client/grpc"
 	"github.com/caarlos0/env"
+	"trustkeeper-go/library/common"
 )
 
 // WebapiService describes the service.
@@ -86,7 +87,7 @@ func NewBasicWebapiService() WebapiService {
 		log.Fatalln(err.Error())
 		return new(basicWebapiService)
 	}
-	AccountEntries, err := client.GetEntries("/services/account/")
+	AccountEntries, err := client.GetEntries(common.AccountSrv)
 	if err != nil {
 		log.Printf("unable to get prefix entries: %s", err.Error())
 		return new(basicWebapiService)
@@ -107,7 +108,7 @@ func NewBasicWebapiService() WebapiService {
 	}
 
 
-	DashboardEntries, err := client.GetEntries("/services/dashboard/")
+	DashboardEntries, err := client.GetEntries(common.DashboardSrv)
 	if err != nil {
 		log.Printf("unable to get prefix entries: %s", err.Error())
 		return new(basicWebapiService)
