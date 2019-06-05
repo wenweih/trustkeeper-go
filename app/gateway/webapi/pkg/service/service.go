@@ -3,15 +3,17 @@ package service
 import (
 	"context"
 	"log"
-	"trustkeeper-go/app/service/account/pkg/grpc/pb"
 	accountService "trustkeeper-go/app/service/account/pkg/service"
+	dashboardService "trustkeeper-go/app/service/dashboard/pkg/service"
 
-	sdetcd "github.com/go-kit/kit/sd/etcdv3"
-	"google.golang.org/grpc"
-	grpctransport "github.com/go-kit/kit/transport/grpc"
 	stdjwt "github.com/go-kit/kit/auth/jwt"
+	sdetcd "github.com/go-kit/kit/sd/etcdv3"
+	grpctransport "github.com/go-kit/kit/transport/grpc"
+	"google.golang.org/grpc"
 
-	grpcClient "trustkeeper-go/app/service/account/client/grpc"
+	accountGrpcClient "trustkeeper-go/app/service/account/client/grpc"
+	dashboardGrpcClient "trustkeeper-go/app/service/dashboard/client/grpc"
+	"github.com/caarlos0/env"
 )
 
 // WebapiService describes the service.
@@ -20,6 +22,7 @@ type WebapiService interface {
 	Signin(ctx context.Context, user Credentials) (token string, err error)
 	Signout(ctx context.Context) (result bool, err error)
 	GetRoles(ctx context.Context) ([]string, error)
+	GetGroups(ctx context.Context, uuid string) (groups []*dashboardService.Group, err error)
 }
 
 // Credentials Signup Signin params
@@ -29,16 +32,21 @@ type Credentials struct {
 }
 
 type basicWebapiService struct {
-	accountServiceClient pb.AccountClient
-	accountServices accountService.AccountService
+	accountServices		accountService.AccountService
+	dashboardServices	dashboardService.DashboardService
 }
 
-func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (result bool, err error) {
-	if err := b.accountServices.Create(ctx, user.Email, user.Password); err != nil {
+func (b *basicWebapiService) auth(ctx context.Context) (uuid string, err error) {
+	return b.accountServices.Auth(ctx)
+}
+
+func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (bool, error) {
+	if _, err := b.accountServices.Create(ctx, user.Email, user.Password); err != nil {
 		return false, err
 	}
 	return true, nil
 }
+
 func (b *basicWebapiService) Signin(ctx context.Context, user Credentials) (token string, err error) {
 	token, err = b.accountServices.Signin(ctx, user.Email, user.Password)
 	return
@@ -50,7 +58,6 @@ func (b *basicWebapiService) Signout(ctx context.Context) (result bool, err erro
 	return true, nil
 }
 
-
 func (b *basicWebapiService) GetRoles(ctx context.Context) (s0 []string, e1 error) {
 	roles, err := b.accountServices.Roles(ctx)
 	if err != nil {
@@ -59,40 +66,68 @@ func (b *basicWebapiService) GetRoles(ctx context.Context) (s0 []string, e1 erro
 	return roles, nil
 }
 
+func (b *basicWebapiService) GetGroups(ctx context.Context, uuid string) (groups []*dashboardService.Group, err error) {
+	// TODO implement the business logic of Group
+	return groups, err
+}
+
 // NewBasicWebapiService returns a naive, stateless implementation of WebapiService.
 func NewBasicWebapiService() WebapiService {
-	var etcdServer = "http://localhost:2379"
-	client, err := sdetcd.NewClient(context.Background(), []string{etcdServer}, sdetcd.ClientOptions{})
+	type config struct {
+		Etcdsrv	string	`env:"etcdsrv"`
+	}
+	cfg := config{}
+	if err := env.Parse(&cfg); err != nil {
+		log.Fatalln("fail to parse env: ", err.Error())
+	}
+	client, err := sdetcd.NewClient(context.Background(), []string{cfg.Etcdsrv}, sdetcd.ClientOptions{})
 	if err != nil {
 		log.Printf("unable to connect to etcd: %s", err.Error())
+		log.Fatalln(err.Error())
 		return new(basicWebapiService)
 	}
-	entries, err := client.GetEntries("/services/account/")
+	AccountEntries, err := client.GetEntries("/services/account/")
 	if err != nil {
 		log.Printf("unable to get prefix entries: %s", err.Error())
 		return new(basicWebapiService)
 	}
-
-	if len(entries) == 0 {
+	if len(AccountEntries) == 0 {
 		log.Printf("entries not eixst")
 		return new(basicWebapiService)
 	}
-
-	conn, err := grpc.Dial(entries[0], grpc.WithInsecure())
+	accountSrvConn, err := grpc.Dial(AccountEntries[0], grpc.WithInsecure())
 	if err != nil {
 		log.Printf("unable to connect to : %s", err.Error())
 	}
-
 	// 把带有 jwt token 的上下文设置到 grpc 请求的上下文中
 	// https://github.com/go-kit/kit/blob/master/auth/jwt/README.md ContextToGRPC
-	accountServiceclient, err := grpcClient.New(conn, []grpctransport.ClientOption{(grpctransport.ClientBefore(stdjwt.ContextToGRPC()))})
+	accountServiceclient, err := accountGrpcClient.New(accountSrvConn, []grpctransport.ClientOption{(grpctransport.ClientBefore(stdjwt.ContextToGRPC()))})
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+
+	DashboardEntries, err := client.GetEntries("/services/dashboard/")
+	if err != nil {
+		log.Printf("unable to get prefix entries: %s", err.Error())
+		return new(basicWebapiService)
+	}
+	if len(DashboardEntries) == 0 {
+		log.Printf("entries not eixst")
+		return new(basicWebapiService)
+	}
+	dashboardSrvconn, err := grpc.Dial(DashboardEntries[0], grpc.WithInsecure())
+	if err != nil {
+		log.Printf("unable to connect to : %s", err.Error())
+	}
+	dashboardServiceClient, err := dashboardGrpcClient.New(dashboardSrvconn, []grpctransport.ClientOption{})
 	if err != nil {
 		log.Println(err.Error())
 	}
 
 	return &basicWebapiService{
-		accountServiceClient: pb.NewAccountClient(conn),
 		accountServices: accountServiceclient,
+		dashboardServices: dashboardServiceClient,
 	}
 }
 

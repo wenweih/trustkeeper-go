@@ -26,8 +26,8 @@ import (
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
 
-	httptransport "github.com/go-kit/kit/transport/http"
 	stdjwt "github.com/go-kit/kit/auth/jwt"
+	httptransport "github.com/go-kit/kit/transport/http"
 )
 
 var tracer opentracinggo.Tracer
@@ -110,9 +110,9 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 		logger.Log("transport", "HTTP", "during", "Listen", "err", err)
 	}
 	c := cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
+		AllowedOrigins:   []string{"*"},
 		AllowCredentials: true,
-		AllowedHeaders: []string{"Authorization", "Content-Type"},
+		AllowedHeaders:   []string{"Authorization", "Content-Type"},
 	})
 	handler := c.Handler(httpHandler)
 	// handler := cors.Default().Handler(httpHandler)

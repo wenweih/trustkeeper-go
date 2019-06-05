@@ -8,6 +8,7 @@ import (
 	endpoint "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	metrics "github.com/go-kit/kit/metrics"
+
 	// httptransport "github.com/go-kit/kit/transport/http"
 	stdjwt "github.com/go-kit/kit/auth/jwt"
 )

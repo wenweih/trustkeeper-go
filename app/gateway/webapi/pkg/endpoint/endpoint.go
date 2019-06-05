@@ -5,6 +5,8 @@ import (
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
 
 	endpoint "github.com/go-kit/kit/endpoint"
+	// groupModel "trustkeeper-go/app/service/dashboard/pkg/model"
+	groupService "trustkeeper-go/app/service/dashboard/pkg/service"
 )
 
 // SignupRequest collects the request parameters for the Signup method.
@@ -128,7 +130,7 @@ func (e Endpoints) Signout(ctx context.Context) (result bool, err error) {
 }
 
 // GetRolesRequest collects the request parameters for the GetRoles method.
-type GetRolesRequest struct {}
+type GetRolesRequest struct{}
 
 // GetRolesResponse collects the response parameters for the GetRoles method.
 type GetRolesResponse struct {
@@ -160,4 +162,42 @@ func (e Endpoints) GetRoles(ctx context.Context, token string) (s0 []string, e1 
 		return nil, err
 	}
 	return response.(GetRolesResponse).S0, response.(GetRolesResponse).E1
+}
+
+// GroupRequest collects the request parameters for the Group method.
+type GetGroupsRequest struct {
+	Uuid string `json:"uuid"`
+}
+
+// GetGroupsResponse collects the response parameters for the Group method.
+type GetGroupsResponse struct {
+	Groups []*groupService.Group `json:"groups"`
+	Err    error               `json:"err"`
+}
+
+// MakeGetGroupsEndpoint returns an endpoint that invokes Group on the service.
+func MakeGetGroupsEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(GetGroupsRequest)
+		groups, err := s.GetGroups(ctx, req.Uuid)
+		return GetGroupsResponse{
+			Err:    err,
+			Groups: groups,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r GetGroupsResponse) Failed() error {
+	return r.Err
+}
+
+// GetGroups implements Service. Primarily useful in a client.
+func (e Endpoints) GetGroups(ctx context.Context, uuid string) (groups []*groupService.Group, err error) {
+	request := GetGroupsRequest{Uuid: uuid}
+	response, err := e.GetGroupsEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(GetGroupsResponse).Groups, response.(GetGroupsResponse).Err
 }
