@@ -19,11 +19,11 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 	}
 }
 
-func (l loggingMiddleware) Create(ctx context.Context, email string, password string) (uuid string, e1 error) {
+func (l loggingMiddleware) Create(ctx context.Context, email, password, orgName string) (uuid string, e1 error) {
 	defer func() {
-		l.logger.Log("method", "Create", "email", email, "password", password, "e1", e1)
+		l.logger.Log("method", "Create", "email", email, "OrgName", orgName, "e1", e1)
 	}()
-	return l.next.Create(ctx, email, password)
+	return l.next.Create(ctx, email, password, orgName)
 }
 
 func (l loggingMiddleware) Signin(ctx context.Context, email string, password string) (s0 string, e1 error) {

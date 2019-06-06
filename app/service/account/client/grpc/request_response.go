@@ -14,7 +14,8 @@ func encodeCreateRequest(_ context.Context, request interface{}) (interface{}, e
 	r := request.(endpoint.CreateRequest)
 	return &pb.CreateRequest{
 		Email: r.Email,
-		Password: r.Password}, nil
+		Password: r.Password,
+    Orgname: r.OrgName}, nil
 }
 
 // decodeCreateResponse is a transport/grpc.DecodeResponseFunc that converts

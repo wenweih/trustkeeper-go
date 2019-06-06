@@ -28,7 +28,7 @@ func MakeSignupEndpoint(s service.WebapiService) endpoint.Endpoint {
 		return SignupResponse{
 			Err:    err,
 			Result: result,
-		}, nil
+		}, err
 	}
 }
 

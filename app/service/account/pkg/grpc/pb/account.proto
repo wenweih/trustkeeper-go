@@ -16,6 +16,7 @@ service Account {
 message CreateRequest {
  string email    = 1;
  string password = 2;
+ string orgname = 3;
 }
 
 message CreateReply {

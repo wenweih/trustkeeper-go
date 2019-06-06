@@ -10,5 +10,5 @@ type Account struct {
   Email     string    `gorm:"type:varchar(100);unique_index;not null"`
   Password  string    `gorm:"not null"`
   UUID      string    `gorm:"unique_index;not null"`
-  TokenID   string    `gorm:"unique_index"`
+  TokenID   string    `gorm:"index"`
 }

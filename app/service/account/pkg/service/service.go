@@ -17,7 +17,7 @@ import (
 
 // AccountService describes the service.
 type AccountService interface {
-	Create(ctx context.Context, email, password string) (string, error)
+	Create(ctx context.Context, email, password, orgName string) (string, error)
 	Signin(ctx context.Context, email, password string) (string, error)
 	Signout(ctx context.Context) error
 	Roles(ctx context.Context) ([]string, error)
@@ -42,7 +42,7 @@ func (b *basicAccountService) findByTokenID(ctx context.Context) (*model.Account
 }
 
 // https://www.sohamkamani.com/blog/2018/02/25/golang-password-authentication-and-storage/
-func (b *basicAccountService) Create(ctx context.Context, email string, password string) (string, error) {
+func (b *basicAccountService) Create(ctx context.Context, email, password, orgName string) (string, error) {
 	// Salt and hash the password using the bcrypt algorithm
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -57,6 +57,7 @@ func (b *basicAccountService) Create(ctx context.Context, email string, password
 		if err := b.repo.Create(acc); err != nil {
 			return "", err
 		}
+		// TODO: 如果是注册用户，则需新建默认群组和分配生成助记词
 		return acc.UUID, nil
 }
 

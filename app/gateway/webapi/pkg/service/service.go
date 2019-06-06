@@ -28,8 +28,9 @@ type WebapiService interface {
 
 // Credentials Signup Signin params
 type Credentials struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    	string	`json:"email"`
+	Password 	string	`json:"password"`
+	OrgName		string	`json:"orgname"`
 }
 
 type basicWebapiService struct {
@@ -42,7 +43,7 @@ func (b *basicWebapiService) auth(ctx context.Context) (uuid string, err error) 
 }
 
 func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (bool, error) {
-	if _, err := b.accountServices.Create(ctx, user.Email, user.Password); err != nil {
+	if _, err := b.accountServices.Create(ctx, user.Email, user.Password, user.OrgName); err != nil {
 		return false, err
 	}
 	return true, nil
