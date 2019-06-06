@@ -1,6 +1,7 @@
 package http
 
 import (
+	"strings"
 	"context"
 	"encoding/json"
 	"errors"
@@ -83,6 +84,7 @@ func encodeSignoutResponse(ctx context.Context, w http.ResponseWriter, response 
 	return
 }
 func ErrorEncoder(_ context.Context, err error, w http.ResponseWriter) {
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	w.WriteHeader(err2code(err))
 	json.NewEncoder(w).Encode(errorWrapper{Error: err.Error()})
 }
@@ -97,7 +99,12 @@ func ErrorDecoder(r *http.Response) error {
 // This is used to set the http status, see an example here :
 // https://github.com/go-kit/kit/blob/master/examples/addsvc/pkg/addtransport/http.go#L133
 func err2code(err error) int {
-	return http.StatusInternalServerError
+	switch  {
+	case strings.HasPrefix(err.Error(), "Fields exist"):
+		return http.StatusBadRequest
+	default:
+		return http.StatusInternalServerError
+	}
 }
 
 type errorWrapper struct {

@@ -35,7 +35,7 @@ func New(db *gorm.DB) AccoutRepo {
 
 // Create save repo
 func (repo AccoutRepo) Create(acc *model.Account) error {
-  // repo.Enforcer.AddRoleForUser(acc.UUID, "admin")
+  repo.Enforcer.AddRoleForUser(acc.UUID, "admin")
   // repo.Enforcer.AddRoleForUser(acc.UUID, "normal")
   // repo.Enforcer.AddPolicy(acc.UUID, "asset_a", "GET")
   // repo.Enforcer.AddPermissionForUser(acc.UUID, "read")

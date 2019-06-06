@@ -1,8 +1,11 @@
 package service
 
 import (
+	"errors"
+	"strings"
 	"context"
 	"log"
+	"regexp"
 	accountService "trustkeeper-go/app/service/account/pkg/service"
 	dashboardService "trustkeeper-go/app/service/dashboard/pkg/service"
 
@@ -38,13 +41,26 @@ type basicWebapiService struct {
 	dashboardServices	dashboardService.DashboardService
 }
 
+func makeError(ctx context.Context, err error) error {
+	errStr := err.Error()
+	switch  {
+	case strings.Contains(errStr, "violates unique constraint"):
+		re := regexp.MustCompile(`[(](.*?)[)]`)
+		result := re.FindAll([]byte(err.Error()), -1)
+		return errors.New("Fields exist: " + string(result[0]))
+	default:
+		return err
+	}
+}
+
 func (b *basicWebapiService) auth(ctx context.Context) (uuid string, err error) {
 	return b.accountServices.Auth(ctx)
 }
 
 func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (bool, error) {
 	if _, err := b.accountServices.Create(ctx, user.Email, user.Password, user.OrgName); err != nil {
-		return false, err
+		e := makeError(ctx, err)
+		return false, e
 	}
 	return true, nil
 }
