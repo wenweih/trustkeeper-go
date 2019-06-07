@@ -58,7 +58,10 @@ func (b *basicWebapiService) auth(ctx context.Context) (uuid string, err error) 
 }
 
 func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (bool, error) {
-	if _, err := b.accountServices.Create(ctx, user.Email, user.Password, user.OrgName); err != nil {
+	if _, err := b.accountServices.Create(ctx,
+		user.Email,
+		user.Password,
+		user.OrgName); err != nil {
 		e := makeError(ctx, err)
 		return false, e
 	}
