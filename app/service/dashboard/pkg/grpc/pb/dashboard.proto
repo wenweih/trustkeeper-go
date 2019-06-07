@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package pb;
 
-
-
 //The Dashboard service definition.
 service Dashboard {
  rpc GetGroups   (GetGroupsRequest  ) returns (GetGroupsReply  );
@@ -26,7 +24,7 @@ message CreateGroupRequest {
   string uuid = 1;
   string name = 2;
   string desc = 3;
-  string parendID = 4;
+  string namespaceID = 4;
 }
 
 message CreateGroupReply {
