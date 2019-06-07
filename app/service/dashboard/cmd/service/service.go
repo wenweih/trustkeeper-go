@@ -101,7 +101,9 @@ func Run() {
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initMetricsEndpoint(g)
-	initJobs(g)
+
+	jobSvc := service.NewJobsService(conf)
+	initJobs(g, jobSvc)
 	initCancelInterrupt(g)
 	registrar, err := etcd.RegisterService(conf.EtcdServer, common.DashboardSrv, conf.Instance, logger)
 	if err != nil {
@@ -113,8 +115,8 @@ func Run() {
 
 }
 
-func initJobs(g *group.Group) {
-	workPool := jobs.New(conf.Redis)
+func initJobs(g *group.Group, jobSrv service.JobService) {
+	workPool := jobs.New(conf.Redis, jobSrv)
 	signalChan := make(chan os.Signal, 1)
 	g.Add(func() error {
 		workPool.Start()

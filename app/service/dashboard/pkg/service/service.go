@@ -1,6 +1,7 @@
 package service
 
 import (
+	// "fmt"
 	"context"
 	"trustkeeper-go/app/service/dashboard/pkg/configure"
 	"trustkeeper-go/app/service/dashboard/pkg/repository"
@@ -13,7 +14,7 @@ type Group struct {
 
 // DashboardService describes the service.
 type DashboardService interface {
-	CreateGroup(ctx context.Context, uuid, name, desc, parentID string) (result bool, err error)
+	CreateGroup(ctx context.Context, uuid, name, desc, namespaceID string) (result bool, err error)
 	GetGroups(ctx context.Context, uuid string) (groups []*Group, err error)
 }
 
@@ -26,8 +27,8 @@ func (b *basicDashboardService) GetGroups(ctx context.Context, uuid string) (gro
 	return groups, err
 }
 
-func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc, parentID string) (bool, error) {
-	group := &model.Group{CreatorID: usrID, Name: name, Desc: desc, ParentID: parentID}
+func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc, namespaceID string) (bool, error) {
+	group := &model.Group{CreatorID: usrID, Name: name, Desc: desc, NamespaceID: namespaceID}
 	err := b.repo.Create(group)
 	if err != nil {
 		return false, err
@@ -47,9 +48,19 @@ func NewBasicDashboardService(conf configure.Conf) DashboardService {
 
 // New returns a DashboardService with all of the expected middleware wired in.
 func New(conf configure.Conf, middleware []Middleware) DashboardService {
-	var svc DashboardService = NewBasicDashboardService(conf)
+	// var svc DashboardService = NewBasicDashboardService(conf)
+	svc := NewBasicDashboardService(conf)
 	for _, m := range middleware {
 		svc = m(svc)
 	}
+	return svc
+}
+
+func NewJobsService(conf configure.Conf) JobService {
+	db := repository.DB(conf.DBInfo)
+	bas := basicDashboardService{
+		repo: repository.New(db),
+	}
+	var svc JobService = &bas
 	return svc
 }
