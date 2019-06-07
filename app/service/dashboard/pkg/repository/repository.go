@@ -25,6 +25,7 @@ func New(db *gorm.DB) DashboardRepo {
   acc := DashboardRepo{db: db}
   acc.db.AutoMigrate(
     model.Group{},
-    model.Role{})
+    model.Role{},
+    model.Namespace{})
   return acc
 }

@@ -7,18 +7,10 @@ import (
 // Group group
 type Group struct {
   gorm.Model
-  Name      string    `grom:"type:varchar(100);not null;index"`
-  Desc      string    `sql:"type:text;"`
-  Key       string    `gorm:"type:varchar(255);index"`
-  CreatorID string    `gorm:"index;not null"`
-  ParentID  string    `grom:"index"`
-  Roles     []Role
-}
-
-type Role struct {
-  gorm.Model
-  GroupID     int
-  Group       Group
-  Name        string  `gorm:"not null;unique_index"`
-  Memo        string  `gorm:"size:200"`
+  NamespaceID string
+  Namespace   Namespace
+  Name        string    `grom:"type:varchar(100);not null;index"`
+  Desc        string    `sql:"type:text;"`
+  CreatorID   string    `gorm:"index;not null"`
+  Roles       []Role
 }
