@@ -7,6 +7,7 @@ import (
 )
 
 type Conf struct {
+	Redis				string
 	DBInfo			string
 	JWTKey 			string
 	EtcdServer	string
@@ -34,7 +35,9 @@ func New() (*Conf, error) {
 	jwtkey := data.Data["jwtkey"].(string)
 	etcdServer := data.Data["etcdserver"].(string)
 	accountInstance := data.Data["accountinstance"].(string)
+	redis := data.Data["redis"].(string)
 	return &Conf{
+		Redis: redis,
 		DBInfo:			dbInfo,
 		JWTKey: 		jwtkey,
 		EtcdServer: etcdServer,

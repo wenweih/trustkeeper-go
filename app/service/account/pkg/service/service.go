@@ -13,6 +13,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 
 	stdjwt "github.com/go-kit/kit/auth/jwt"
+
+	"github.com/gocraft/work"
+	"trustkeeper-go/library/database/redis"
+	"trustkeeper-go/library/common"
 )
 
 // AccountService describes the service.
@@ -27,6 +31,7 @@ type AccountService interface {
 type basicAccountService struct {
 	repo repository.AccoutRepo
 	conf configure.Conf
+	jobEnqueuer *work.Enqueuer
 }
 
 func (b *basicAccountService) findByTokenID(ctx context.Context) (*model.Account, error) {
@@ -57,10 +62,16 @@ func (b *basicAccountService) Create(ctx context.Context, email, password, orgNa
 		if err := b.repo.Create(acc); err != nil {
 			return "", err
 		}
-		// TODO: 如果是注册用户，则需新建默认群组和分配生成助记词
+		if _, err := b.jobEnqueuer.Enqueue(common.SignUpJobs,
+			work.Q{"uuid": uid,
+				"email": email,
+				"orgname": orgName}); err != nil {
+			return "", err
+		}
 		return acc.UUID, nil
 }
 
+// Claims jwt clains struct
 type Claims struct {
 	jwt.StandardClaims
 }
@@ -115,9 +126,12 @@ func (b *basicAccountService) Roles(ctx context.Context) ([]string, error) {
 // NewBasicAccountService returns a naive, stateless implementation of AccountService.
 func NewBasicAccountService(conf configure.Conf) AccountService {
 	db := repository.DB(conf.DBInfo)
+	redisPool := redis.NewPool(conf.Redis)
+	enqueuer := work.NewEnqueuer(redis.Namespace, redisPool)
 	bas := basicAccountService{
 		repo: repository.New(db),
 		conf: conf,
+		jobEnqueuer: enqueuer,
 	}
 	return &bas
 }
