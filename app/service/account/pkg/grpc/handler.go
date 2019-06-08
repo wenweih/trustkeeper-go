@@ -15,7 +15,7 @@ func makeCreateHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption
 
 func decodeCreateRequest(_ context.Context, r interface{}) (interface{}, error) {
 	req := r.(*pb.CreateRequest)
-	return endpoint.CreateRequest{Email: req.Email, Password: req.Password}, nil
+	return endpoint.CreateRequest{Email: req.Email, Password: req.Password, OrgName: req.Orgname}, nil
 }
 
 func encodeCreateResponse(_ context.Context, r interface{}) (interface{}, error) {
