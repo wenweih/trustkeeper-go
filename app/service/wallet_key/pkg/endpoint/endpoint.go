@@ -51,5 +51,5 @@ func (e Endpoints) GenerateMnemonic(ctx context.Context, uuid string) (xpub stri
 	if err != nil {
 		return
 	}
-	return response.(GenerateMnemonicResponse).Xpub, response.(GenerateMnemonicResponse).Err
+	return response.(*GenerateMnemonicResponse).Xpub, response.(*GenerateMnemonicResponse).Err
 }
