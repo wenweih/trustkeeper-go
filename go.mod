@@ -10,6 +10,7 @@ require (
 	github.com/Shopify/sarama v1.22.1 // indirect
 	github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
+	github.com/btcsuite/btcd v0.0.0-20190605094302-a0d1e3e36d50 // indirect
 	github.com/caarlos0/env v3.5.0+incompatible
 	github.com/casbin/casbin v1.8.2
 	github.com/casbin/gorm-adapter v0.0.0-20190318080705-e74a050c51a4
@@ -61,6 +62,7 @@ require (
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.3.0
+	github.com/tyler-smith/go-bip39 v1.0.0
 	go.etcd.io/etcd v3.3.13+incompatible // indirect
 	golang.org/x/crypto v0.0.0-20190513172903-22d7a77e9e5f
 	golang.org/x/exp v0.0.0-20190510132918-efd6b22b2522 // indirect
