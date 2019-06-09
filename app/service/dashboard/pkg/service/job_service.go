@@ -2,7 +2,6 @@ package service
 
 import (
   "context"
-  "fmt"
 )
 
 
@@ -11,6 +10,6 @@ type JobService interface {
 }
 
 func (b *basicDashboardService) Signup(ctx context.Context, uuid, email, orgName string) error {
-  fmt.Println("uuid: ", uuid, " email: ", email, " orgName: ", orgName)
-  return nil
+  // TODO wallet_key service generate xpub
+  return b.biz.Signup(uuid, email, orgName, "")
 }

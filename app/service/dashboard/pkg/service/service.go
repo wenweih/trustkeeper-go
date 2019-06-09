@@ -19,8 +19,7 @@ type DashboardService interface {
 }
 
 type basicDashboardService struct {
-	repo repository.DashboardRepo
-	conf configure.Conf
+	biz repository.IBiz
 }
 
 func (b *basicDashboardService) GetGroups(ctx context.Context, uuid string) (groups []*Group, err error) {
@@ -29,7 +28,7 @@ func (b *basicDashboardService) GetGroups(ctx context.Context, uuid string) (gro
 
 func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc, namespaceID string) (bool, error) {
 	group := &model.Group{CreatorID: usrID, Name: name, Desc: desc, NamespaceID: namespaceID}
-	err := b.repo.Create(group)
+	err := b.biz.Group(group)
 	if err != nil {
 		return false, err
 	}
@@ -40,16 +39,14 @@ func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, de
 func NewBasicDashboardService(conf configure.Conf) DashboardService {
 	db := repository.DB(conf.DBInfo)
 	bas := basicDashboardService{
-		repo: repository.New(db),
-		conf: conf,
+		biz: repository.New(db),
 	}
 	return &bas
 }
 
 // New returns a DashboardService with all of the expected middleware wired in.
 func New(conf configure.Conf, middleware []Middleware) DashboardService {
-	// var svc DashboardService = NewBasicDashboardService(conf)
-	svc := NewBasicDashboardService(conf)
+	var svc DashboardService = NewBasicDashboardService(conf)
 	for _, m := range middleware {
 		svc = m(svc)
 	}
@@ -59,7 +56,7 @@ func New(conf configure.Conf, middleware []Middleware) DashboardService {
 func NewJobsService(conf configure.Conf) JobService {
 	db := repository.DB(conf.DBInfo)
 	bas := basicDashboardService{
-		repo: repository.New(db),
+		biz: repository.New(db),
 	}
 	var svc JobService = &bas
 	return svc

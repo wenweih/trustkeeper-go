@@ -6,9 +6,10 @@ import(
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
 
-// DashboardRepo account obj
-type DashboardRepo struct {
-  db *gorm.DB
+// Repo repo obj
+type repo struct {
+  iNamespaceRepo
+  iGroupRepo
 }
 
 // DB database connect
@@ -20,12 +21,15 @@ func DB(dbInfo string) *gorm.DB {
   return db
 }
 
-// New new
-func New(db *gorm.DB) DashboardRepo {
-  acc := DashboardRepo{db: db}
-  acc.db.AutoMigrate(
+// New new repo
+func New(db *gorm.DB) IBiz {
+  db.AutoMigrate(
     model.Group{},
     model.Role{},
     model.Namespace{})
-  return acc
+  repo := repo{
+    &namespaceRepo{db},
+    &groupRepo{db}}
+  var biz IBiz = &repo
+  return biz
 }
