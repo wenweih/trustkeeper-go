@@ -22,7 +22,7 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 func (l loggingMiddleware) GenerateMnemonic(ctx context.Context, uuid string) (xpub string, err error) {
 	defer func() {
-		l.logger.Log("method", "GenerateMnemonic", "uuid", uuid, "xpub", xpub, "err", err)
+		l.logger.Log("method", "GenerateMnemonic", "xPubUUID", uuid, "xpub", xpub, "err", err)
 	}()
 	return l.next.GenerateMnemonic(ctx, uuid)
 }

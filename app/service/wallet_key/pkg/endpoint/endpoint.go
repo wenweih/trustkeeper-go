@@ -43,7 +43,7 @@ type Failure interface {
 }
 
 // GenerateMnemonic implements Service. Primarily useful in a client.
-func (e Endpoints) GenerateMnemonic(ctx context.Context, email string, uuid string) (xpub string, err error) {
+func (e Endpoints) GenerateMnemonic(ctx context.Context, uuid string) (xpub string, err error) {
 	request := GenerateMnemonicRequest{
 		Uuid:  uuid,
 	}

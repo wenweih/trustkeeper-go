@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package pb;
 
-
-
 //The WalletKey service definition.
 service WalletKey {
  rpc GenerateMnemonic (GenerateMnemonicRequest) returns (GenerateMnemonicReply);
