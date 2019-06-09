@@ -13,6 +13,9 @@ import (
 	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/wallet_key/pkg/service"
 
+	"trustkeeper-go/library/etcd"
+	"trustkeeper-go/library/common"
+
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
@@ -23,6 +26,7 @@ import (
 	grpc1 "google.golang.org/grpc"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
+	"github.com/caarlos0/env"
 )
 
 var tracer opentracinggo.Tracer
@@ -85,6 +89,23 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
+
+	type config struct {
+		Etcdsrv		string	`env:"etcdsrv"`
+		Instance	string	`env:"instance"`
+	}
+	cfg := config{}
+	if err := env.Parse(&cfg); err != nil {
+		logger.Log("fail to parse env: ", err.Error())
+		os.Exit(3)
+	}
+
+	registrar, err := etcd.RegisterService(cfg.Etcdsrv, common.WalletKeySrv, cfg.Instance, logger)
+	if err != nil {
+		logger.Log("wallet key srv registrar error: ", err.Error())
+		return
+	}
+	defer registrar.Deregister()
 	logger.Log("exit", g.Run())
 
 }
