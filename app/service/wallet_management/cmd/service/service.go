@@ -24,17 +24,23 @@ import (
 	grpc "trustkeeper-go/app/service/wallet_management/pkg/grpc"
 	pb "trustkeeper-go/app/service/wallet_management/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/wallet_management/pkg/service"
+	"trustkeeper-go/library/etcd"
+	"trustkeeper-go/app/service/wallet_management/pkg/configure"
+	"trustkeeper-go/library/common"
 )
 
-var tracer opentracinggo.Tracer
-var logger log.Logger
+var (
+	conf   configure.Conf
+	tracer opentracinggo.Tracer
+	logger log.Logger
+)
 
 // Define our flags. Your service probably won't need to bind listeners for
 // all* supported transports, but we do it here for demonstration purposes.
 var fs = flag.NewFlagSet("wallet_management", flag.ExitOnError)
 var debugAddr = fs.String("debug.addr", ":8080", "Debug and metrics listen address")
 var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
-var grpcAddr = fs.String("grpc-addr", ":8082", "gRPC listen address")
+var grpcAddr = fs.String("grpc-addr", ":5555", "gRPC listen address")
 var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
 var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
 var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
@@ -81,11 +87,23 @@ func Run() {
 		tracer = opentracinggo.GlobalTracer()
 	}
 
+	c, err := configure.New()
+	if err != nil {
+		logger.Log(err)
+	}
+	conf = *c
+
 	svc := service.New(getServiceMiddleware(logger))
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
+	registrar, err := etcd.RegisterService(conf.EtcdServer, common.WalletManagementSrv, conf.Instance, logger)
+	if err != nil {
+		logger.Log("WalletManagementSrv registrar error: ", err.Error())
+		return
+	}
+	defer registrar.Deregister()
 	logger.Log("exit", g.Run())
 
 }

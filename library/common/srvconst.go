@@ -8,4 +8,6 @@ const (
 
   // WalletKeySrv wallet_key register in etcd
   WalletKeySrv = "/services/walletkey/"
+
+  WalletManagementSrv = "/services/walletmanagement/"
 )
