@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package pb;
+
+
+
+//The WalletManagement service definition.
+service WalletManagement {
+ rpc CreateChain (CreateChainRequest) returns (CreateChainReply);
+}
+
+message CreateChainRequest {
+  string symbol = 1;
+  string bitid = 2;
+  bool status = 3;
+}
+
+message CreateChainReply {
+  bool result = 1;
+}

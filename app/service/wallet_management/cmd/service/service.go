@@ -3,30 +3,27 @@ package service
 import (
 	"flag"
 	"fmt"
-	"net"
-	// "net/http"
-	"os"
-	"os/signal"
-	"syscall"
-	endpoint "trustkeeper-go/app/service/wallet_key/pkg/endpoint"
-	grpc "trustkeeper-go/app/service/wallet_key/pkg/grpc"
-	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
-	service "trustkeeper-go/app/service/wallet_key/pkg/service"
-
-	"trustkeeper-go/library/etcd"
-	"trustkeeper-go/library/common"
-
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
+	prometheus "github.com/go-kit/kit/metrics/prometheus"
 	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
 	zipkingoopentracing "github.com/openzipkin/zipkin-go-opentracing"
-	// promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
+	prometheus1 "github.com/prometheus/client_golang/prometheus"
+	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	grpc1 "google.golang.org/grpc"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"github.com/caarlos0/env"
+	"syscall"
+	endpoint "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
+	grpc "trustkeeper-go/app/service/wallet_management/pkg/grpc"
+	pb "trustkeeper-go/app/service/wallet_management/pkg/grpc/pb"
+	service "trustkeeper-go/app/service/wallet_management/pkg/service"
 )
 
 var tracer opentracinggo.Tracer
@@ -34,9 +31,10 @@ var logger log.Logger
 
 // Define our flags. Your service probably won't need to bind listeners for
 // all* supported transports, but we do it here for demonstration purposes.
-var fs = flag.NewFlagSet("wallet_key", flag.ExitOnError)
-// var debugAddr = fs.String("debug.addr", ":8080", "Debug and metrics listen address")
-var grpcAddr = fs.String("grpc-addr", ":6666", "gRPC listen address")
+var fs = flag.NewFlagSet("wallet_management", flag.ExitOnError)
+var debugAddr = fs.String("debug.addr", ":8080", "Debug and metrics listen address")
+var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
+var grpcAddr = fs.String("grpc-addr", ":8082", "gRPC listen address")
 var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
 var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
 var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
@@ -63,7 +61,7 @@ func Run() {
 			os.Exit(1)
 		}
 		defer collector.Close()
-		recorder := zipkingoopentracing.NewRecorder(collector, false, "localhost:80", "wallet_key")
+		recorder := zipkingoopentracing.NewRecorder(collector, false, "localhost:80", "wallet_management")
 		tracer, err = zipkingoopentracing.NewTracer(recorder)
 		if err != nil {
 			logger.Log("err", err)
@@ -86,25 +84,8 @@ func Run() {
 	svc := service.New(getServiceMiddleware(logger))
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
-	// initMetricsEndpoint(g)
+	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
-
-	type config struct {
-		Etcdsrv		string	`env:"etcdsrv"`
-		Instance	string	`env:"instance"`
-	}
-	cfg := config{}
-	if err := env.Parse(&cfg); err != nil {
-		logger.Log("fail to parse env: ", err.Error())
-		os.Exit(3)
-	}
-
-	registrar, err := etcd.RegisterService(cfg.Etcdsrv, common.WalletKeySrv, cfg.Instance, logger)
-	if err != nil {
-		logger.Log("wallet key srv registrar error: ", err.Error())
-		return
-	}
-	defer registrar.Deregister()
 	logger.Log("exit", g.Run())
 
 }
@@ -120,7 +101,7 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	g.Add(func() error {
 		logger.Log("transport", "gRPC", "addr", *grpcAddr)
 		baseServer := grpc1.NewServer()
-		pb.RegisterWalletKeyServer(baseServer, grpcServer)
+		pb.RegisterWalletManagementServer(baseServer, grpcServer)
 		return baseServer.Serve(grpcListener)
 	}, func(error) {
 		grpcListener.Close()
@@ -129,29 +110,37 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 }
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
+	mw = addDefaultServiceMiddleware(logger, mw)
 	// Append your middleware here
 
 	return
 }
 func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middleware) {
 	mw = map[string][]endpoint1.Middleware{}
+	duration := prometheus.NewSummaryFrom(prometheus1.SummaryOpts{
+		Help:      "Request duration in seconds.",
+		Name:      "request_duration_seconds",
+		Namespace: "example",
+		Subsystem: "wallet_management",
+	}, []string{"method", "success"})
+	addDefaultEndpointMiddleware(logger, duration, mw)
 	// Add you endpoint middleware here
 
 	return
 }
-// func initMetricsEndpoint(g *group.Group) {
-// 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
-// 	debugListener, err := net.Listen("tcp", *debugAddr)
-// 	if err != nil {
-// 		logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err)
-// 	}
-// 	g.Add(func() error {
-// 		logger.Log("transport", "debug/HTTP", "addr", *debugAddr)
-// 		return http.Serve(debugListener, http.DefaultServeMux)
-// 	}, func(error) {
-// 		debugListener.Close()
-// 	})
-// }
+func initMetricsEndpoint(g *group.Group) {
+	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
+	debugListener, err := net.Listen("tcp", *debugAddr)
+	if err != nil {
+		logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err)
+	}
+	g.Add(func() error {
+		logger.Log("transport", "debug/HTTP", "addr", *debugAddr)
+		return http.Serve(debugListener, http.DefaultServeMux)
+	}, func(error) {
+		debugListener.Close()
+	})
+}
 func initCancelInterrupt(g *group.Group) {
 	cancelInterrupt := make(chan struct{})
 	g.Add(func() error {
