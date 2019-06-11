@@ -1,0 +1,126 @@
+version: '2'
+
+services:
+  # https://gist.github.com/squizr/23239c598179c4a944edbcdf19eab31e
+  cockroach-ui:
+    container_name: 'tk_roach_ui'
+    image: cockroachdb/cockroach
+    command: start --insecure
+    ports:
+      - "8080:8080"
+      - "26257:26257"
+    networks:
+      - tk_net
+    volumes:
+      # https://yeasy.gitbooks.io/docker_practice/compose/compose_file.html#volumes
+      - ./data/roach/roach-ui:/cockroach/cockroach-data
+  roach-one:
+    container_name: 'tk_roach_one'
+    image: cockroachdb/cockroach
+    depends_on:
+      - cockroach-ui
+    command: start --insecure --join=tk_roach_ui
+    networks:
+      - tk_net
+    volumes:
+      - ./data/roach/roach-one:/cockroach/cockroach-data
+  roach-two:
+    container_name: 'tk_roach_two'
+    image: cockroachdb/cockroach
+    depends_on:
+      - cockroach-ui
+    command: start --insecure --join=tk_roach_ui
+    networks:
+      - tk_net
+    volumes:
+      - ./data/roach/roach-two:/cockroach/cockroach-data
+
+  # https://github.com/hashicorp/consul/blob/master/demo/docker-compose-cluster/docker-compose.yml
+  consul-agent-1: &consul-agent
+    image: consul:latest
+    container_name: 'tk_consul_agent_one'
+    networks:
+      - tk_net
+    command: "agent -retry-join consul-server-bootstrap -client 0.0.0.0 -bind 0.0.0.0"
+    volumes:
+      - ./data/consul/consul-agent-one:/consul/data
+
+  consul-agent-2:
+    <<: *consul-agent
+    container_name: 'tk_consul_agent_two'
+    volumes:
+      - ./data/consul/consul-agent-two:/consul/data
+
+  consul-agent-3:
+    <<: *consul-agent
+    container_name: 'tk_consul_agent_three'
+    volumes:
+      - ./data/consul/consul-agent-three:/consul/data
+
+  consul-server-1: &consul-server
+    <<: *consul-agent
+    container_name: 'tk_consul_server_one'
+    command: "agent -server -retry-join consul-server-bootstrap -client 0.0.0.0 -bind 0.0.0.0"
+    volumes:
+      - ./data/consul/consul-server-one:/consul/data
+
+  consul-server-2:
+    <<: *consul-server
+    container_name: 'tk_consul_server_two'
+    volumes:
+      - ./data/consul/consul-server-two:/consul/data
+
+  consul-server-bootstrap:
+    <<: *consul-agent
+    container_name: 'tk_consul_server_bootstrap'
+    ports:
+      - "8400:8400"
+      - "8500:8500"
+      - "8600:8600"
+      - "8600:8600/udp"
+    command: "agent -server -bootstrap-expect 3 -ui -client 0.0.0.0 -bind 0.0.0.0"
+    volumes:
+      - ./data/consul/consul-server-bootstrap:/consul/data
+  vault:
+      container_name: tk_vault
+      image: vault:latest
+      networks:
+        - tk_net
+      links:
+        - consul-server-bootstrap
+        - consul-server-2
+      depends_on:
+        - consul-server-bootstrap
+        - consul-server-2
+      ports:
+        - "8200:8200"
+      volumes:
+        # https://www.vaultproject.io/docs/configuration/storage/consul.html
+        - ./script/vault.hcl:/vault/config/vault.hcl
+        - ./data/vault/policies:/vault/policies
+        - ./data/vault/data:/vault/data
+        - ./data/vault/logs:/vault/logs
+      cap_add:
+        - IPC_LOCK
+      # command: "server -config=/vault/config/vault.hcl"
+      command: "server"
+  redis:
+    container_name: 'tk_redis'
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data/redis:/data
+  db-init:
+    # https://stackoverflow.com/questions/45884185/cockroachdb-docker-compose-script-with-sql-commands
+    container_name: 'tk_db_init'
+    image: cockroachdb/cockroach
+    networks:
+      - tk_net
+    volumes:
+      - ./script/db_setup.sh:/db_setup.sh
+    entrypoint: "/bin/bash"
+    command: /db_setup.sh
+
+networks:
+  tk_net:
