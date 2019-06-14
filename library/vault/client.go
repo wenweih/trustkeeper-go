@@ -12,8 +12,9 @@ var (
 
 // Config vault server info
 type config struct {
-	Address	string	`env:"address"`
-	Token		string	`env:"token"`
+	Address	string	`env:"v_address"`
+	Token		string	`env:"v_token"`
+	Path		string	`env:"v_path"`
 }
 
 // Client vault client
@@ -22,15 +23,16 @@ type Client struct {
 }
 
 // NewVault new vault client
-func NewVault() (*Client, error) {
+func NewVault() (c *Client, path string, err error) {
 	client, err := api.NewClient(&api.Config{
 		Address: cfg.Address,
 	})
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
+
 	client.SetToken(cfg.Token)
-	return &Client{client}, nil
+	return &Client{client},  cfg.Path, nil
 }
 
 func init()  {

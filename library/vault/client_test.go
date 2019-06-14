@@ -6,14 +6,14 @@ import (
 )
 
 func TestNewVault(t *testing.T) {
-  c, e := NewVault()
+  c, _, e := NewVault()
   assert.NotNil(t, c)
   assert.Nil(t, e)
   assert.NotEmpty(t, c.Token())
 }
 
 func TestReadWrite(t *testing.T) {
-  c, _ := NewVault()
+  c, _, _ := NewVault()
   secretData := map[string]interface{}{
     "foo": "bar",
     "age": "-1",
