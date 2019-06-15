@@ -24,7 +24,6 @@ func (h *HealthImpl) Check(ctx context.Context, req *grpc_health_v1.HealthCheckR
 		Status: grpc_health_v1.HealthCheckResponse_SERVING,
 	}, nil
 }
-
 // Watch HealthServer interface 有两个方法
 // Check(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 // Watch(*HealthCheckRequest, Health_WatchServer) error
