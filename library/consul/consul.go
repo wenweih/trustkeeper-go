@@ -41,14 +41,11 @@ func (r *ConsulRegister) NewConsulGRPCRegister() (*consulsd.Registrar, error) {
 		logger = log.With(logger, "caller", log.DefaultCaller)
 	}
 
-  consulConfig := api.DefaultConfig()
-  consulConfig.Address = r.ConsulAddress
-  consulClient, err := api.NewClient(consulConfig)
+  consulClient, err := NewClient(r.ConsulAddress)
   if err != nil {
     return nil, err
   }
   client := consulsd.NewClient(consulClient)
-  // agent := consulClient.Agent()
 
   reg := &api.AgentServiceRegistration{
     ID: fmt.Sprintf("%v-%v-%v", r.ServiceName, r.ServiceIP, r.ServicePort),
@@ -65,10 +62,16 @@ func (r *ConsulRegister) NewConsulGRPCRegister() (*consulsd.Registrar, error) {
       DeregisterCriticalServiceAfter: r.DeregisterCriticalServiceAfter.String(),
     },
   }
-
-  // if err := agent.ServiceRegister(reg); err != nil {
-  //   return err
-  // }
-  // return nil
   return consulsd.NewRegistrar(client, reg, logger), nil
+}
+
+
+func NewClient(consulAddr string) (*api.Client, error) {
+  consulConfig := api.DefaultConfig()
+  consulConfig.Address = consulAddr
+  consulClient, err := api.NewClient(consulConfig)
+  if err != nil {
+    return nil, err
+  }
+  return consulClient, nil
 }
