@@ -14,12 +14,12 @@ type repo struct {
 }
 
 // DB database connect
-func DB(dbInfo string) *gorm.DB {
+func DB(dbInfo string) (*gorm.DB, error) {
   db, err := orm.Connect(dbInfo)
   if err != nil {
-    panic(err.Error())
+    return nil, err
   }
-  return db
+  return db, nil
 }
 
 // New new repo
