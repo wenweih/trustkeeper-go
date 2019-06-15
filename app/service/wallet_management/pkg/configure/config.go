@@ -7,18 +7,17 @@ import (
 )
 
 type Conf struct {
-	DBInfo			string
-	EtcdServer	string
-	Instance 		string
+	DBInfo				string
+	ConsulAddress	string
 }
 
 func New() (*Conf, error) {
-	vc, err := vault.NewVault()
+	vc, path, err := vault.NewVault()
 	if err != nil {
 		return nil, fmt.Errorf("fail to connect vault" + err.Error())
 	}
 	// ListSecret
-	data, err := vc.Logical().Read("kv1/trustkeeter-wallet")
+	data, err := vc.Logical().Read(path)
 	if err != nil {
 		return nil, fmt.Errorf("vaule read error" + err.Error())
 	}
@@ -30,11 +29,9 @@ func New() (*Conf, error) {
 	dbname := strings.Join([]string{"dbname", data.Data["dbname"].(string)}, "=")
 	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
-	etcdServer := data.Data["etcdserver"].(string)
-	instance := data.Data["instance"].(string)
+	consulAddr := data.Data["consuladdress"].(string)
 	return &Conf{
 		DBInfo:			dbInfo,
-		EtcdServer: etcdServer,
-		Instance: instance,
+		ConsulAddress: consulAddr,
 	}, nil
 }
