@@ -23,7 +23,7 @@ func MakeCreateChainEndpoint(s service.WalletManagementService) endpoint.Endpoin
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateChainRequest)
 		err := s.CreateChain(ctx, req.Symbol, req.Bit44ID, req.Status)
-		return CreateChainResponse{Err: err}, nil
+		return CreateChainResponse{Err: err}, err
 	}
 }
 
@@ -40,15 +40,14 @@ type Failure interface {
 }
 
 // CreateChain implements Service. Primarily useful in a client.
-func (e Endpoints) CreateChain(ctx context.Context, symbol string, bit44ID string, status bool) (err error) {
+func (e Endpoints) CreateChain(ctx context.Context, symbol string, bit44ID string, status bool) error {
 	request := CreateChainRequest{
 		Bit44ID: bit44ID,
 		Status:  status,
 		Symbol:  symbol,
 	}
-	response, err := e.CreateChainEndpoint(ctx, request)
-	if err != nil {
-		return
+	if _, err := e.CreateChainEndpoint(ctx, request); err != nil {
+		return err
 	}
-	return response.(CreateChainResponse).Err
+	return nil
 }

@@ -2,7 +2,6 @@ package grpc
 
 import (
 	"context"
-	"errors"
 	grpc "github.com/go-kit/kit/transport/grpc"
 	context1 "golang.org/x/net/context"
 	endpoint "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
@@ -16,17 +15,21 @@ func makeCreateChainHandler(endpoints endpoint.Endpoints, options []grpc.ServerO
 
 // decodeCreateChainResponse is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC request to a user-domain CreateChain request.
-// TODO implement the decoder
 func decodeCreateChainRequest(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'WalletManagement' Decoder is not impelemented")
+	req := r.(*pb.CreateChainRequest)
+	return endpoint.CreateChainRequest{Symbol: req.Symbol, Bit44ID: req.Bitid, Status: req.Status}, nil
 }
 
 // encodeCreateChainResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeCreateChainResponse(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'WalletManagement' Encoder is not impelemented")
+	resp := r.(endpoint.CreateChainResponse)
+	if resp.Err != nil {
+		return &pb.CreateChainReply{Result: false}, resp.Err
+	}
+	return &pb.CreateChainReply{Result: true}, nil
 }
+
 func (g *grpcServer) CreateChain(ctx context1.Context, req *pb.CreateChainRequest) (*pb.CreateChainReply, error) {
 	_, rep, err := g.createChain.ServeGRPC(ctx, req)
 	if err != nil {
