@@ -7,21 +7,23 @@ import (
 )
 
 type Conf struct {
-	DBInfo			string
-	Redis				string
-	EtcdServer	string
-	Instance 		string
+	ConsulAddress string
+	DBInfo        string
+	Redis         string
 }
 
 func New() (*Conf, error) {
-	vc, err := vault.NewVault()
+	vc, path, err := vault.NewVault()
 	if err != nil {
 		return nil, fmt.Errorf("fail to connect vault" + err.Error())
 	}
-	// ListSecret
-	data, err := vc.Logical().Read("kv1/trustkeeper-dashboard")
+	data, err := vc.Logical().Read(path)
 	if err != nil {
-		return nil, fmt.Errorf("vaule read error" + err.Error())
+		return nil, fmt.Errorf("vaule read error: " + err.Error())
+	}
+
+	if data == nil {
+		return nil, fmt.Errorf("vault data nil")
 	}
 
 	host := strings.Join([]string{"host", data.Data["host"].(string)}, "=")
@@ -31,13 +33,11 @@ func New() (*Conf, error) {
 	dbname := strings.Join([]string{"dbname", data.Data["dbname"].(string)}, "=")
 	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
-	etcdServer := data.Data["etcdserver"].(string)
-	instance := data.Data["dashboardinstance"].(string)
+	consuladdr := data.Data["consuladdr"].(string)
 	redis := data.Data["redis"].(string)
 	return &Conf{
-		DBInfo:			dbInfo,
-		EtcdServer: etcdServer,
-		Instance: instance,
+		DBInfo:  dbInfo,
+		ConsulAddress: consuladdr,
 		Redis: redis,
 	}, nil
 }

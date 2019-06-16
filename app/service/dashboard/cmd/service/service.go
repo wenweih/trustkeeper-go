@@ -97,33 +97,17 @@ func Run() {
 	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
+	initJobs(g)
 	initMetricsEndpoint(g)
-
-	jobSvc := service.NewJobsService(conf)
-	initJobs(g, jobSvc)
 	initCancelInterrupt(g)
 	logger.Log("exit", g.Run())
-
-}
-
-func initJobs(g *group.Group, jobSrv service.JobService) {
-	workPool := jobs.New(conf.Redis, jobSrv)
-	signalChan := make(chan os.Signal, 1)
-	g.Add(func() error {
-		workPool.Start()
-		signal.Notify(signalChan, os.Interrupt, os.Kill)
-		return nil
-	}, func(err error) {
-		<-signalChan
-		workPool.Stop()
-	})
 }
 
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options := defaultGRPCOptions(logger, tracer)
 	// Add your GRPC options here
-
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
+
 	grpcListener, err := net.Listen("tcp", common.LocalIP() + ":0")
 	if err != nil {
 		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
@@ -147,7 +131,29 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 		register.Deregister()
 		grpcListener.Close()
 	})
+}
 
+func initJobs(g *group.Group) {
+	jobSvc, err := service.NewJobsService(conf)
+	if err != nil {
+		logger.Log("init job service error: ", err.Error())
+		os.Exit(1)
+	}
+	workPool := jobs.New(conf.Redis, jobSvc)
+	cancelInterrupt := make(chan struct{})
+	g.Add(func() error {
+		c := make(chan os.Signal, 1)
+		workPool.Start()
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		select {
+		case sig := <-c:
+			return fmt.Errorf("received signal %s", sig)
+		case <- cancelInterrupt:
+			return nil
+		}
+	}, func(err error) {
+		workPool.Stop()
+	})
 }
 
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
