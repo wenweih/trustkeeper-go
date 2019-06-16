@@ -84,7 +84,8 @@ func Run() {
 
 	c, err := configure.New()
 	if err != nil {
-		logger.Log(err)
+		logger.Log("configure err: ", err.Error())
+		os.Exit(1)
 	}
 	conf = *c
 
@@ -119,11 +120,11 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 		logger.Log("transport", "gRPC", "addr", grpcListener.Addr().String())
 		baseServer := grpc1.NewServer()
 		pb.RegisterWalletManagementServer(baseServer, grpcServer)
-		grpc_health_v1.RegisterHealthServer(baseServer, &service.HealthImpl{})
+		grpc_health_v1.RegisterHealthServer(baseServer, &consul.HealthImpl{})
 		register.Register()
 		return baseServer.Serve(grpcListener)
 	}, func(error) {
-		register.Register()
+		register.Deregister()
 		grpcListener.Close()
 	})
 }
