@@ -1,18 +1,16 @@
 package service
 
 import (
-	// "fmt"
-	"log"
+	"fmt"
 	"context"
 	"trustkeeper-go/app/service/dashboard/pkg/configure"
 	"trustkeeper-go/app/service/dashboard/pkg/repository"
 	"trustkeeper-go/app/service/dashboard/pkg/model"
-	walletKeyGrpcClient "trustkeeper-go/app/service/wallet_key/client/grpc"
+	// walletKeyGrpcClient "trustkeeper-go/app/service/wallet_key/client/grpc"
 	walletKeyService "trustkeeper-go/app/service/wallet_key/pkg/service"
-	sdetcd "github.com/go-kit/kit/sd/etcdv3"
-	"google.golang.org/grpc"
-	"trustkeeper-go/library/common"
-	grpctransport "github.com/go-kit/kit/transport/grpc"
+	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
+	walletManagementGrpcClient "trustkeeper-go/app/service/wallet_management/client"
+	log "github.com/go-kit/kit/log"
 )
 
 type Group struct {
@@ -27,7 +25,9 @@ type DashboardService interface {
 
 type basicDashboardService struct {
 	biz				repository.IBiz
-	walletSrv	walletKeyService.WalletKeyService
+	KeySrv	walletKeyService.WalletKeyService
+	WalletSrv walletManagementService.WalletManagementService
+
 }
 
 func (b *basicDashboardService) GetGroups(ctx context.Context, uuid string) (groups []*Group, err error) {
@@ -44,50 +44,44 @@ func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, de
 }
 
 // NewBasicDashboardService returns a naive, stateless implementation of DashboardService.
-func NewBasicDashboardService(conf configure.Conf) *basicDashboardService {
-	client, err := sdetcd.NewClient(context.Background(), []string{conf.EtcdServer}, sdetcd.ClientOptions{})
+func NewBasicDashboardService(conf configure.Conf, logger log.Logger) (*basicDashboardService, error) {
+	db, err := repository.DB(conf.DBInfo)
 	if err != nil {
-		log.Printf("unable to connect to etcd: %s", err.Error())
-		log.Fatalln(err.Error())
-		return new(basicDashboardService)
+		return nil, err
 	}
-	walletKeyEntries, err := client.GetEntries(common.WalletKeySrv)
+	wmClient, err := walletManagementGrpcClient.New(conf.ConsulAddress, logger)
 	if err != nil {
-		log.Printf("unable to get prefix entries: %s", err.Error())
-		return new(basicDashboardService)
-	}
-	if len(walletKeyEntries) == 0 {
-		log.Printf("entries not eixst")
-		return new(basicDashboardService)
-	}
-	walletKeySrvconn, err := grpc.Dial(walletKeyEntries[0], grpc.WithInsecure())
-	if err != nil {
-		log.Printf("unable to connect to : %s", err.Error())
-	}
-	walletKeyServiceClient, err := walletKeyGrpcClient.New(walletKeySrvconn, []grpctransport.ClientOption{})
-	if err != nil {
-		log.Println(err.Error())
+		return nil, fmt.Errorf("walletManagementGrpcClient: %s", err.Error())
 	}
 
-	db := repository.DB(conf.DBInfo)
 
 	bas := basicDashboardService{
 		biz: repository.New(db),
-		walletSrv: walletKeyServiceClient,
+		// walletSrv: walletKeyServiceClient,
+		WalletSrv: wmClient,
 	}
-	return &bas
+	return &bas, nil
 }
 
 // New returns a DashboardService with all of the expected middleware wired in.
-func New(conf configure.Conf, middleware []Middleware) DashboardService {
-	var svc DashboardService = NewBasicDashboardService(conf)
+func New(conf configure.Conf, logger log.Logger, middleware []Middleware) (DashboardService, error ){
+	bs, err := NewBasicDashboardService(conf, logger)
+	if err != nil {
+		return nil, err
+	}
+
+	var svc DashboardService = bs
 	for _, m := range middleware {
 		svc = m(svc)
 	}
-	return svc
+	return svc, nil
 }
 
-func NewJobsService(conf configure.Conf) JobService {
-	var svc JobService = NewBasicDashboardService(conf)
-	return svc
+func NewJobsService(conf configure.Conf, logger log.Logger) (JobService, error) {
+	bs, err := NewBasicDashboardService(conf, logger)
+	if err != nil {
+		return nil, err
+	}
+	var svc JobService = bs
+	return svc, nil
 }

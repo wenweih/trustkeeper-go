@@ -90,14 +90,14 @@ func Run() {
 	}
 	conf = *c
 
-	svc, err := service.New(conf, getServiceMiddleware(logger))
+	svc, err := service.New(conf, logger, getServiceMiddleware(logger))
 	if err != nil {
 		logger.Log("new service error: ",  err.Error())
 		os.Exit(1)
 	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
-	initJobs(g)
+	initJobs(logger, g)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
 	logger.Log("exit", g.Run())
@@ -133,8 +133,8 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	})
 }
 
-func initJobs(g *group.Group) {
-	jobSvc, err := service.NewJobsService(conf)
+func initJobs(logger log.Logger, g *group.Group) {
+	jobSvc, err := service.NewJobsService(conf, logger)
 	if err != nil {
 		logger.Log("init job service error: ", err.Error())
 		os.Exit(1)

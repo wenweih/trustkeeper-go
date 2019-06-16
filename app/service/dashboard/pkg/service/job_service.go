@@ -11,7 +11,7 @@ type JobService interface {
 
 func (b *basicDashboardService) Signup(ctx context.Context, uuid, email, orgName string) error {
   // TODO wallet_key service generate xpub
-  xpub, err := b.walletSrv.GenerateMnemonic(ctx, uuid)
+  xpub, err := b.KeySrv.GenerateMnemonic(ctx, uuid)
   if err != nil {
     return err
   }
