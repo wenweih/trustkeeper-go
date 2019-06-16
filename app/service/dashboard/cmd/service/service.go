@@ -14,7 +14,6 @@ import (
 	grpc "trustkeeper-go/app/service/dashboard/pkg/grpc"
 	pb "trustkeeper-go/app/service/dashboard/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/dashboard/pkg/service"
-	"trustkeeper-go/library/etcd"
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
@@ -29,6 +28,8 @@ import (
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
 	"trustkeeper-go/library/common"
+	"trustkeeper-go/library/consul"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 var (
@@ -40,15 +41,6 @@ var (
 // Define our flags. Your service probably won't need to bind listeners for
 // all* supported transports, but we do it here for demonstration purposes.
 var fs = flag.NewFlagSet("dashboard", flag.ExitOnError)
-var debugAddr = fs.String("debug.addr", ":8080", "Debug and metrics listen address")
-
-// var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
-var grpcAddr = fs.String("grpc-addr", ":9999", "gRPC listen address")
-
-// var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
-// var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
-// var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
-// var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
 var zipkinURL = fs.String("zipkin-url", "", "Enable Zipkin tracing via a collector URL e.g. http://localhost:9411/api/v1/spans")
 var lightstepToken = fs.String("lightstep-token", "", "Enable LightStep tracing via a LightStep access token")
 var appdashAddr = fs.String("appdash-addr", "", "Enable Appdash tracing via an Appdash server host:port")
@@ -93,11 +85,16 @@ func Run() {
 
 	c, err := configure.New()
 	if err != nil {
-		logger.Log(err)
+		logger.Log("err: ", err.Error())
+		os.Exit(1)
 	}
 	conf = *c
 
-	svc := service.New(conf, getServiceMiddleware(logger))
+	svc, err := service.New(conf, getServiceMiddleware(logger))
+	if err != nil {
+		logger.Log("new service error: ",  err.Error())
+		os.Exit(1)
+	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initMetricsEndpoint(g)
@@ -105,12 +102,6 @@ func Run() {
 	jobSvc := service.NewJobsService(conf)
 	initJobs(g, jobSvc)
 	initCancelInterrupt(g)
-	registrar, err := etcd.RegisterService(conf.EtcdServer, common.DashboardSrv, conf.Instance, logger)
-	if err != nil {
-		logger.Log("dashboard srv registrar error: ", err.Error())
-		return
-	}
-	defer registrar.Deregister()
 	logger.Log("exit", g.Run())
 
 }
@@ -133,20 +124,32 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	// Add your GRPC options here
 
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
-	grpcListener, err := net.Listen("tcp", *grpcAddr)
+	grpcListener, err := net.Listen("tcp", common.LocalIP() + ":0")
 	if err != nil {
 		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
+		os.Exit(1)
+	}
+	port := grpcListener.Addr().(*net.TCPAddr).Port
+	consulReg := consul.NewConsulRegister(conf.ConsulAddress, common.DashboardSrv, common.LocalIP(), port, []string{"dashboard"})
+	register, err := consulReg.NewConsulGRPCRegister()
+	if err != nil {
+		logger.Log("Get consul grpc register error: ", err.Error())
+		os.Exit(1)
 	}
 	g.Add(func() error {
-		logger.Log("transport", "gRPC", "addr", *grpcAddr)
+		logger.Log("transport", "gRPC", "addr", grpcListener.Addr().String())
 		baseServer := grpc1.NewServer()
 		pb.RegisterDashboardServer(baseServer, grpcServer)
+		grpc_health_v1.RegisterHealthServer(baseServer, &consul.HealthImpl{})
+		register.Register()
 		return baseServer.Serve(grpcListener)
 	}, func(error) {
+		register.Deregister()
 		grpcListener.Close()
 	})
 
 }
+
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
 	mw = addDefaultServiceMiddleware(logger, mw)
@@ -154,6 +157,7 @@ func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 
 	return
 }
+
 func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middleware) {
 	mw = map[string][]endpoint1.Middleware{}
 	duration := prometheus.NewSummaryFrom(prometheus1.SummaryOpts{
@@ -167,19 +171,21 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 
 	return
 }
+
 func initMetricsEndpoint(g *group.Group) {
 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
-	debugListener, err := net.Listen("tcp", *debugAddr)
+	debugListener, err := net.Listen("tcp", "[::1]:0")
 	if err != nil {
 		logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err)
 	}
 	g.Add(func() error {
-		logger.Log("transport", "debug/HTTP", "addr", *debugAddr)
+		logger.Log("transport", "debug/HTTP", "addr", debugListener.Addr().String())
 		return http.Serve(debugListener, http.DefaultServeMux)
 	}, func(error) {
 		debugListener.Close()
 	})
 }
+
 func initCancelInterrupt(g *group.Group) {
 	cancelInterrupt := make(chan struct{})
 	g.Add(func() error {
