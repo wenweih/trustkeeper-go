@@ -13,7 +13,6 @@ import (
 	grpc "trustkeeper-go/app/service/account/pkg/grpc"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/account/pkg/service"
-	"trustkeeper-go/library/etcd"
 
 	stdjwt "github.com/go-kit/kit/auth/jwt"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
@@ -31,6 +30,8 @@ import (
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
 	"trustkeeper-go/library/common"
+	"trustkeeper-go/library/consul"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 var (
@@ -42,10 +43,6 @@ var (
 // Define our flags. Your service probably won't need to bind listeners for
 // all* supported transports, but we do it here for demonstration purposes.
 var fs = flag.NewFlagSet("account", flag.ExitOnError)
-var debugAddr = fs.String("debug.addr", ":7777", "Debug and metrics listen address")
-var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
-var grpcAddr = fs.String("grpc-addr", ":8082", "gRPC listen address")
-
 // var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
 // var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
 // var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
@@ -102,12 +99,6 @@ func Run() {
 	g := createService(eps)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
-	registrar, err := etcd.RegisterService(conf.EtcdServer, common.AccountSrv, conf.AccountInstance, logger)
-	if err != nil {
-		logger.Log(err.Error())
-		return
-	}
-	defer registrar.Deregister()
 	logger.Log("exit", g.Run())
 }
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
@@ -119,16 +110,27 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options["Auth"] = append(options["Auth"], grpctransport.ServerBefore(stdjwt.GRPCToContext()))
 
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
-	grpcListener, err := net.Listen("tcp", *grpcAddr)
+	grpcListener, err := net.Listen("tcp", common.LocalIP() + ":0")
 	if err != nil {
 		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
+		os.Exit(1)
+	}
+	port := grpcListener.Addr().(*net.TCPAddr).Port
+	consulReg := consul.NewConsulRegister(conf.ConsulAddress, common.AccountSrv, common.LocalIP(), port, []string{"account"})
+	register, err := consulReg.NewConsulGRPCRegister()
+	if err != nil {
+		logger.Log("Get consul grpc register error: ", err.Error())
+		os.Exit(1)
 	}
 	g.Add(func() error {
-		logger.Log("transport", "gRPC", "addr", *grpcAddr)
+		logger.Log("transport", "gRPC", "addr", grpcListener.Addr().String())
 		baseServer := grpc1.NewServer()
 		pb.RegisterAccountServer(baseServer, grpcServer)
+		grpc_health_v1.RegisterHealthServer(baseServer, &consul.HealthImpl{})
+		register.Register()
 		return baseServer.Serve(grpcListener)
 	}, func(error) {
+		register.Deregister()
 		grpcListener.Close()
 	})
 
@@ -158,12 +160,12 @@ func getEndpointMiddleware(logger log.Logger, s service.AccountService) (mw map[
 }
 func initMetricsEndpoint(g *group.Group) {
 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
-	debugListener, err := net.Listen("tcp", *debugAddr)
+	debugListener, err := net.Listen("tcp", "[::1]:0")
 	if err != nil {
 		logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err)
 	}
 	g.Add(func() error {
-		logger.Log("transport", "debug/HTTP", "addr", *debugAddr)
+		logger.Log("transport", "debug/HTTP", "addr", debugListener.Addr().String())
 		return http.Serve(debugListener, http.DefaultServeMux)
 	}, func(error) {
 		debugListener.Close()

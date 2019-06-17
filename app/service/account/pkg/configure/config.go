@@ -10,17 +10,16 @@ type Conf struct {
 	Redis				string
 	DBInfo			string
 	JWTKey 			string
-	EtcdServer	string
-	AccountInstance string
+	ConsulAddress string
 }
 
 func New() (*Conf, error) {
-	vc, err := vault.NewVault()
+	vc, path, err := vault.NewVault()
 	if err != nil {
 		return nil, fmt.Errorf("fail to connect vault" + err.Error())
 	}
 	// ListSecret
-	data, err := vc.Logical().Read("kv1/db_trustkeeper_account")
+	data, err := vc.Logical().Read(path)
 	if err != nil {
 		return nil, fmt.Errorf("vaule read error" + err.Error())
 	}
@@ -33,14 +32,12 @@ func New() (*Conf, error) {
 	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
 	jwtkey := data.Data["jwtkey"].(string)
-	etcdServer := data.Data["etcdserver"].(string)
-	accountInstance := data.Data["accountinstance"].(string)
 	redis := data.Data["redis"].(string)
+	consuladdr := data.Data["consuladdr"].(string)
 	return &Conf{
 		Redis: redis,
 		DBInfo:			dbInfo,
 		JWTKey: 		jwtkey,
-		EtcdServer: etcdServer,
-		AccountInstance: accountInstance,
+		ConsulAddress: consuladdr,
 	}, nil
 }
