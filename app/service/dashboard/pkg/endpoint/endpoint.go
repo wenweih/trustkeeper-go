@@ -47,9 +47,9 @@ func (e Endpoints) GetGroups(ctx context.Context, uuid string) (groups []*servic
 	request := GetGroupsRequest{Uuid: uuid}
 	response, err := e.GetGroupsEndpoint(ctx, request)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return response.(GetGroupsResponse).Groups, response.(GetGroupsResponse).Err
+	return response.(GetGroupsResponse).Groups, nil
 }
 
 // CreateGroupRequest collects the request parameters for the CreateGroup method.

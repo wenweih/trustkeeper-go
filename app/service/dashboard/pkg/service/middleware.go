@@ -24,7 +24,7 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 func (l loggingMiddleware) GetGroups(ctx context.Context, uuid string) (groups []*Group, err error) {
 	defer func() {
-		l.logger.Log("method", "GetGroups", "uuid", uuid, "groups", groups, "err", err)
+		l.logger.Log("method", "GetGroups", "uuid", uuid, "err", err)
 	}()
 	return l.next.GetGroups(ctx, uuid)
 }

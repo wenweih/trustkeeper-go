@@ -29,7 +29,7 @@ func New() (*Conf, error) {
 	dbname := strings.Join([]string{"dbname", data.Data["dbname"].(string)}, "=")
 	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
-	consulAddr := data.Data["consuladdress"].(string)
+	consulAddr := data.Data["consuladdr"].(string)
 	return &Conf{
 		DBInfo:			dbInfo,
 		ConsulAddress: consulAddr,
