@@ -86,7 +86,11 @@ func Run() {
 		tracer = opentracinggo.GlobalTracer()
 	}
 
-	svc := service.New(getServiceMiddleware(logger))
+	svc, err := service.New(logger, getServiceMiddleware(logger))
+	if err != nil {
+		logger.Log("err: ", err.Error())
+		os.Exit(1)
+	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initMetricsEndpoint(g)

@@ -1,23 +1,19 @@
 package service
 
 import (
+	"fmt"
 	"errors"
 	"strings"
 	"context"
-	"log"
 	"regexp"
 	accountService "trustkeeper-go/app/service/account/pkg/service"
 	dashboardService "trustkeeper-go/app/service/dashboard/pkg/service"
 
-	stdjwt "github.com/go-kit/kit/auth/jwt"
-	sdetcd "github.com/go-kit/kit/sd/etcdv3"
-	grpctransport "github.com/go-kit/kit/transport/grpc"
-	"google.golang.org/grpc"
+	log "github.com/go-kit/kit/log"
 
-	accountGrpcClient "trustkeeper-go/app/service/account/client/grpc"
-	dashboardGrpcClient "trustkeeper-go/app/service/dashboard/client/grpc"
+	accountGrpcClient "trustkeeper-go/app/service/account/client"
+	dashboardGrpcClient "trustkeeper-go/app/service/dashboard/client"
 	"github.com/caarlos0/env"
-	"trustkeeper-go/library/common"
 )
 
 // WebapiService describes the service.
@@ -37,8 +33,8 @@ type Credentials struct {
 }
 
 type basicWebapiService struct {
-	accountServices		accountService.AccountService
-	dashboardServices	dashboardService.DashboardService
+	accountSrv accountService.AccountService
+	dashboardSrv dashboardService.DashboardService
 }
 
 func makeError(ctx context.Context, err error) error {
@@ -54,11 +50,11 @@ func makeError(ctx context.Context, err error) error {
 }
 
 func (b *basicWebapiService) auth(ctx context.Context) (uuid string, err error) {
-	return b.accountServices.Auth(ctx)
+	return b.accountSrv.Auth(ctx)
 }
 
 func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (bool, error) {
-	if _, err := b.accountServices.Create(ctx,
+	if _, err := b.accountSrv.Create(ctx,
 		user.Email,
 		user.Password,
 		user.OrgName); err != nil {
@@ -69,18 +65,18 @@ func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (bool
 }
 
 func (b *basicWebapiService) Signin(ctx context.Context, user Credentials) (token string, err error) {
-	token, err = b.accountServices.Signin(ctx, user.Email, user.Password)
+	token, err = b.accountSrv.Signin(ctx, user.Email, user.Password)
 	return
 }
 func (b *basicWebapiService) Signout(ctx context.Context) (result bool, err error) {
-	if err := b.accountServices.Signout(ctx); err != nil {
+	if err := b.accountSrv.Signout(ctx); err != nil {
 		return false, err
 	}
 	return true, nil
 }
 
 func (b *basicWebapiService) GetRoles(ctx context.Context) (s0 []string, e1 error) {
-	roles, err := b.accountServices.Roles(ctx)
+	roles, err := b.accountSrv.Roles(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -93,70 +89,40 @@ func (b *basicWebapiService) GetGroups(ctx context.Context, uuid string) (groups
 }
 
 // NewBasicWebapiService returns a naive, stateless implementation of WebapiService.
-func NewBasicWebapiService() WebapiService {
+func NewBasicWebapiService(logger log.Logger) (WebapiService, error) {
 	type config struct {
-		Etcdsrv	string	`env:"etcdsrv"`
+		ConsulAddr string `end:"consuladdr"`
 	}
 	cfg := config{}
 	if err := env.Parse(&cfg); err != nil {
-		log.Fatalln("fail to parse env: ", err.Error())
-	}
-	client, err := sdetcd.NewClient(context.Background(), []string{cfg.Etcdsrv}, sdetcd.ClientOptions{})
-	if err != nil {
-		log.Printf("unable to connect to etcd: %s", err.Error())
-		log.Fatalln(err.Error())
-		return new(basicWebapiService)
-	}
-	AccountEntries, err := client.GetEntries(common.AccountSrv)
-	if err != nil {
-		log.Printf("unable to get prefix entries: %s", err.Error())
-		return new(basicWebapiService)
-	}
-	if len(AccountEntries) == 0 {
-		log.Printf("entries not eixst")
-		return new(basicWebapiService)
-	}
-	accountSrvConn, err := grpc.Dial(AccountEntries[0], grpc.WithInsecure())
-	if err != nil {
-		log.Printf("unable to connect to : %s", err.Error())
-	}
-	// 把带有 jwt token 的上下文设置到 grpc 请求的上下文中
-	// https://github.com/go-kit/kit/blob/master/auth/jwt/README.md ContextToGRPC
-	accountServiceclient, err := accountGrpcClient.New(accountSrvConn, []grpctransport.ClientOption{(grpctransport.ClientBefore(stdjwt.ContextToGRPC()))})
-	if err != nil {
-		log.Println(err.Error())
+		return nil, errors.New("fail to parse env: " + err.Error())
 	}
 
+	accountClient, err := accountGrpcClient.New(cfg.ConsulAddr, logger)
+	if err != nil {
+		return nil, fmt.Errorf("accountGrpcClient: %s", err.Error())
+	}
 
-	DashboardEntries, err := client.GetEntries(common.DashboardSrv)
+	dashboardClient, err := dashboardGrpcClient.New(cfg.ConsulAddr, logger)
 	if err != nil {
-		log.Printf("unable to get prefix entries: %s", err.Error())
-		return new(basicWebapiService)
-	}
-	if len(DashboardEntries) == 0 {
-		log.Printf("entries not eixst")
-		return new(basicWebapiService)
-	}
-	dashboardSrvconn, err := grpc.Dial(DashboardEntries[0], grpc.WithInsecure())
-	if err != nil {
-		log.Printf("unable to connect to : %s", err.Error())
-	}
-	dashboardServiceClient, err := dashboardGrpcClient.New(dashboardSrvconn, []grpctransport.ClientOption{})
-	if err != nil {
-		log.Println(err.Error())
+		return nil, fmt.Errorf("dashboardGrpcClient: %s", err.Error())
 	}
 
 	return &basicWebapiService{
-		accountServices: accountServiceclient,
-		dashboardServices: dashboardServiceClient,
-	}
+		accountSrv: accountClient,
+		dashboardSrv: dashboardClient,
+	}, nil
 }
 
 // New returns a WebapiService with all of the expected middleware wired in.
-func New(middleware []Middleware) WebapiService {
-	var svc WebapiService = NewBasicWebapiService()
+func New(logger log.Logger, middleware []Middleware) (WebapiService, error) {
+	service, err := NewBasicWebapiService(logger)
+	if err != nil {
+		return nil, err
+	}
+	var svc WebapiService = service
 	for _, m := range middleware {
 		svc = m(svc)
 	}
-	return svc
+	return svc, nil
 }
