@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-
+	"strings"
 	log "github.com/go-kit/kit/log"
 )
 
@@ -42,7 +42,7 @@ func (l loggingMiddleware) Signout(ctx context.Context) (e0 error) {
 
 func (l loggingMiddleware) Roles(ctx context.Context) (s0 []string, e1 error) {
 	defer func() {
-		l.logger.Log("method", "Roles", "s0", s0, "e1", e1)
+		l.logger.Log("method", "Roles", "s0", strings.Join(s0, " "), "e1", e1)
 	}()
 	return l.next.Roles(ctx)
 }

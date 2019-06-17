@@ -59,7 +59,7 @@ func (e Endpoints) Create(ctx context.Context, email, password, orgName string) 
 	if err != nil {
 		return "", err
 	}
-	return resp.(*CreateResponse).UUID, nil
+	return resp.(CreateResponse).UUID, nil
 }
 
 // SignRequest collects the request parameters for the Sign method.
@@ -107,7 +107,7 @@ func (e Endpoints) Signin(ctx context.Context, email string, password string) (s
 	if err != nil {
 		return "", err
 	}
-	return response.(*SigninResponse).S0, response.(*SigninResponse).E1
+	return response.(SigninResponse).S0, nil
 }
 
 // SignoutRequest collects the request parameters for the Signout method.
@@ -174,7 +174,7 @@ func (e Endpoints) Roles(ctx context.Context) (s0 []string, e1 error) {
 	if err != nil {
 		return nil, err
 	}
-	return response.(*RolesResponse).S0, nil
+	return response.(RolesResponse).S0, nil
 }
 
 // AuthRequest collects the request parameters for the Auth method.

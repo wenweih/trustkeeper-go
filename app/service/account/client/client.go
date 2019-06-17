@@ -10,6 +10,7 @@ import (
   "github.com/go-kit/kit/endpoint"
 
   sdconsul "github.com/go-kit/kit/sd/consul"
+  stdjwt "github.com/go-kit/kit/auth/jwt"
   "github.com/go-kit/kit/sd/lb"
   "github.com/go-kit/kit/sd"
   "google.golang.org/grpc"
@@ -85,7 +86,8 @@ func factoryFor(makeEndpoint func(service.AccountService) endpoint.Endpoint) sd.
       return nil, nil, err
     }
 
-    srv, err := newGRPCClient(conn, []grpctransport.ClientOption{})
+    // https://github.com/go-kit/kit/blob/master/auth/jwt/README.md ContextToGRPC
+    srv, err := newGRPCClient(conn, []grpctransport.ClientOption{(grpctransport.ClientBefore(stdjwt.ContextToGRPC()))})
 		if err != nil {
 			return nil, nil, err
 		}

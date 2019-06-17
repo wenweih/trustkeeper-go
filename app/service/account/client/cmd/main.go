@@ -3,9 +3,12 @@ package main
 import (
   "os"
   "context"
+  "strings"
   log "github.com/go-kit/kit/log"
   "github.com/caarlos0/env"
   "trustkeeper-go/app/service/account/client"
+  "github.com/Pallinder/go-randomdata"
+  stdjwt "github.com/go-kit/kit/auth/jwt"
 )
 
 type config struct {
@@ -27,9 +30,9 @@ func main()  {
     os.Exit(1)
   }
 
-  email := "mr.huangwenwei@gmail.com"
+  email := randomdata.Email()
   password := "111111"
-  orgName := "test"
+  orgName := randomdata.SillyName()
 
   s, err := client.New(cfg.ConsulAddr, logger)
   if err != nil {
@@ -46,6 +49,20 @@ func main()  {
     logger.Log("Signin error: ", err.Error())
   }
 
-  logger.Log("uuid: ", uuid, " token: ", token)
+  roles, err := s.Roles(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token))
+  if err != nil {
+    logger.Log("Roles error: ", err.Error())
+  }
+
+  authUUID, err := s.Auth(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token))
+  if err != nil {
+    logger.Log("Auth error: ", err.Error())
+  }
+
+  if err := s.Signout(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token)); err != nil {
+    logger.Log("Signout error: ", err.Error())
+  }
+
+  logger.Log("uuid:", uuid, " token:", token, " roles:", strings.Join(roles," "), " authUUID:", authUUID)
 
 }

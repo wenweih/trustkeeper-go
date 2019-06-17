@@ -123,9 +123,9 @@ func decodeRolesResponse(_ context.Context, reply interface{}) (interface{}, err
   r, ok := reply.(*pb.RolesReply)
   if !ok {
     e := errors.New("'Account' Decoder is not impelemented")
-    return &endpoint1.RolesResponse{E1: e}, e
+    return endpoint1.RolesResponse{E1: e}, e
   }
-  return &endpoint1.RolesResponse{S0: r.Roles}, nil
+  return endpoint1.RolesResponse{S0: r.Roles}, nil
 }
 
 // encodeAuthRequest is a transport/grpc.EncodeRequestFunc that converts a
@@ -140,7 +140,7 @@ func decodeAuthResponse(_ context.Context, reply interface{}) (interface{}, erro
   r, ok := reply.(*pb.AuthReply)
   if !ok {
     e := errors.New("'AuthReply' Decoder is not impelemented")
-    return &endpoint1.AuthResponse{Err: e}, e
+    return endpoint1.AuthResponse{Err: e}, e
   }
-  return &endpoint1.AuthResponse{Uuid: r.Uuid}, nil
+  return endpoint1.AuthResponse{Uuid: r.Uuid}, nil
 }
