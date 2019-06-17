@@ -1,17 +1,62 @@
-package grpc
+package client
 
 import (
+	grpc1 "github.com/go-kit/kit/transport/grpc"
+	endpoint "github.com/go-kit/kit/endpoint"
+	grpc "google.golang.org/grpc"
+	endpoint1 "trustkeeper-go/app/service/account/pkg/endpoint"
+	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
+	service "trustkeeper-go/app/service/account/pkg/service"
+
   "fmt"
   "context"
   "errors"
-  pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
-  "trustkeeper-go/app/service/account/pkg/endpoint"
 )
+
+// New returns an AddService backed by a gRPC server at the other end
+//  of the conn. The caller is responsible for constructing the conn, and
+// eventually closing the underlying transport. We bake-in certain middlewares,
+// implementing the client library pattern.
+// 查阅 https://github.com/kujtimiihoxha/kit#generate-the-client-library
+func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service.AccountService, error) {
+	var createEndpoint endpoint.Endpoint
+	{
+		createEndpoint = grpc1.NewClient(conn, "pb.Account", "Create", encodeCreateRequest, decodeCreateResponse, pb.CreateReply{}, options...).Endpoint()
+	}
+
+	var signinEndpoint endpoint.Endpoint
+	{
+		signinEndpoint = grpc1.NewClient(conn, "pb.Account", "Signin", encodeSigninRequest, decodeSigninResponse, pb.SigninReply{}, options...).Endpoint()
+	}
+
+	var signoutEndpoint endpoint.Endpoint
+	{
+		signoutEndpoint = grpc1.NewClient(conn, "pb.Account", "Signout", encodeSignoutRequest, decodeSignoutResponse, pb.SignoutReply{}, options...).Endpoint()
+	}
+
+	var rolesEndpoint endpoint.Endpoint
+	{
+		rolesEndpoint = grpc1.NewClient(conn, "pb.Account", "Roles", encodeRolesRequest, decodeRolesResponse, pb.RolesReply{}, options...).Endpoint()
+	}
+
+	var authEndpoint endpoint.Endpoint
+	{
+		authEndpoint = grpc1.NewClient(conn, "pb.Account", "Auth", encodeAuthRequest, decodeAuthResponse, pb.AuthReply{}, options...).Endpoint()
+	}
+
+	return endpoint1.Endpoints{
+		AuthEndpoint:    authEndpoint,
+		CreateEndpoint:        createEndpoint,
+		RolesEndpoint:         rolesEndpoint,
+		SigninEndpoint:        signinEndpoint,
+		SignoutEndpoint:       signoutEndpoint,
+	}, nil
+}
 
 // encodeCreateRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain Create request to a gRPC request.
 func encodeCreateRequest(_ context.Context, request interface{}) (interface{}, error) {
-	r := request.(endpoint.CreateRequest)
+	r := request.(endpoint1.CreateRequest)
 	return &pb.CreateRequest{
 		Email: r.Email,
 		Password: r.Password,
@@ -25,13 +70,13 @@ func decodeCreateResponse(_ context.Context, reply interface{}) (interface{}, er
   if !found{
     return nil, fmt.Errorf("pb CreateReply type assertion error")
   }
-  return &endpoint.CreateResponse{E1: nil}, nil
+  return endpoint1.CreateResponse{E1: nil}, nil
 }
 
 // encodeSigninRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain Signin request to a gRPC request.
 func encodeSigninRequest(_ context.Context, request interface{}) (interface{}, error) {
-  r := request.(endpoint.SigninRequest)
+  r := request.(endpoint1.SigninRequest)
   return &pb.SigninRequest{
     Email: r.Email,
     Password: r.Password}, nil
@@ -43,11 +88,11 @@ func decodeSigninResponse(_ context.Context, reply interface{}) (interface{}, er
   r, found := reply.(*pb.SigninReply)
   if !found {
     e := fmt.Errorf("pb CreateReply type assertion error")
-    return &endpoint.SigninResponse{
+    return &endpoint1.SigninResponse{
       E1: e,
     }, e
   }
-  return &endpoint.SigninResponse{S0: r.Token,}, nil
+  return endpoint1.SigninResponse{S0: r.Token,}, nil
 }
 
 // encodeSignoutRequest is a transport/grpc.EncodeRequestFunc that converts a
@@ -61,7 +106,7 @@ func encodeSignoutRequest(_ context.Context, request interface{}) (interface{}, 
 func decodeSignoutResponse(_ context.Context, reply interface{}) (interface{}, error) {
   r := reply.(*pb.SignoutReply)
   if r.Result{
-    return &endpoint.SignoutResponse{E0: nil}, nil
+    return &endpoint1.SignoutResponse{E0: nil}, nil
   }
 	return nil, errors.New("'Account' Decoder is not impelemented")
 }
@@ -78,9 +123,9 @@ func decodeRolesResponse(_ context.Context, reply interface{}) (interface{}, err
   r, ok := reply.(*pb.RolesReply)
   if !ok {
     e := errors.New("'Account' Decoder is not impelemented")
-    return &endpoint.RolesResponse{E1: e}, e
+    return &endpoint1.RolesResponse{E1: e}, e
   }
-  return &endpoint.RolesResponse{S0: r.Roles}, nil
+  return &endpoint1.RolesResponse{S0: r.Roles}, nil
 }
 
 // encodeAuthRequest is a transport/grpc.EncodeRequestFunc that converts a
@@ -95,7 +140,7 @@ func decodeAuthResponse(_ context.Context, reply interface{}) (interface{}, erro
   r, ok := reply.(*pb.AuthReply)
   if !ok {
     e := errors.New("'AuthReply' Decoder is not impelemented")
-    return &endpoint.AuthResponse{Err: e}, e
+    return &endpoint1.AuthResponse{Err: e}, e
   }
-  return &endpoint.AuthResponse{Uuid: r.Uuid}, nil
+  return &endpoint1.AuthResponse{Uuid: r.Uuid}, nil
 }
