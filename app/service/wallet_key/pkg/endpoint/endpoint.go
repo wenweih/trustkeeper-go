@@ -49,7 +49,7 @@ func (e Endpoints) GenerateMnemonic(ctx context.Context, uuid string) (xpub stri
 	}
 	response, err := e.GenerateMnemonicEndpoint(ctx, request)
 	if err != nil {
-		return
+		return "", nil
 	}
-	return response.(*GenerateMnemonicResponse).Xpub, response.(*GenerateMnemonicResponse).Err
+	return response.(GenerateMnemonicResponse).Xpub, nil
 }
