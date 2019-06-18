@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-
 	log "github.com/go-kit/kit/log"
 	groupService "trustkeeper-go/app/service/dashboard/pkg/service"
 )
@@ -21,7 +20,6 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 	return func(next WebapiService) WebapiService {
 		return &loggingMiddleware{logger, next}
 	}
-
 }
 
 func (l loggingMiddleware) Signup(ctx context.Context, user Credentials) (result bool, err error) {
@@ -43,9 +41,9 @@ func (l loggingMiddleware) Signout(ctx context.Context) (result bool, err error)
 	return l.next.Signout(ctx)
 }
 
-func (l loggingMiddleware) GetRoles(ctx context.Context) (s0 []string, e1 error) {
+func (l loggingMiddleware) GetRoles(ctx context.Context) (roles []string, err error) {
 	defer func() {
-		l.logger.Log("method", "GetRoles", "s0", s0, "e1", e1)
+		l.logger.Log("method", "GetRoles", "err", err)
 	}()
 	return l.next.GetRoles(ctx)
 }
