@@ -43,10 +43,6 @@ var (
 // Define our flags. Your service probably won't need to bind listeners for
 // all* supported transports, but we do it here for demonstration purposes.
 var fs = flag.NewFlagSet("account", flag.ExitOnError)
-// var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
-// var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
-// var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
-// var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
 var zipkinURL = fs.String("zipkin-url", "", "Enable Zipkin tracing via a collector URL e.g. http://localhost:9411/api/v1/spans")
 var lightstepToken = fs.String("lightstep-token", "", "Enable LightStep tracing via a LightStep access token")
 var appdashAddr = fs.String("appdash-addr", "", "Enable Appdash tracing via an Appdash server host:port")
@@ -94,7 +90,11 @@ func Run() {
 	}
 	conf = *c
 
-	svc := service.New(conf, getServiceMiddleware(logger))
+	svc, err := service.New(conf, getServiceMiddleware(logger))
+	if err != nil {
+		logger.Log("err:", err.Error())
+		os.Exit(1)
+	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger, svc))
 	g := createService(eps)
 	initMetricsEndpoint(g)
