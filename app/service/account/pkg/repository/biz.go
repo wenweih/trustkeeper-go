@@ -1,0 +1,103 @@
+package repository
+
+import (
+  "time"
+  "errors"
+  uuid "github.com/satori/go.uuid"
+  "golang.org/x/crypto/bcrypt"
+  "github.com/dgrijalva/jwt-go"
+  "trustkeeper-go/app/service/account/pkg/model"
+)
+
+// Claims jwt clains struct
+type Claims struct {
+	jwt.StandardClaims
+}
+
+// IBiz repository bussiness logic
+type IBiz interface {
+  Signup(email, password, orgName string) (uuid string, err error)
+  Signin(email, password, jwtKey string) (token string, err error)
+  Signout(tokenID string) error
+  QueryRoles(tokenID string) (roles []string, err error)
+  Auth(tokenID string) (uuid string, err error)
+}
+
+func (repo *repo) Signup(email, password, orgName string) (uid string, err error) {
+  // Salt and hash the password using the bcrypt algorithm
+  hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+  uuid := uuid.NewV4()
+  acc := &model.Account{
+    Email:    email,
+    Password: string(hashedPassword),
+    UUID:     uuid.String()}
+  repo.iAccountRepo.Create(acc)
+  return uuid.String(), nil
+}
+
+func (repo *repo)Signin(email, password, jwtKey string) (string, error) {
+  accounts, err :=repo.iAccountRepo.Query(map[string]interface{}{
+    "email": email,
+  })
+  if err != nil {
+    return "", err
+  }
+  if len(accounts) > 1{
+    return "", errors.New("database error")
+  }
+  acc := accounts[0]
+	if err := bcrypt.CompareHashAndPassword([]byte(acc.Password), []byte(password)); err != nil {
+		return "", errors.New("fail to login")
+	}
+
+  expirationTime := time.Now().Add(100 * time.Minute)
+  tokenID := uuid.NewV4().String()
+  claims := &Claims{
+    StandardClaims: jwt.StandardClaims{
+      ExpiresAt: expirationTime.Unix(),
+      Id:        tokenID,
+    },
+  }
+  token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+  tokenStr, err := token.SignedString([]byte(jwtKey))
+  if err != nil {
+    return "", err
+  }
+  if err := repo.iAccountRepo.Update(acc, map[string]interface{}{"token_id": tokenID}); err != nil {
+    return "", err
+  }
+  return tokenStr, nil
+}
+
+func (repo *repo)QueryRoles(tokenID string) ([]string, error) {
+  return repo.Roles(tokenID)
+}
+
+func (repo *repo)Signout(tokenID string) error {
+  accounts, err := repo.iAccountRepo.Query(map[string]interface{}{
+    "token_id": tokenID})
+  if err != nil {
+    return err
+  }
+
+  if len(accounts) > 1{
+    return errors.New("database error")
+  }
+  return repo.iAccountRepo.Update(accounts[0], map[string]interface{}{"token_id": nil})
+}
+
+func (repo *repo)Auth(tokenID string) (string, error) {
+  accounts, err := repo.iAccountRepo.Query(map[string]interface{}{
+    "token_id": tokenID})
+  if err != nil {
+    return "", err
+  }
+
+  if len(accounts) > 1{
+    return "", errors.New("database error")
+  }
+  return accounts[0].UUID, nil
+}
