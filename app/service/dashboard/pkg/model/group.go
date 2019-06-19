@@ -8,9 +8,7 @@ import (
 type Group struct {
   gorm.Model
   NamespaceID string
-  Namespace   Namespace
   Name        string    `grom:"type:varchar(100);not null;index"`
   Desc        string    `sql:"type:text;"`
   CreatorID   string    `gorm:"index;not null"`
-  Roles       []Role
 }

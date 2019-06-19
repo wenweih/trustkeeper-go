@@ -8,6 +8,8 @@ import(
 
 type repo struct {
   iAccountRepo
+  iNamespaceRepo
+  iRoleRepo
 }
 
 // New new
@@ -16,7 +18,9 @@ func New(db *gorm.DB, jwtKey string) IBiz {
     model.Account{},
     model.Role{})
   repo := repo{
-    &accountRepo{db: db, Enforcer: enforcer.NewCasbinEnforcer(db)}}
+    &accountRepo{db: db, Enforcer: enforcer.NewCasbinEnforcer(db)},
+    &namespaceRepo{db: db},
+    &roleRepo{db: db}}
   var biz IBiz = &repo
   return biz
 }

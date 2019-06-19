@@ -1,6 +1,7 @@
 package repository
 
 import (
+  "errors"
   "github.com/jinzhu/gorm"
   "trustkeeper-go/app/service/account/pkg/model"
   stdcasbin "github.com/casbin/casbin"
@@ -20,6 +21,9 @@ type iAccountRepo interface {
 
 func (repo *accountRepo)Query(query map[string]interface{}) (accounts []*model.Account, err error) {
   err = repo.db.Where(query).Find(&accounts).Error
+  if len(accounts) < 1 {
+    return nil, errors.New("Empty records")
+  }
   return
 }
 

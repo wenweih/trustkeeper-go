@@ -2,7 +2,6 @@ package repository
 
 import(
   "github.com/jinzhu/gorm"
-  "trustkeeper-go/library/database/orm"
   "trustkeeper-go/app/service/wallet_management/pkg/model"
 )
 
@@ -11,15 +10,6 @@ type repo struct {
   iChainRepo
   iWalletRepo
   iXpubRepo
-}
-
-// DB database connect
-func DB(dbInfo string) (*gorm.DB, error) {
-  db, err := orm.Connect(dbInfo)
-  if err != nil {
-    return nil, err
-  }
-  return db, nil
 }
 
 // New new repo

@@ -2,7 +2,7 @@ package repository
 
 import (
   "github.com/jinzhu/gorm"
-  "trustkeeper-go/app/service/dashboard/pkg/model"
+  "trustkeeper-go/app/service/account/pkg/model"
 )
 
 type namespaceRepo struct {

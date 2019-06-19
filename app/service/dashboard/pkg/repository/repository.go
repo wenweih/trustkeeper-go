@@ -7,22 +7,15 @@ import(
 
 // Repo repo obj
 type repo struct {
-  iNamespaceRepo
   iGroupRepo
-  iXpubRepo
 }
 
 // New new repo
 func New(db *gorm.DB) IBiz {
   db.AutoMigrate(
-    model.Group{},
-    model.Role{},
-    model.Namespace{},
-    model.Xpub{})
+    model.Group{})
   repo := repo{
-    &namespaceRepo{db},
-    &groupRepo{db},
-    &xpubRepo{db}}
+    &groupRepo{db}}
   var biz IBiz = &repo
   return biz
 }
