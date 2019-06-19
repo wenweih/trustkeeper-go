@@ -89,7 +89,11 @@ func Run() {
 	}
 	conf = *c
 
-	svc := service.New(getServiceMiddleware(logger))
+	svc, err := service.New(conf, getServiceMiddleware(logger))
+	if err != nil {
+		logger.Log("svc error: ", err.Error())
+		os.Exit(1)
+	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initMetricsEndpoint(g)
