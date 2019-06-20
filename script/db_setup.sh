@@ -16,5 +16,6 @@ $SQL -e "CREATE USER trustkeeper;"
 # https://www.cockroachlabs.com/docs/stable/training/users-and-privileges.html
 # https://www.cockroachlabs.com/docs/stable/grant.html
 $SQL -e "GRANT ALL ON DATABASE account, dashboard, wallet to trustkeeper;"
-
-# $SQL -d tarun -e "CREATE TABLE articles(name VARCHAR);"
+$SQL -d wallet -e 'CREATE TABLE "chains" ("id" serial,"created_at" timestamp with time zone,"updated_at" timestamp with time zone,"deleted_at" timestamp with time zone,"name" text,"coin" text,"bip44id" integer,"status" boolean , PRIMARY KEY ("id"));'
+$SQL -d wallet -e "INSERT  INTO "chains" ("name","coin","bip44id","status") VALUES ('Bitcoincore','BTC',0,true)"
+$SQL -d wallet -e "INSERT  INTO "chains" ("name","coin","bip44id","status") VALUES ('Ethereum','ETH',60,true)"

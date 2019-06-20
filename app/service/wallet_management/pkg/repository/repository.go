@@ -15,7 +15,6 @@ type repo struct {
 // New new repo
 func New(db *gorm.DB) IBiz {
   db.AutoMigrate(
-    model.Chain{},
     model.Wallet{},
     model.Xpub{})
   repo := repo{

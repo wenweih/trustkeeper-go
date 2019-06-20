@@ -6,7 +6,8 @@ import (
 
 type Chain struct {
   gorm.Model
-  Symbol  string
-  BIP44ID int
+  Name  string
+  Coin  string
+  Bip44id int // BIP44 公链编号 https://github.com/satoshilabs/slips/blob/master/slip-0044.md
   Status  bool
 }
