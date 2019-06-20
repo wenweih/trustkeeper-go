@@ -5,14 +5,12 @@ import (
   "trustkeeper-go/app/service/account/pkg/model"
 )
 
-type namespaceRepo struct {
-  db *gorm.DB
-}
+type namespaceRepo struct {}
 
 type iNamespaceRepo interface {
-  Create(m *model.Namespace) error
+  Create(tx *gorm.DB, m *model.Namespace) *gorm.DB
 }
 
-func (repo *namespaceRepo) Create(m *model.Namespace) error {
-  return repo.db.Create(&m).Error
+func (repo *namespaceRepo) Create(tx *gorm.DB, m *model.Namespace) *gorm.DB {
+  return tx.Create(&m)
 }

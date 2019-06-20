@@ -11,4 +11,6 @@ type Account struct {
   Password  string    `gorm:"not null"`
   UUID      string    `gorm:"unique_index;not null"`
   TokenID   string    `gorm:"index"`
+  // https://gorm.io/docs/has_one.html#Association-ForeignKey
+  Namespace Namespace `gorm:"foreignkey:creator_uid;association_foreignkey:uuid"`
 }

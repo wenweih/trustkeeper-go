@@ -1,6 +1,8 @@
 package repository
 
 import (
+  "fmt"
+  "strconv"
   "errors"
   "github.com/jinzhu/gorm"
   "trustkeeper-go/app/service/account/pkg/model"
@@ -13,10 +15,11 @@ type accountRepo struct {
 }
 
 type iAccountRepo interface {
-  Create(m *model.Account) error
+  Create(tx *gorm.DB, m *model.Account) *gorm.DB
   Query(query map[string]interface{}) ([]*model.Account, error)
   Update(acc *model.Account, colums map[string]interface{}) error
   Roles(tokenID string) (roles []string, err error)
+  AddRoleForUserInDomain(accountUID, NamespaceID, role string) (result bool)
 }
 
 func (repo *accountRepo)Query(query map[string]interface{}) (accounts []*model.Account, err error) {
@@ -27,14 +30,13 @@ func (repo *accountRepo)Query(query map[string]interface{}) (accounts []*model.A
   return
 }
 
-func (repo *accountRepo)Create(m *model.Account) error {
-  repo.Enforcer.AddRoleForUser(m.UUID, "admin")
-  return repo.db.Create(m).Error
+func (repo *accountRepo)Create(tx *gorm.DB, m *model.Account) *gorm.DB {
+  return tx.Create(m)
 }
 
 func (repo *accountRepo) findByTokenID(id string) (*model.Account, error) {
   var acc model.Account
-  if err := repo.db.Find(&acc, "token_id = ?", id).Error; err != nil {
+  if err := repo.db.Preload("Namespace").Find(&acc, "token_id = ?", id).Error; err != nil {
     return nil, err
   }
   return &acc, nil
@@ -44,8 +46,19 @@ func (repo *accountRepo) Update(acc *model.Account, colums map[string]interface{
   return repo.db.Model(acc).Update(colums).Error
 }
 
-func (repo *accountRepo) GetRoles(acc *model.Account) ([]string) {
-  return repo.Enforcer.GetRolesForUser(acc.UUID)
+func (repo *accountRepo) GetRoles(acc *model.Account) (roles []string) {
+  roles = repo.Enforcer.GetRolesForUserInDomain(acc.UUID, strconv.FormatUint(uint64(acc.Namespace.ID), 10))
+  fmt.Println("roles: ", roles, " namespace: ", acc.Namespace.ID)
+  return
+  // return repo.Enforcer.GetRolesForUser(acc.UUID)
+}
+
+func (repo *accountRepo) AddRoleForUserInDomain(accountUID, NamespaceID, role string) (result bool) {
+  // https://github.com/casbin/casbin/blob/master/rbac_api_with_domains.go#L36
+  result = repo.Enforcer.AddRoleForUserInDomain(accountUID,
+    role,
+    NamespaceID)
+  return
 }
 
 func (repo *accountRepo)Roles(tokenID string) ([]string, error) {
@@ -53,5 +66,8 @@ func (repo *accountRepo)Roles(tokenID string) ([]string, error) {
   if err != nil {
     return nil, err
   }
-  return repo.Enforcer.GetRolesForUser(acc.UUID), nil
+  // return repo.Enforcer.GetRolesForUser(acc.UUID), nil
+  roles := repo.Enforcer.GetRolesForUserInDomain(acc.UUID, strconv.FormatUint(uint64(acc.Namespace.ID), 10))
+  fmt.Println("roles: ", roles, " namespace: ", acc.Namespace.ID)
+  return roles, nil
 }

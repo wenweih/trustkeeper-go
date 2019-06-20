@@ -3,6 +3,7 @@ package repository
 import (
   "time"
   "errors"
+  "strconv"
   uuid "github.com/satori/go.uuid"
   "golang.org/x/crypto/bcrypt"
   "github.com/dgrijalva/jwt-go"
@@ -34,7 +35,25 @@ func (repo *repo) Signup(email, password, orgName string) (uid string, err error
     Email:    email,
     Password: string(hashedPassword),
     UUID:     uuid.String()}
-  repo.iAccountRepo.Create(acc)
+  namespace := &model.Namespace{
+    CreatorUID: uuid.String(),
+    Name: orgName,
+  }
+  tx := repo.db.Begin()
+  if err := repo.iAccountRepo.Create(tx, acc).Error; err != nil {
+    tx.Rollback()
+    return "", err
+  }
+  if err := repo.iNamespaceRepo.Create(tx, namespace).Error; err != nil {
+    tx.Rollback()
+    return "", err
+  }
+  if err := tx.Commit().Error; err != nil {
+    return "", err
+  }
+
+  namespaceID := strconv.FormatUint(uint64(namespace.ID), 10)
+  repo.iAccountRepo.AddRoleForUserInDomain(acc.UUID, namespaceID, "admin")
   return uuid.String(), nil
 }
 

@@ -7,20 +7,20 @@ import(
 )
 
 type repo struct {
+  db *gorm.DB
   iAccountRepo
   iNamespaceRepo
-  iRoleRepo
 }
 
 // New new
 func New(db *gorm.DB, jwtKey string) IBiz {
   db.AutoMigrate(
     model.Account{},
-    model.Role{})
+    model.Namespace{})
   repo := repo{
+    db,
     &accountRepo{db: db, Enforcer: enforcer.NewCasbinEnforcer(db)},
-    &namespaceRepo{db: db},
-    &roleRepo{db: db}}
+    &namespaceRepo{}}
   var biz IBiz = &repo
   return biz
 }

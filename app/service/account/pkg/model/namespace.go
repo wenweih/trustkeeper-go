@@ -7,7 +7,7 @@ import (
 // Namespace for organization
 type Namespace struct {
   gorm.Model
-  CreatorID   string   `gorm:"index;not null"`
+  CreatorUID  string   `gorm:"index;not null"`
   Name        string    `gorm:"index;unique_index"`
   DefaultKey  string    `gorm:"type:varchar(500);index"`
 }
