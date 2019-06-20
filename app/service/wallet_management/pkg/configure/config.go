@@ -9,6 +9,7 @@ import (
 type Conf struct {
 	DBInfo				string
 	ConsulAddress	string
+	Redis         string
 }
 
 func New() (*Conf, error) {
@@ -30,8 +31,10 @@ func New() (*Conf, error) {
 	sslmode := strings.Join([]string{"sslmode", data.Data["sslmode"].(string)}, "=")
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
 	consulAddr := data.Data["consuladdr"].(string)
+	redis := data.Data["redis"].(string)
 	return &Conf{
 		DBInfo:			dbInfo,
 		ConsulAddress: consulAddr,
+		Redis: redis,
 	}, nil
 }

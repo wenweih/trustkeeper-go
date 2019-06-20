@@ -28,6 +28,7 @@ import (
 	"trustkeeper-go/library/consul"
 	"trustkeeper-go/library/common"
 	"google.golang.org/grpc/health/grpc_health_v1"
+	"trustkeeper-go/app/service/wallet_management/pkg/jobs"
 )
 
 var (
@@ -89,13 +90,14 @@ func Run() {
 	}
 	conf = *c
 
-	svc, err := service.New(conf, getServiceMiddleware(logger))
+	svc, err := service.New(conf, logger, getServiceMiddleware(logger))
 	if err != nil {
 		logger.Log("svc error: ", err.Error())
 		os.Exit(1)
 	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
+	initJobs(logger, g)
 	initMetricsEndpoint(g)
 	initCancelInterrupt(g)
 	logger.Log("exit", g.Run())
@@ -132,6 +134,30 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 		grpcListener.Close()
 	})
 }
+
+func initJobs(logger log.Logger, g *group.Group) {
+	jobSvc, err := service.NewJobsService(conf, logger)
+	if err != nil {
+		logger.Log("init job service error: ", err.Error())
+		os.Exit(1)
+	}
+	workPool := jobs.New(conf.Redis, jobSvc)
+	cancelInterrupt := make(chan struct{})
+	g.Add(func() error {
+		c := make(chan os.Signal, 1)
+		workPool.Start()
+		signal.Notify(c, os.Interrupt, syscall.SIGTERM)
+		select {
+		case sig := <-c:
+			return fmt.Errorf("received signal %s", sig)
+		case <- cancelInterrupt:
+			return nil
+		}
+	}, func(err error) {
+		workPool.Stop()
+	})
+}
+
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
 	mw = addDefaultServiceMiddleware(logger, mw)
