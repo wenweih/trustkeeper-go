@@ -5,6 +5,7 @@ import (
 	bip39 "github.com/tyler-smith/go-bip39"
 	"github.com/btcsuite/btcutil/hdkeychain"
 	"github.com/btcsuite/btcd/chaincfg"
+	"trustkeeper-go/app/service/wallet_key/pkg/repository"
 )
 
 type Bip44AccountKey struct {
@@ -20,9 +21,17 @@ type Bip44ThirdXpubsForChain struct {
 // WalletKeyService describes the service.
 type WalletKeyService interface {
 	GenerateMnemonic(ctx context.Context, namespaceID string, bip44ids []int32, bip44accountSize int) (chainsWithXpubs []*Bip44ThirdXpubsForChain, err error)
+	Close() error
 }
 
-type basicWalletKeyService struct{}
+type basicWalletKeyService struct{
+	biz  repository.IBiz
+}
+
+
+func (b *basicWalletKeyService) Close() error{
+	return b.biz.Close()
+}
 
 func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, namespaceID string, bip44ids []int32, bip44accountSize int) (chainsWithXpubs []*Bip44ThirdXpubsForChain, err error) {
 	// https://matthewdowney.github.io/extract-xpub-ethereum-bitcoin-ledger-nano-s.html
@@ -72,19 +81,30 @@ func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, namespaceI
 		}
 		chainsWithXpubs = append(chainsWithXpubs, &Bip44ThirdXpubsForChain{Chain: int(bip44id), Xpubs: xpubs})
 	}
+	// b.ldb.Get(key, ro)
 	return chainsWithXpubs, nil
 }
 
 // NewBasicWalletKeyService returns a naive, stateless implementation of WalletKeyService.
-func NewBasicWalletKeyService() WalletKeyService {
-	return &basicWalletKeyService{}
+func newBasicWalletKeyService() (WalletKeyService, error) {
+	repo, err := repository.New()
+	if err != nil {
+		return nil, err
+	}
+	return &basicWalletKeyService{
+		biz: repo,
+	}, nil
 }
 
 // New returns a WalletKeyService with all of the expected middleware wired in.
-func New(middleware []Middleware) WalletKeyService {
-	var svc WalletKeyService = NewBasicWalletKeyService()
+func New(middleware []Middleware) (WalletKeyService, error) {
+	 ws, err := newBasicWalletKeyService()
+	 if err != nil {
+		 return nil, err
+	 }
+	 var svc WalletKeyService = ws
 	for _, m := range middleware {
 		svc = m(svc)
 	}
-	return svc
+	return svc, nil
 }

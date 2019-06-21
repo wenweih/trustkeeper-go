@@ -92,3 +92,8 @@ func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc, parentID s
 	}
 	return response.(CreateGroupResponse).Result, response.(CreateGroupResponse).Err
 }
+
+// Close implements Service. Primarily useful in a client.
+func (e Endpoints) Close() error {
+	return nil
+}

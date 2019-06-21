@@ -12,7 +12,7 @@ import (
 	grpc "trustkeeper-go/app/service/wallet_key/pkg/grpc"
 	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/wallet_key/pkg/service"
-	"trustkeeper-go/library/common"
+	"trustkeeper-go/Library/common"
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
@@ -77,11 +77,15 @@ func Run() {
 		tracer = opentracinggo.GlobalTracer()
 	}
 
-	svc := service.New(getServiceMiddleware(logger))
+	svc, err := service.New(getServiceMiddleware(logger))
+	if err != nil {
+		logger.Log("err", err)
+		os.Exit(1)
+	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initMetricsEndpoint(g)
-	initCancelInterrupt(g)
+	initCancelInterrupt(svc, g)
 	logger.Log("exit", g.Run())
 
 }
@@ -125,7 +129,7 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 }
 func getServiceMiddleware(logger log.Logger) (mw []service.Middleware) {
 	mw = []service.Middleware{}
-	// Append your middleware here
+	mw = addDefaultServiceMiddleware(logger, mw)
 
 	return
 }
@@ -148,7 +152,9 @@ func initMetricsEndpoint(g *group.Group) {
 		debugListener.Close()
 	})
 }
-func initCancelInterrupt(g *group.Group) {
+
+// https://www.jianshu.com/p/ae72ad58ecb6
+func initCancelInterrupt(s service.WalletKeyService, g *group.Group) {
 	cancelInterrupt := make(chan struct{})
 	g.Add(func() error {
 		c := make(chan os.Signal, 1)
@@ -160,6 +166,7 @@ func initCancelInterrupt(g *group.Group) {
 			return nil
 		}
 	}, func(error) {
+		s.Close()
 		close(cancelInterrupt)
 	})
 }

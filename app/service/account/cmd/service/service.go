@@ -98,7 +98,7 @@ func Run() {
 	eps := endpoint.New(svc, getEndpointMiddleware(logger, svc))
 	g := createService(eps)
 	initMetricsEndpoint(g)
-	initCancelInterrupt(g)
+	initCancelInterrupt(svc, g)
 	logger.Log("exit", g.Run())
 }
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
@@ -171,7 +171,9 @@ func initMetricsEndpoint(g *group.Group) {
 		debugListener.Close()
 	})
 }
-func initCancelInterrupt(g *group.Group) {
+
+// This function just sits and waits for ctrl-C.
+func initCancelInterrupt(s service.AccountService, g *group.Group) {
 	cancelInterrupt := make(chan struct{})
 	g.Add(func() error {
 		c := make(chan os.Signal, 1)
@@ -183,6 +185,7 @@ func initCancelInterrupt(g *group.Group) {
 			return nil
 		}
 	}, func(error) {
+		s.Close()
 		close(cancelInterrupt)
 	})
 }

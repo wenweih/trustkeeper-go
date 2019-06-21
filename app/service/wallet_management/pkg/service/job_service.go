@@ -2,11 +2,16 @@ package service
 
 import (
   "context"
+  "github.com/gomodule/redigo/redis"
 )
 
-
 type JobService interface {
+  RedisInstance() *redis.Pool
   CreateMnemonic(ctx context.Context, namespaceID string) error
+}
+
+func (b *basicWalletManagementService) RedisInstance() *redis.Pool {
+  return b.biz.RedisInstance()
 }
 
 func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, namespaceID string) error {
@@ -17,6 +22,21 @@ func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, names
   // }
   //
   // return b.biz.Signup(uuid, email, orgName, xpub)
-  _, err := b.KeySrv.GenerateMnemonic(ctx, namespaceID)
-  return err
+  // params: namespaceid as levelDB key, slices for default bip44id of chain, default size for response xpub
+  // response:
+  // [
+  //   {
+  //     "chainid": xxx,
+  //     [
+  //       {
+  //         "bip44account": xxx,
+  //         "key": xxx
+  //       }
+  //       ...
+  //     ]
+  //   },
+  //   ...
+  // ]
+  // _, err := b.KeySrv.GenerateMnemonic(ctx, namespaceID)
+  return nil
 }

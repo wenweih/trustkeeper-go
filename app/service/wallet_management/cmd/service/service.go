@@ -26,7 +26,7 @@ import (
 	service "trustkeeper-go/app/service/wallet_management/pkg/service"
 	"trustkeeper-go/app/service/wallet_management/pkg/configure"
 	"trustkeeper-go/library/consul"
-	"trustkeeper-go/library/common"
+	"trustkeeper-go/Library/common"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"trustkeeper-go/app/service/wallet_management/pkg/jobs"
 )
@@ -99,7 +99,7 @@ func Run() {
 	g := createService(eps)
 	initJobs(logger, g)
 	initMetricsEndpoint(g)
-	initCancelInterrupt(g)
+	initCancelInterrupt(svc, g)
 	logger.Log("exit", g.Run())
 
 }
@@ -192,7 +192,7 @@ func initMetricsEndpoint(g *group.Group) {
 		debugListener.Close()
 	})
 }
-func initCancelInterrupt(g *group.Group) {
+func initCancelInterrupt(s service.WalletManagementService, g *group.Group) {
 	cancelInterrupt := make(chan struct{})
 	g.Add(func() error {
 		c := make(chan os.Signal, 1)
@@ -204,6 +204,7 @@ func initCancelInterrupt(g *group.Group) {
 			return nil
 		}
 	}, func(error) {
+		s.Close()
 		close(cancelInterrupt)
 	})
 }

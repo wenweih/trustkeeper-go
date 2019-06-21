@@ -23,6 +23,7 @@ type AccountService interface {
 	Signout(ctx context.Context) error
 	Roles(ctx context.Context) ([]string, error)
 	Auth(ctx context.Context) (uuid string, err error)
+	Close() error
 }
 
 type basicAccountService struct {
@@ -36,18 +37,28 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
+func (b *basicAccountService) Close() error{
+	return b.biz.Close()
+}
+
 // https://www.sohamkamani.com/blog/2018/02/25/golang-password-authentication-and-storage/
 func (b *basicAccountService) Create(ctx context.Context, email, password, orgName string) (string, error) {
-	uuid, err := b.biz.Signup(email, password, orgName)
+	uuid, namespaceid, err := b.biz.Signup(email, password, orgName)
 	if err != nil{
 		return "", err
 	}
-	if _, err := b.jobEnqueuer.Enqueue(common.SignUpJobs,
-		work.Q{"uuid": uuid,
-			"email": email,
-			"orgname": orgName}); err != nil {
+
+	if _, err := b.jobEnqueuer.Enqueue(common.WalletMnemonicJob,
+		work.Q{"namespaceid": namespaceid}); err != nil {
 		return "", err
 	}
+
+	// if _, err := b.jobEnqueuer.Enqueue(common.SignUpJobs,
+	// 	work.Q{"uuid": uuid,
+	// 		"email": email,
+	// 		"orgname": orgName}); err != nil {
+	// 	return "", err
+	// }
 	return uuid, nil
 }
 
@@ -103,7 +114,7 @@ func NewBasicAccountService(conf configure.Conf) (AccountService, error) {
 	redisPool := redis.NewPool(conf.Redis)
 	enqueuer := work.NewEnqueuer(redis.Namespace, redisPool)
 	bas := basicAccountService{
-		biz: repository.New(db, conf.JWTKey),
+		biz: repository.New(redisPool, db, conf.JWTKey),
 		jobEnqueuer: enqueuer,
 		jwtKey: conf.JWTKey,
 	}

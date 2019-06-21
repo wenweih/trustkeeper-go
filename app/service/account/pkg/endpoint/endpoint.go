@@ -211,3 +211,8 @@ func (e Endpoints) Auth(ctx context.Context) (uuid string, err error) {
 	}
 	return response.(AuthResponse).Uuid, nil
 }
+
+// Close implements Service. Primarily useful in a client.
+func (e Endpoints) Close() error {
+	return nil
+}

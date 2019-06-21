@@ -53,3 +53,10 @@ func (l loggingMiddleware) Auth(ctx context.Context) (uuid string, err error) {
 	}()
 	return l.next.Auth(ctx)
 }
+
+func (l loggingMiddleware) Close() error {
+	defer func() {
+		l.logger.Log("method", "Close", "close resource", "(database, redis etc...)")
+	}()
+	return l.next.Close()
+}

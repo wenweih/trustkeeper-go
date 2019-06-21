@@ -7,6 +7,8 @@ import(
 
 // Repo repo obj
 type repo struct {
+  db *gorm.DB
+  // redisPool *redis.Pool
   iGroupRepo
 }
 
@@ -15,7 +17,19 @@ func New(db *gorm.DB) IBiz {
   db.AutoMigrate(
     model.Group{})
   repo := repo{
+    db,
     &groupRepo{db}}
   var biz IBiz = &repo
   return biz
+}
+
+
+func (repo *repo) close() error {
+  if err := repo.db.Close(); err != nil {
+    return err
+  }
+  // if err := repo.redisPool.Close(); err != nil {
+  //   return err
+  // }
+  return nil
 }

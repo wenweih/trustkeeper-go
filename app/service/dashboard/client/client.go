@@ -14,7 +14,7 @@ import (
   "github.com/go-kit/kit/sd"
   "google.golang.org/grpc"
   grpctransport "github.com/go-kit/kit/transport/grpc"
-  "trustkeeper-go/library/common"
+  "trustkeeper-go/Library/common"
   libconsule "trustkeeper-go/library/consul"
 )
 

@@ -26,3 +26,10 @@ func (l loggingMiddleware) GenerateMnemonic(ctx context.Context, namespaceid str
 	}()
 	return l.next.GenerateMnemonic(ctx, namespaceid, bip44ids, bip44accountSize)
 }
+
+func (l loggingMiddleware) Close() error {
+	defer func() {
+		l.logger.Log("method", "Close", "close resource", "(database, redis etc...)")
+	}()
+	return l.next.Close()
+}

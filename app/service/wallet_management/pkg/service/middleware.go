@@ -28,3 +28,10 @@ func (l loggingMiddleware) CreateChain(ctx context.Context, symbol string, bit44
 	}()
 	return l.next.CreateChain(ctx, symbol, bit44ID, status)
 }
+
+func (l loggingMiddleware) Close() error {
+	defer func() {
+		l.logger.Log("method", "Close", "close resource", "(database, redis etc...)")
+	}()
+	return l.next.Close()
+}

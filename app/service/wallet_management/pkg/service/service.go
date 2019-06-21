@@ -9,17 +9,22 @@ import (
 	"trustkeeper-go/app/service/wallet_management/pkg/repository"
 	walletKeyService "trustkeeper-go/app/service/wallet_key/pkg/service"
 	walletKeyGrpcClient "trustkeeper-go/app/service/wallet_key/client"
+	"trustkeeper-go/Library/database/redis"
 )
 
 // WalletManagementService describes the service.
 type WalletManagementService interface {
-	// Add your methods here
 	CreateChain(ctx context.Context, symbol, bit44ID string, status bool) (err error)
+	Close() error
 }
 
 type basicWalletManagementService struct{
 	biz  repository.IBiz
 	KeySrv	walletKeyService.WalletKeyService
+}
+
+func (b *basicWalletManagementService) Close() error{
+	return b.biz.Close()
 }
 
 func (b *basicWalletManagementService) CreateChain(ctx context.Context, symbol string, bit44ID string, status bool) (err error) {
@@ -34,13 +39,15 @@ func newBasicWalletManagementService(conf configure.Conf, logger log.Logger) (*b
 		return nil, err
 	}
 
+	redisPool := redis.NewPool(conf.Redis)
+
 	wkClient, err := walletKeyGrpcClient.New(conf.ConsulAddress, logger)
 	if err != nil {
 		return nil, fmt.Errorf("walletKeyGrpcClient: %s", err.Error())
 	}
 
 	bas := basicWalletManagementService{
-		biz: repository.New(db),
+		biz: repository.New(redisPool, db),
 		KeySrv: wkClient,
 	}
 	return &bas, nil

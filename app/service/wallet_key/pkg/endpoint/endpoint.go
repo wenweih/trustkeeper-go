@@ -60,3 +60,8 @@ func (e Endpoints) GenerateMnemonic(ctx context.Context, namespaceID string, bip
 	}
 	return response.(GenerateMnemonicResponse).ChainsXpubs, nil
 }
+
+// Auth implements Service. Primarily useful in a client.
+func (e Endpoints) Close() error {
+	return nil
+}

@@ -35,3 +35,10 @@ func (l loggingMiddleware) CreateGroup(ctx context.Context, uuid, name, desc, na
 	}()
 	return l.next.CreateGroup(ctx, uuid, name, desc, namespaceID)
 }
+
+func (l loggingMiddleware) Close() error {
+	defer func() {
+		l.logger.Log("method", "Close", "close resource", "(database, redis etc...)")
+	}()
+	return l.next.Close()
+}

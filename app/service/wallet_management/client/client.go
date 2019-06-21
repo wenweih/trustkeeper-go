@@ -8,14 +8,13 @@ import (
   "trustkeeper-go/app/service/wallet_management/pkg/service"
   walletmanagementEndpoint "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
   "github.com/go-kit/kit/endpoint"
-
   sdconsul "github.com/go-kit/kit/sd/consul"
   "github.com/go-kit/kit/sd/lb"
   "github.com/go-kit/kit/sd"
   "google.golang.org/grpc"
   grpctransport "github.com/go-kit/kit/transport/grpc"
-  "trustkeeper-go/library/common"
   libconsule "trustkeeper-go/library/consul"
+  "trustkeeper-go/Library/common"
 )
 
 // https://github.com/go-kit/kit/blob/master/examples/apigateway/main.go

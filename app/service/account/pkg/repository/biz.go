@@ -17,18 +17,23 @@ type Claims struct {
 
 // IBiz repository bussiness logic
 type IBiz interface {
-  Signup(email, password, orgName string) (uuid string, err error)
+  Signup(email, password, orgName string) (uuid string, namespaceID string, err error)
   Signin(email, password, jwtKey string) (token string, err error)
   Signout(tokenID string) error
   QueryRoles(tokenID string) (roles []string, err error)
   Auth(tokenID string) (uuid string, err error)
+  Close() error
 }
 
-func (repo *repo) Signup(email, password, orgName string) (uid string, err error) {
+func (repo *repo)Close() error{
+  return repo.close()
+}
+
+func (repo *repo) Signup(email, password, orgName string) (uid string, namespaceID string, err error) {
   // Salt and hash the password using the bcrypt algorithm
   hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
   uuid := uuid.NewV4()
   acc := &model.Account{
@@ -42,19 +47,19 @@ func (repo *repo) Signup(email, password, orgName string) (uid string, err error
   tx := repo.db.Begin()
   if err := repo.iAccountRepo.Create(tx, acc).Error; err != nil {
     tx.Rollback()
-    return "", err
+    return "", "", err
   }
   if err := repo.iNamespaceRepo.Create(tx, namespace).Error; err != nil {
     tx.Rollback()
-    return "", err
+    return "", "", err
   }
   if err := tx.Commit().Error; err != nil {
-    return "", err
+    return "", "", err
   }
 
-  namespaceID := strconv.FormatUint(uint64(namespace.ID), 10)
+  namespaceID = strconv.FormatUint(uint64(namespace.ID), 10)
   repo.iAccountRepo.AddRoleForUserInDomain(acc.UUID, namespaceID, "admin")
-  return uuid.String(), nil
+  return uuid.String(), namespaceID, nil
 }
 
 func (repo *repo)Signin(email, password, jwtKey string) (string, error) {
