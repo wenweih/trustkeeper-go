@@ -28,7 +28,7 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 //  user-domain GenerateMnemonic request to a gRPC request.
 func encodeGenerateMnemonicRequest(_ context.Context, request interface{}) (interface{}, error) {
   r := request.(endpoint1.GenerateMnemonicRequest)
-  return &pb.GenerateMnemonicRequest{Uuid: r.Uuid}, nil
+  return &pb.GenerateMnemonicRequest{Namespaceid: r.Namespaceid, Bip44Ids: r.Bip44ids, Bip44AccountSize: int32(r.Bip44accountSize)}, nil
 }
 
 // decodeGenerateMnemonicResponse is a transport/grpc.DecodeResponseFunc that converts
@@ -39,5 +39,15 @@ func decodeGenerateMnemonicResponse(_ context.Context, reply interface{}) (inter
     e := errors.New("request interface to *pb.GenerateMnemonicReply type assertion error")
     return endpoint1.GenerateMnemonicResponse{Err: e}, e
   }
-  return endpoint1.GenerateMnemonicResponse{Xpub: r.Xpub}, nil
+
+  xpubs := []*service.Bip44ThirdXpubsForChain{}
+  for _, chainwithxpubs := range r.Chainsxpubs {
+    bip44AccountKeys := []*service.Bip44AccountKey{}
+    for _,  bip44AccountKey := range chainwithxpubs.Xpubs {
+      bip44AccountKeys = append(bip44AccountKeys, &service.Bip44AccountKey{
+        Account: int(bip44AccountKey.Account), Key: bip44AccountKey.Key})
+    }
+    xpubs = append(xpubs, &service.Bip44ThirdXpubsForChain{Chain: int(chainwithxpubs.Chain), Xpubs: bip44AccountKeys})
+  }
+  return endpoint1.GenerateMnemonicResponse{ChainsXpubs: xpubs}, nil
 }

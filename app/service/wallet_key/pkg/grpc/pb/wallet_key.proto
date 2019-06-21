@@ -8,9 +8,21 @@ service WalletKey {
 }
 
 message GenerateMnemonicRequest {
- string uuid  = 1;
+ string namespaceid  = 1;
+ repeated int32 bip44ids = 2;
+ int32 bip44accountSize = 3;
+}
+
+message Bip44AccountKey {
+  int32 account = 1;
+  string key = 2;
+}
+
+message Bip44ThirdXpubsForChain {
+  int32 chain = 1;
+  repeated Bip44AccountKey xpubs = 2;
 }
 
 message GenerateMnemonicReply {
- string xpub = 1;
+  repeated Bip44ThirdXpubsForChain chainsxpubs = 1;
 }

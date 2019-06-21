@@ -32,11 +32,16 @@ func main()  {
     logger.Log("service client error: ", err.Error())
   }
 
-  for _, str := range []string{"aa", "bb", "ccc", "ee", "dd", "ff", "gg", "hh"} {
-    xpub, err := s.GenerateMnemonic(context.Background(), str)
-    if err != nil {
-      logger.Log("GenerateMnemonic:", err.Error())
+  asset := []int32{int32(0), int32(60), int32(66)}
+  chainsWithXpubs, err := s.GenerateMnemonic(context.Background(), "aaaaa", asset, 10)
+  if err != nil {
+    logger.Log("GenerateMnemonic:", err.Error())
+  }
+
+  for _, chainwithXpubs := range chainsWithXpubs {
+    for _, xpub := range chainwithXpubs.Xpubs {
+      xpubTmp := xpub
+     logger.Log("chain:", chainwithXpubs.Chain, " xpub account:", xpubTmp.Account, " xpub key:", xpubTmp.Key)
     }
-    logger.Log("xpub:", xpub)
   }
 }

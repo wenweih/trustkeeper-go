@@ -9,12 +9,14 @@ import (
 
 // GenerateMnemonicRequest collects the request parameters for the GenerateMnemonic method.
 type GenerateMnemonicRequest struct {
-	Uuid  string `json:"uuid"`
+	Namespaceid  string `json:"namespaceid"`
+	Bip44ids     []int32 `json:"bip44ids"`
+	Bip44accountSize int  `json:"bip44accountSize"`
 }
 
 // GenerateMnemonicResponse collects the response parameters for the GenerateMnemonic method.
 type GenerateMnemonicResponse struct {
-	Xpub string `json:"xpub"`
+	ChainsXpubs []*service.Bip44ThirdXpubsForChain `json:"chainsxpubs"`
 	Err  error  `json:"err"`
 }
 
@@ -22,11 +24,14 @@ type GenerateMnemonicResponse struct {
 func MakeGenerateMnemonicEndpoint(s service.WalletKeyService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GenerateMnemonicRequest)
-		xpub, err := s.GenerateMnemonic(ctx, req.Uuid)
-		return GenerateMnemonicResponse{
-			Err:  err,
-			Xpub: xpub,
-		}, nil
+		xpubs, err := s.GenerateMnemonic(ctx, req.Namespaceid, req.Bip44ids, req.Bip44accountSize)
+		if err != nil {
+			return GenerateMnemonicResponse{
+				Err:  err,
+				ChainsXpubs: nil,
+			}, err
+		}
+		return GenerateMnemonicResponse{ChainsXpubs: xpubs}, nil
 	}
 }
 
@@ -43,13 +48,15 @@ type Failure interface {
 }
 
 // GenerateMnemonic implements Service. Primarily useful in a client.
-func (e Endpoints) GenerateMnemonic(ctx context.Context, uuid string) (xpub string, err error) {
+func (e Endpoints) GenerateMnemonic(ctx context.Context, namespaceID string, bip44ids []int32, bip44accountSize int) (xpubs []*service.Bip44ThirdXpubsForChain, err error) {
 	request := GenerateMnemonicRequest{
-		Uuid:  uuid,
+		Namespaceid: namespaceID,
+		Bip44ids: bip44ids,
+		Bip44accountSize: bip44accountSize,
 	}
 	response, err := e.GenerateMnemonicEndpoint(ctx, request)
 	if err != nil {
-		return "", nil
+		return nil, err
 	}
-	return response.(GenerateMnemonicResponse).Xpub, nil
+	return response.(GenerateMnemonicResponse).ChainsXpubs, nil
 }

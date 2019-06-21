@@ -19,7 +19,7 @@ func makeGenerateMnemonicHandler(endpoints endpoint.Endpoints, options []grpc.Se
 // TODO implement the decoder
 func decodeGenerateMnemonicRequest(_ context.Context, r interface{}) (interface{}, error) {
 	req := r.(*pb.GenerateMnemonicRequest)
-	return endpoint.GenerateMnemonicRequest{Uuid: req.Uuid}, nil
+	return endpoint.GenerateMnemonicRequest{Namespaceid: req.Namespaceid, Bip44ids: req.Bip44Ids, Bip44accountSize: int(req.Bip44AccountSize)}, nil
 }
 
 // encodeGenerateMnemonicResponse is a transport/grpc.EncodeResponseFunc that converts
@@ -29,8 +29,17 @@ func encodeGenerateMnemonicResponse(_ context.Context, r interface{}) (interface
 	if resp.Err != nil {
 		return nil, resp.Err
 	}
-	return &pb.GenerateMnemonicReply{Xpub: resp.Xpub}, nil
+	pbXpubs := []*pb.Bip44ThirdXpubsForChain{}
+	for _, chainxpub := range resp.ChainsXpubs {
+		pbPubkeys := []*pb.Bip44AccountKey{}
+		for _, key := range chainxpub.Xpubs {
+			pbPubkeys = append(pbPubkeys, &pb.Bip44AccountKey{Account: int32(key.Account), Key: key.Key})
+		}
+		pbXpubs = append(pbXpubs, &pb.Bip44ThirdXpubsForChain{Chain: int32(chainxpub.Chain), Xpubs: pbPubkeys})
+	}
+	return &pb.GenerateMnemonicReply{Chainsxpubs: pbXpubs}, nil
 }
+
 func (g *grpcServer) GenerateMnemonic(ctx context1.Context, req *pb.GenerateMnemonicRequest) (*pb.GenerateMnemonicReply, error) {
 	_, rep, err := g.generateMnemonic.ServeGRPC(ctx, req)
 	if err != nil {

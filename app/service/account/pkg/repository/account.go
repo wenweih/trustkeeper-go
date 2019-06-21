@@ -53,6 +53,7 @@ func (repo *accountRepo) GetRoles(acc *model.Account) (roles []string) {
   // return repo.Enforcer.GetRolesForUser(acc.UUID)
 }
 
+// https://github.com/casbin/casbin/blob/master/rbac/default-role-manager/role_manager_test.go
 func (repo *accountRepo) AddRoleForUserInDomain(accountUID, NamespaceID, role string) (result bool) {
   // https://github.com/casbin/casbin/blob/master/rbac_api_with_domains.go#L36
   result = repo.Enforcer.AddRoleForUserInDomain(accountUID,
@@ -66,7 +67,6 @@ func (repo *accountRepo)Roles(tokenID string) ([]string, error) {
   if err != nil {
     return nil, err
   }
-  // return repo.Enforcer.GetRolesForUser(acc.UUID), nil
   roles := repo.Enforcer.GetRolesForUserInDomain(acc.UUID, strconv.FormatUint(uint64(acc.Namespace.ID), 10))
   fmt.Println("roles: ", roles, " namespace: ", acc.Namespace.ID)
   return roles, nil
