@@ -14,8 +14,8 @@ import (
   "github.com/go-kit/kit/sd"
   "google.golang.org/grpc"
   grpctransport "github.com/go-kit/kit/transport/grpc"
-  "trustkeeper-go/Library/common"
   libconsule "trustkeeper-go/library/consul"
+  "trustkeeper-go/library/util"
 )
 
 // https://github.com/go-kit/kit/blob/master/examples/apigateway/main.go

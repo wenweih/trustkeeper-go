@@ -12,7 +12,7 @@ import (
 	grpc "trustkeeper-go/app/service/wallet_key/pkg/grpc"
 	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/wallet_key/pkg/service"
-	"trustkeeper-go/Library/common"
+	"trustkeeper-go/library/util"
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"

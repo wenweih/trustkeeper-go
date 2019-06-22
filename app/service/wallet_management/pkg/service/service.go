@@ -9,7 +9,7 @@ import (
 	"trustkeeper-go/app/service/wallet_management/pkg/repository"
 	walletKeyService "trustkeeper-go/app/service/wallet_key/pkg/service"
 	walletKeyGrpcClient "trustkeeper-go/app/service/wallet_key/client"
-	"trustkeeper-go/Library/database/redis"
+	"trustkeeper-go/library/database/redis"
 )
 
 // WalletManagementService describes the service.
@@ -40,7 +40,6 @@ func newBasicWalletManagementService(conf configure.Conf, logger log.Logger) (*b
 	}
 
 	redisPool := redis.NewPool(conf.Redis)
-
 	wkClient, err := walletKeyGrpcClient.New(conf.ConsulAddress, logger)
 	if err != nil {
 		return nil, fmt.Errorf("walletKeyGrpcClient: %s", err.Error())

@@ -3,7 +3,7 @@ package jobs
 import (
   "github.com/gocraft/work"
   "trustkeeper-go/library/database/redis"
-  "trustkeeper-go/Library/common"
+  "trustkeeper-go/library/util"
   service "trustkeeper-go/app/service/dashboard/pkg/service"
 )
 

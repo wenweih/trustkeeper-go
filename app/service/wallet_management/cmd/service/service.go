@@ -26,7 +26,7 @@ import (
 	service "trustkeeper-go/app/service/wallet_management/pkg/service"
 	"trustkeeper-go/app/service/wallet_management/pkg/configure"
 	"trustkeeper-go/library/consul"
-	"trustkeeper-go/Library/common"
+	"trustkeeper-go/library/util"
 	"google.golang.org/grpc/health/grpc_health_v1"
 	"trustkeeper-go/app/service/wallet_management/pkg/jobs"
 )

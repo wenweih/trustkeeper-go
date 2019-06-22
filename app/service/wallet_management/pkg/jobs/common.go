@@ -2,8 +2,8 @@ package jobs
 
 import (
   "github.com/gocraft/work"
-  "trustkeeper-go/Library/database/redis"
-  "trustkeeper-go/Library/common"
+  "trustkeeper-go/library/database/redis"
+  "trustkeeper-go/library/util"
   service "trustkeeper-go/app/service/wallet_management/pkg/service"
 )
 

@@ -23,7 +23,7 @@ func New(redisPool *redis.Pool, db *gorm.DB) IBiz {
   repo := repo{
     db,
     redisPool,
-    &chainRepo{db},
+    &chainRepo{},
     &walletRepo{db},
     &xpubRepo{db}}
   var biz IBiz = &repo

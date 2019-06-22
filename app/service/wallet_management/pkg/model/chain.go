@@ -8,6 +8,6 @@ type Chain struct {
   gorm.Model
   Name  string
   Coin  string
-  Bip44id int // BIP44 公链编号 https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+  Bip44id int  `gorm:"unique_index;not null"`  // BIP44 公链编号 https://github.com/satoshilabs/slips/blob/master/slip-0044.md
   Status  bool
 }

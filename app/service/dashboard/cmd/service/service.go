@@ -27,7 +27,7 @@ import (
 	grpc1 "google.golang.org/grpc"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"trustkeeper-go/Library/common"
+	"trustkeeper-go/library/util"
 	"trustkeeper-go/library/consul"
 	"google.golang.org/grpc/health/grpc_health_v1"
 )

@@ -51,3 +51,8 @@ func (e Endpoints) CreateChain(ctx context.Context, symbol string, bit44ID strin
 	}
 	return nil
 }
+
+// Close implements Service. Primarily useful in a client.
+func (e Endpoints) Close() error {
+	return nil
+}

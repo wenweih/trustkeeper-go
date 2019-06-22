@@ -12,7 +12,7 @@ import (
 
 	"github.com/gocraft/work"
 	"trustkeeper-go/library/database/redis"
-	"trustkeeper-go/library/common"
+	"trustkeeper-go/library/util"
 	"trustkeeper-go/library/database/orm"
 )
 
