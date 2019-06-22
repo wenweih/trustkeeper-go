@@ -37,7 +37,7 @@ func encodeGenerateMnemonicResponse(_ context.Context, r interface{}) (interface
 		}
 		pbXpubs = append(pbXpubs, &pb.Bip44ThirdXpubsForChain{Chain: int32(chainxpub.Chain), Xpubs: pbPubkeys})
 	}
-	return &pb.GenerateMnemonicReply{Chainsxpubs: pbXpubs}, nil
+	return &pb.GenerateMnemonicReply{Chainsxpubs: pbXpubs, Version: resp.Version}, nil
 }
 
 func (g *grpcServer) GenerateMnemonic(ctx context1.Context, req *pb.GenerateMnemonicRequest) (*pb.GenerateMnemonicReply, error) {

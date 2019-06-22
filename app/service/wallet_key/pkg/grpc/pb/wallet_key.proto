@@ -25,4 +25,5 @@ message Bip44ThirdXpubsForChain {
 
 message GenerateMnemonicReply {
   repeated Bip44ThirdXpubsForChain chainsxpubs = 1;
+  string version = 2;
 }

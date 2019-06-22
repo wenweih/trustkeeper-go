@@ -49,5 +49,5 @@ func decodeGenerateMnemonicResponse(_ context.Context, reply interface{}) (inter
     }
     xpubs = append(xpubs, &service.Bip44ThirdXpubsForChain{Chain: int(chainwithxpubs.Chain), Xpubs: bip44AccountKeys})
   }
-  return endpoint1.GenerateMnemonicResponse{ChainsXpubs: xpubs}, nil
+  return endpoint1.GenerateMnemonicResponse{ChainsXpubs: xpubs, Version: r.Version}, nil
 }

@@ -20,9 +20,9 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 }
 
-func (l loggingMiddleware) GenerateMnemonic(ctx context.Context, namespaceid string, bip44ids []int32, bip44accountSize int) (xpubs []*Bip44ThirdXpubsForChain, err error) {
+func (l loggingMiddleware) GenerateMnemonic(ctx context.Context, namespaceid string, bip44ids []int32, bip44accountSize int) (xpubs []*Bip44ThirdXpubsForChain, version string, err error) {
 	defer func() {
-		l.logger.Log("method", "GenerateMnemonic", "namespaceid", namespaceid, "err", err)
+		l.logger.Log("method", "GenerateMnemonic", "version", version, "err", err)
 	}()
 	return l.next.GenerateMnemonic(ctx, namespaceid, bip44ids, bip44accountSize)
 }

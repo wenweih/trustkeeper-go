@@ -33,7 +33,7 @@ func main()  {
   }
 
   asset := []int32{int32(0), int32(60), int32(66)}
-  chainsWithXpubs, err := s.GenerateMnemonic(context.Background(), "aaaaa", asset, 10)
+  chainsWithXpubs, version, err := s.GenerateMnemonic(context.Background(), "aaaaa", asset, 10)
   if err != nil {
     logger.Log("GenerateMnemonic:", err.Error())
   }
@@ -41,7 +41,7 @@ func main()  {
   for _, chainwithXpubs := range chainsWithXpubs {
     for _, xpub := range chainwithXpubs.Xpubs {
       xpubTmp := xpub
-     logger.Log("chain:", chainwithXpubs.Chain, " xpub account:", xpubTmp.Account, " xpub key:", xpubTmp.Key)
+     logger.Log("chain:", chainwithXpubs.Chain, " xpub account:", xpubTmp.Account, " xpub key:", xpubTmp.Key, "version:", version)
     }
   }
 }

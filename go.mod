@@ -4,9 +4,10 @@ go 1.12
 
 require (
 	cloud.google.com/go v0.39.0 // indirect
-	github.com/DATA-DOG/go-sqlmock v1.3.3
+	github.com/DATA-DOG/go-sqlmock v1.3.3 // indirect
 	github.com/DataDog/zstd v1.4.0 // indirect
 	github.com/OneOfOne/xxhash v1.2.5 // indirect
+	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/Shopify/sarama v1.22.1 // indirect
 	github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 // indirect
 	github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878 // indirect
@@ -51,6 +52,7 @@ require (
 	github.com/lightstep/lightstep-tracer-go v0.16.0
 	github.com/mattn/go-colorable v0.1.2 // indirect
 	github.com/miekg/dns v1.1.14 // indirect
+	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
 	github.com/oklog/oklog v0.3.2
 	github.com/onsi/ginkgo v1.8.0 // indirect
@@ -70,6 +72,7 @@ require (
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.3.0
+	github.com/syndtr/goleveldb v1.0.0
 	github.com/tyler-smith/go-bip39 v1.0.0
 	go.etcd.io/etcd v3.3.13+incompatible // indirect
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8

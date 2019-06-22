@@ -10,4 +10,6 @@ const (
   WalletKeySrv = "/services/walletkey/"
 
   WalletManagementSrv = "/services/walletmanagement/"
+
+  LevelDBDir = "tk_w"
 )
