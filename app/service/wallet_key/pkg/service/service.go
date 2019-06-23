@@ -33,6 +33,7 @@ func (b *basicWalletKeyService) Close() error{
 	return b.biz.Close()
 }
 
+// GenerateMnemonic return chainsWithXpubs is slice of Bip44ThirdXpubsForChain pointer
 func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, namespaceID string, bip44ids []int32, bip44accountSize int) (chainsWithXpubs []*Bip44ThirdXpubsForChain, version string, err error) {
 	// https://matthewdowney.github.io/extract-xpub-ethereum-bitcoin-ledger-nano-s.html
 	// Generate a mnemonic for memorization or user-friendly seeds
@@ -59,14 +60,16 @@ func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, namespaceI
 		return nil, "", err
 	}
 
-	chainsWithXpubs = []*Bip44ThirdXpubsForChain{}
-	for _, bip44id := range bip44ids {
+	// Defining a function that returns a slice of variable size in golang
+	// https://stackoverflow.com/questions/22317329/defining-a-function-that-returns-a-slice-of-variable-size-in-golang
+	chainsWithXpubs = make([]*Bip44ThirdXpubsForChain, len(bip44ids))
+	for i, bip44id := range bip44ids {
 		// m / 44' / coin_type'
 		coinTypeH, err := acc44H.Child(hdkeychain.HardenedKeyStart + uint32(bip44id))
 		if err != nil {
 			return nil, "", err
 		}
-		xpubs := []*Bip44AccountKey{}
+		xpubs := make([]*Bip44AccountKey, bip44accountSize)
 		for account := 0;account < bip44accountSize;account++ {
 			// m / 44' / coin_type' / account'
 			accountH, err := coinTypeH.Child(hdkeychain.HardenedKeyStart + uint32(account))
@@ -77,9 +80,9 @@ func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, namespaceI
 			if err != nil {
 				return nil, "", err
 			}
-			xpubs = append(xpubs, &Bip44AccountKey{Account: account, Key: xpub.String()})
+			xpubs[account] = &Bip44AccountKey{Account: account, Key: xpub.String()}
 		}
-		chainsWithXpubs = append(chainsWithXpubs, &Bip44ThirdXpubsForChain{Chain: int(bip44id), Xpubs: xpubs})
+		chainsWithXpubs[i] = &Bip44ThirdXpubsForChain{Chain: int(bip44id), Xpubs: xpubs}
 	}
 	version, err = b.biz.SaveMnemonic(namespaceID, []byte(mnemonic))
 	if err != nil {
