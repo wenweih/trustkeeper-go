@@ -2,7 +2,9 @@ package service
 
 import (
   "context"
+  "github.com/jinzhu/copier"
   "github.com/gomodule/redigo/redis"
+  "trustkeeper-go/app/service/wallet_management/pkg/repository"
 )
 
 type JobService interface {
@@ -15,28 +17,22 @@ func (b *basicWalletManagementService) RedisInstance() *redis.Pool {
 }
 
 func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, namespaceID string) error {
-  // TODO wallet_key service generate xpub
-  // xpub, err := b.KeySrv.GenerateMnemonic(ctx, uuid)
-  // if err != nil {
-  //   return err
-  // }
-  //
-  // return b.biz.Signup(uuid, email, orgName, xpub)
-  // params: namespaceid as levelDB key, slices for default bip44id of chain, default size for response xpub
-  // response:
-  // [
-  //   {
-  //     "chainid": xxx,
-  //     [
-  //       {
-  //         "bip44account": xxx,
-  //         "key": xxx
-  //       }
-  //       ...
-  //     ]
-  //   },
-  //   ...
-  // ]
-  // _, err := b.KeySrv.GenerateMnemonic(ctx, namespaceID)
-  return nil
+  chains, err := b.biz.GetChains()
+  if err != nil {
+    return err
+  }
+
+  // https://huangwenwei.com/blogs/how-to-use-slice-capacity-and-length-in-go
+  bip44ids := make([]int32, len(chains))
+  for i, chain := range chains {
+    bip44ids[i] = int32(chain.Bip44id)
+  }
+  bip44ThirdXpubsForChains, version, err := b.KeySrv.GenerateMnemonic(ctx, namespaceID, bip44ids, 10)
+  if err != nil {
+    return err
+  }
+  localBip44ThirdXpubsForChains := []*repository.Bip44ThirdXpubsForChain{}
+  copier.Copy(&localBip44ThirdXpubsForChains, &bip44ThirdXpubsForChains)
+
+  return b.biz.Signup(version, localBip44ThirdXpubsForChains)
 }
