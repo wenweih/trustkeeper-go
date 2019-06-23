@@ -13,19 +13,22 @@ type repo struct {
   iChainRepo
   iWalletRepo
   iXpubRepo
+  imnemonicVersionRepo
 }
 
 // New new repo
 func New(redisPool *redis.Pool, db *gorm.DB) IBiz {
   db.AutoMigrate(
     model.Wallet{},
-    model.Xpub{})
+    model.Xpub{},
+    model.MnemonicVersion{})
   repo := repo{
     db,
     redisPool,
     &chainRepo{},
     &walletRepo{db},
-    &xpubRepo{db}}
+    &xpubRepo{},
+    &mnemonicVersionRepo{}}
   var biz IBiz = &repo
   return biz
 }

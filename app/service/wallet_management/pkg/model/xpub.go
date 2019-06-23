@@ -7,10 +7,11 @@ import (
 // Xpub for organization
 type Xpub struct {
   gorm.Model
-  UUID          string    `gorm:"unique_index;not null"`
   Key           string    `gorm:"type:varchar(500);index"`
   Status        bool      `gorm:"default:true"`
-  ChainID       int8
+  Bip44ChainID  int
   BIP44Account  int
   GroupID       int8
+  MnemonicVersionID uint
+  MnemonicVersion MnemonicVersion
 }

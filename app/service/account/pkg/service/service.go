@@ -52,16 +52,9 @@ func (b *basicAccountService) Create(ctx context.Context, email, password, orgNa
 		work.Q{"namespaceid": namespaceid}); err != nil {
 		return "", err
 	}
-
-	// if _, err := b.jobEnqueuer.Enqueue(common.SignUpJobs,
-	// 	work.Q{"uuid": uuid,
-	// 		"email": email,
-	// 		"orgname": orgName}); err != nil {
-	// 	return "", err
-	// }
+	// TODO: add SignUp Jobs (send email etc)
 	return uuid, nil
 }
-
 
 // https://www.sohamkamani.com/blog/golang/2019-01-01-jwt-authentication/
 func (b *basicAccountService) Signin(ctx context.Context, email string, password string) (string, error) {
