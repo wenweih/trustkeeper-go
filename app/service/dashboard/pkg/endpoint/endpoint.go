@@ -3,18 +3,18 @@ package endpoint
 import (
 	"context"
 	service "trustkeeper-go/app/service/dashboard/pkg/service"
-
+	"trustkeeper-go/app/service/dashboard/pkg/repository"
 	endpoint "github.com/go-kit/kit/endpoint"
 )
 
 // GetGroupsRequest collects the request parameters for the GetGroups method.
 type GetGroupsRequest struct {
-	Uuid string `json:"uuid"`
+	NamespaceID uint `json:"namespaceid"`
 }
 
 // GetGroupsResponse collects the response parameters for the GetGroups method.
 type GetGroupsResponse struct {
-	Groups []*service.Group `json:"groups"`
+	Groups []*repository.GetGroupsResp `json:"groups"`
 	Err    error            `json:"err"`
 }
 
@@ -22,7 +22,7 @@ type GetGroupsResponse struct {
 func MakeGetGroupsEndpoint(s service.DashboardService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetGroupsRequest)
-		groups, err := s.GetGroups(ctx, req.Uuid)
+		groups, err := s.GetGroups(ctx, req.NamespaceID)
 		return GetGroupsResponse{
 			Err:    err,
 			Groups: groups,
@@ -43,8 +43,8 @@ type Failure interface {
 }
 
 // GetGroups implements Service. Primarily useful in a client.
-func (e Endpoints) GetGroups(ctx context.Context, uuid string) (groups []*service.Group, err error) {
-	request := GetGroupsRequest{Uuid: uuid}
+func (e Endpoints) GetGroups(ctx context.Context, namespaceID uint) (groups []*repository.GetGroupsResp, err error) {
+	request := GetGroupsRequest{}
 	response, err := e.GetGroupsEndpoint(ctx, request)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ type CreateGroupRequest struct {
 	UUID 			string `json:"uuid"`
 	Name 			string `json:"name"`
 	Desc			string `json:"desc"`
-	ParentID	string `json:"parentid"`
+	NamespaceID	uint `json:"namespaceid"`
 }
 
 // CreateGroupResponse collects the response parameters for the CreateGroup method.
@@ -70,9 +70,11 @@ type CreateGroupResponse struct {
 func MakeCreateGroupEndpoint(s service.DashboardService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateGroupRequest)
-		result, err := s.CreateGroup(ctx, req.UUID, req.Name, req.Desc, req.ParentID)
+		result, err := s.CreateGroup(ctx, req.UUID, req.Name, req.Desc, req.NamespaceID)
+		if err != nil {
+			return nil, err
+		}
 		return CreateGroupResponse{
-			Err:    err,
 			Result: result,
 		}, nil
 	}
@@ -84,13 +86,13 @@ func (r CreateGroupResponse) Failed() error {
 }
 
 // CreateGroup implements Service. Primarily useful in a client.
-func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc, parentID string) (result bool, err error) {
-	request := CreateGroupRequest{UUID: uuid, Name: name, Desc: desc, ParentID: parentID}
+func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (result bool, err error) {
+	request := CreateGroupRequest{UUID: uuid, Name: name, Desc: desc, NamespaceID: namespaceID}
 	response, err := e.CreateGroupEndpoint(ctx, request)
 	if err != nil {
-		return
+		return false, err
 	}
-	return response.(CreateGroupResponse).Result, response.(CreateGroupResponse).Err
+	return response.(CreateGroupResponse).Result, nil
 }
 
 // Close implements Service. Primarily useful in a client.

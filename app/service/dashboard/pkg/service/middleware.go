@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-
+	"trustkeeper-go/app/service/dashboard/pkg/repository"
 	log "github.com/go-kit/kit/log"
 )
 
@@ -22,14 +22,14 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 	}
 }
 
-func (l loggingMiddleware) GetGroups(ctx context.Context, uuid string) (groups []*Group, err error) {
+func (l loggingMiddleware) GetGroups(ctx context.Context, namespaceID uint) (groups []*repository.GetGroupsResp, err error) {
 	defer func() {
-		l.logger.Log("method", "GetGroups", "uuid", uuid, "err", err)
+		l.logger.Log("method", "GetGroups", "namespaceID", namespaceID, "err", err)
 	}()
-	return l.next.GetGroups(ctx, uuid)
+	return l.next.GetGroups(ctx, namespaceID)
 }
 
-func (l loggingMiddleware) CreateGroup(ctx context.Context, uuid, name, desc, namespaceID string) (result bool, err error) {
+func (l loggingMiddleware) CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (result bool, err error) {
 	defer func() {
 		l.logger.Log("method", "CreateGroup", "uuid", uuid, "result", result, "err", err)
 	}()

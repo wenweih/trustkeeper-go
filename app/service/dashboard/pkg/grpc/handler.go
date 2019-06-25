@@ -3,7 +3,6 @@ package grpc
 import (
 	"fmt"
 	"context"
-	"errors"
 	endpoint "trustkeeper-go/app/service/dashboard/pkg/endpoint"
 	pb "trustkeeper-go/app/service/dashboard/pkg/grpc/pb"
 
@@ -18,17 +17,28 @@ func makeGetGroupsHandler(endpoints endpoint.Endpoints, options []grpc.ServerOpt
 
 // decodeGetGroupsResponse is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC request to a user-domain GetGroups request.
-// TODO implement the decoder
 func decodeGetGroupsRequest(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Dashboard' Decoder is not impelemented")
+	req, ok := r.(*pb.GetGroupsRequest)
+	if !ok {
+		return nil, fmt.Errorf("interface{} to pb GetGroupsRequest type assertion error")
+	}
+	return endpoint.GetGroupsRequest{NamespaceID: uint(req.NamespaceID)}, nil
 }
 
 // encodeGetGroupsResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeGetGroupsResponse(_ context.Context, r interface{}) (interface{}, error) {
-	return nil, errors.New("'Dashboard' Encoder is not impelemented")
+	resp, ok := r.(endpoint.GetGroupsResponse)
+	if !ok {
+		return nil, fmt.Errorf("interface{} to endpoint GetGroupsResponse type assertion error")
+	}
+	pbGroups := []*pb.Group{}
+	for _, g := range resp.Groups {
+		pbGroups = append(pbGroups, &pb.Group{Name: g.Name})
+	}
+	return &pb.GetGroupsReply{Groups: pbGroups}, nil
 }
+
 func (g *grpcServer) GetGroups(ctx context1.Context, req *pb.GetGroupsRequest) (*pb.GetGroupsReply, error) {
 	_, rep, err := g.getGroups.ServeGRPC(ctx, req)
 	if err != nil {

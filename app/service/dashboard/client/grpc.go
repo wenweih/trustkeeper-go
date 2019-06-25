@@ -4,6 +4,7 @@ package client
 import (
   "fmt"
   "context"
+  "trustkeeper-go/app/service/dashboard/pkg/repository"
   endpoint "github.com/go-kit/kit/endpoint"
 	grpc1 "github.com/go-kit/kit/transport/grpc"
 	grpc "google.golang.org/grpc"
@@ -50,7 +51,7 @@ func decodeCreateGroupResponse(_ context.Context, reply interface{}) (interface{
   if !ok{
     return nil, fmt.Errorf("pb CreateReply type assertion error")
   }
-  return &endpoint1.CreateGroupResponse{Result: resp.Result}, nil
+  return endpoint1.CreateGroupResponse{Result: resp.Result}, nil
 }
 
 // encodeGetGroupsRequest is a transport/grpc.EncodeRequestFunc that converts a
@@ -60,15 +61,21 @@ func encodeGetGroupsRequest(_ context.Context, request interface{}) (interface{}
   if !ok {
     return nil, fmt.Errorf("request interface to endpoint.GetGroupsRequest type assertion error")
   }
-  return &pb.GetGroupsRequest{Uuid: r.Uuid}, nil
+  return &pb.GetGroupsRequest{NamespaceID: uint32(r.NamespaceID)}, nil
 }
 
 // decodeGetGroupsResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeGetGroupsResponse(_ context.Context, reply interface{}) (interface{}, error) {
-  _, ok := reply.(*pb.GetGroupsReply)
+  resp, ok := reply.(*pb.GetGroupsReply)
   if !ok{
     return nil, fmt.Errorf("pb GetGroupsReply type assertion error")
   }
-  return endpoint1.GetGroupsResponse{}, nil
+
+  groupsResp := make([]*repository.GetGroupsResp, len(resp.Groups))
+  for i, g := range resp.Groups {
+    groupsResp[i] = &repository.GetGroupsResp{Name: g.Name}
+  }
+
+  return endpoint1.GetGroupsResponse{Groups: groupsResp}, nil
 }

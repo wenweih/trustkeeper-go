@@ -31,10 +31,18 @@ func main()  {
   if err != nil {
     logger.Log("service client error: ", err.Error())
   }
-  ctx := context.Background()
-  for _, str := range []string{"aa", "bb", "ccc", "ee", "dd", "ff", "gg", "hh"} {
-    if _, err := s.GetGroups(ctx, str); err != nil {
+  _, err = s.CreateGroup(context.Background(), "546e1345-4c4c-44c9-9baf-04f3cdc908ec", "testGroup", "desc", uint(462832467565871105))
+  if err != nil {
+    logger.Log("CreateGroup error: ", err.Error())
+  }
+
+  for _, namespaceID := range []uint{uint(462832467565871105)} {
+    groups, err := s.GetGroups(context.Background(), namespaceID)
+    if err != nil {
       logger.Log("GetGroups error: ", err.Error())
+    }
+    for _, g := range groups {
+      logger.Log("Group:", g.Name)
     }
   }
 }

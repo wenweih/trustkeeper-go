@@ -6,35 +6,33 @@ import (
 	"trustkeeper-go/app/service/dashboard/pkg/configure"
 	"trustkeeper-go/app/service/dashboard/pkg/repository"
 	"trustkeeper-go/app/service/dashboard/pkg/model"
-	// walletKeyGrpcClient "trustkeeper-go/app/service/wallet_key/client/grpc"
-	walletKeyService "trustkeeper-go/app/service/wallet_key/pkg/service"
 	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
 	walletManagementGrpcClient "trustkeeper-go/app/service/wallet_management/client"
 	log "github.com/go-kit/kit/log"
+	"trustkeeper-go/library/database/orm"
 )
-
-type Group struct {
-	Name string
-}
 
 // DashboardService describes the service.
 type DashboardService interface {
-	CreateGroup(ctx context.Context, uuid, name, desc, namespaceID string) (result bool, err error)
-	GetGroups(ctx context.Context, uuid string) (groups []*Group, err error)
+	CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (result bool, err error)
+	GetGroups(ctx context.Context, namespaceID uint) (groups []*repository.GetGroupsResp, err error)
+	Close() error
 }
 
 type basicDashboardService struct {
 	biz				repository.IBiz
-	KeySrv	walletKeyService.WalletKeyService
 	WalletSrv walletManagementService.WalletManagementService
-
 }
 
-func (b *basicDashboardService) GetGroups(ctx context.Context, uuid string) (groups []*Group, err error) {
-	return groups, err
+func (b *basicDashboardService) Close() error{
+	return b.biz.Close()
 }
 
-func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc, namespaceID string) (bool, error) {
+func (b *basicDashboardService) GetGroups(ctx context.Context, namespaceID uint) (groups []*repository.GetGroupsResp, err error) {
+	return b.biz.GetGroups(map[string]interface{}{"namespace_id": namespaceID})
+}
+
+func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc string, namespaceID uint) (bool, error) {
 	group := &model.Group{CreatorID: usrID, Name: name, Desc: desc, NamespaceID: namespaceID}
 	err := b.biz.Group(group)
 	if err != nil {
@@ -45,7 +43,7 @@ func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, de
 
 // NewBasicDashboardService returns a naive, stateless implementation of DashboardService.
 func NewBasicDashboardService(conf configure.Conf, logger log.Logger) (*basicDashboardService, error) {
-	db, err := repository.DB(conf.DBInfo)
+	db, err := orm.DB(conf.DBInfo)
 	if err != nil {
 		return nil, err
 	}
@@ -54,10 +52,8 @@ func NewBasicDashboardService(conf configure.Conf, logger log.Logger) (*basicDas
 		return nil, fmt.Errorf("walletManagementGrpcClient: %s", err.Error())
 	}
 
-
 	bas := basicDashboardService{
 		biz: repository.New(db),
-		// walletSrv: walletKeyServiceClient,
 		WalletSrv: wmClient,
 	}
 	return &bas, nil
