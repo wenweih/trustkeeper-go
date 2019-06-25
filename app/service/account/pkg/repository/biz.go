@@ -1,6 +1,7 @@
 package repository
 
 import (
+  "context"
   "time"
   "errors"
   "strconv"
@@ -17,11 +18,11 @@ type Claims struct {
 
 // IBiz repository bussiness logic
 type IBiz interface {
-  Signup(email, password, orgName string) (uuid string, namespaceID string, err error)
+  Signup(email, password, orgName string) (uuid, namespaceID string, err error)
   Signin(email, password, jwtKey string) (token string, err error)
   Signout(tokenID string) error
-  QueryRoles(tokenID string) (roles []string, err error)
-  Auth(tokenID string) (accountuid string, namespaceid *uint, err error)
+  QueryRoles(ctx context.Context, tokenID string) (roles []string, err error)
+  Auth(ctx context.Context, tokenID string) (accountuid string, namespaceid *uint, err error)
   Close() error
 }
 
@@ -29,7 +30,7 @@ func (repo *repo)Close() error{
   return repo.close()
 }
 
-func (repo *repo) Signup(email, password, orgName string) (uid string, namespaceID string, err error) {
+func (repo *repo) Signup(email, password, orgName string) (uid, namespaceID string, err error) {
   // Salt and hash the password using the bcrypt algorithm
   hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -62,10 +63,8 @@ func (repo *repo) Signup(email, password, orgName string) (uid string, namespace
   return uuid.String(), namespaceID, nil
 }
 
-func (repo *repo)Signin(email, password, jwtKey string) (string, error) {
-  accounts, err :=repo.iAccountRepo.Query(repo.db, map[string]interface{}{
-    "email": email,
-  })
+func (repo *repo) Signin(email, password, jwtKey string) (string, error) {
+  accounts, err := repo.iAccountRepo.Query(context.Background(), repo.db, &model.Account{Email: email})
   if err != nil {
     return "", err
   }
@@ -94,16 +93,25 @@ func (repo *repo)Signin(email, password, jwtKey string) (string, error) {
   if err := repo.iAccountRepo.Update(ts, acc, map[string]interface{}{"token_id": tokenID}); err != nil {
     return "", err
   }
+  if err := ts.Commit().Error; err != nil {
+    return "", err
+  }
   return tokenStr, nil
 }
 
-func (repo *repo)QueryRoles(tokenID string) ([]string, error) {
-  return repo.Roles(repo.db, tokenID)
+func (repo *repo) QueryRoles(ctx context.Context, tokenID string) ([]string, error) {
+  accounts, err := repo.iAccountRepo.Query(ctx, repo.db, &model.Account{TokenID: tokenID})
+  if err != nil {
+    return nil, err
+  }
+  if len(accounts) != 1 {
+    return nil, errors.New("multiple accounts when query roles")
+  }
+  return repo.iAccountRepo.Roles(repo.db, accounts[0])
 }
 
-func (repo *repo)Signout(tokenID string) error {
-  accounts, err := repo.iAccountRepo.Query(repo.db, map[string]interface{}{
-    "token_id": tokenID})
+func (repo *repo) Signout(tokenID string) error {
+  accounts, err := repo.iAccountRepo.Query(context.Background(), repo.db, &model.Account{TokenID: tokenID})
   if err != nil {
     return err
   }
@@ -118,11 +126,10 @@ func (repo *repo)Signout(tokenID string) error {
   return tx.Commit().Error
 }
 
-func (repo *repo)Auth(tokenID string) (string, *uint, error) {
-  accounts, err := repo.iAccountRepo.Query(repo.db, map[string]interface{}{
-    "token_id": tokenID})
+func (repo *repo) Auth(ctx context.Context, tokenID string) (string, *uint, error) {
+  accounts, err := repo.iAccountRepo.Query(ctx, repo.db, &model.Account{TokenID: tokenID})
   if err != nil {
-    return "", nil, err
+    return "", nil, errors.New("Biz query accounts error:" + err.Error())
   }
 
   if len(accounts) > 1{

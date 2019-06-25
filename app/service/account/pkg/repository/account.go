@@ -1,8 +1,8 @@
 package repository
 
 import (
-  "fmt"
   "strconv"
+  "context"
   "errors"
   "github.com/jinzhu/gorm"
   "trustkeeper-go/app/service/account/pkg/model"
@@ -15,41 +15,29 @@ type accountRepo struct {
 
 type iAccountRepo interface {
   Create(tx *gorm.DB, m *model.Account) *gorm.DB
-  Query(tx *gorm.DB, query map[string]interface{}) ([]*model.Account, error)
+  Query(ctx context.Context, tx *gorm.DB, query *model.Account) ([]*model.Account, error)
   Update(tx *gorm.DB, acc *model.Account, colums map[string]interface{}) error
-  Roles(tx *gorm.DB, tokenID string) (roles []string, err error)
+  Roles(tx *gorm.DB, account *model.Account) (roles []string, err error)
   AddRoleForUserInDomain(accountUID, NamespaceID, role string) (result bool)
 }
 
-func (repo *accountRepo)Query(tx *gorm.DB, query map[string]interface{}) (accounts []*model.Account, err error) {
-  err = tx.Preload("Namespace").Where(query).Find(&accounts).Error
+func (repo *accountRepo) Query(ctx context.Context, tx *gorm.DB, query *model.Account) (accounts []*model.Account, err error) {
+  result := tx.Set("gorm:auto_preload", true).Find(&accounts, query)
+  if result.Error != nil {
+    return nil, errors.New("Account Query error: " + err.Error())
+  }
   if len(accounts) < 1 {
     return nil, errors.New("Empty records")
   }
-  return
+  return accounts, nil
 }
 
 func (repo *accountRepo)Create(tx *gorm.DB, m *model.Account) *gorm.DB {
   return tx.Create(m)
 }
 
-func (repo *accountRepo) findByTokenID(tx *gorm.DB, id string) (*model.Account, error) {
-  var acc model.Account
-  if err := tx.Preload("Namespace").Find(&acc, "token_id = ?", id).Error; err != nil {
-    return nil, err
-  }
-  return &acc, nil
-}
-
 func (repo *accountRepo) Update(tx *gorm.DB, acc *model.Account, colums map[string]interface{}) error {
   return tx.Model(acc).Update(colums).Error
-}
-
-func (repo *accountRepo) GetRoles(tx *gorm.DB, acc *model.Account) (roles []string) {
-  roles = repo.Enforcer.GetRolesForUserInDomain(acc.UUID, strconv.FormatUint(uint64(acc.Namespace.ID), 10))
-  fmt.Println("roles: ", roles, " namespace: ", acc.Namespace.ID)
-  return
-  // return repo.Enforcer.GetRolesForUser(acc.UUID)
 }
 
 // https://github.com/casbin/casbin/blob/master/rbac/default-role-manager/role_manager_test.go
@@ -61,12 +49,8 @@ func (repo *accountRepo) AddRoleForUserInDomain(accountUID, NamespaceID, role st
   return
 }
 
-func (repo *accountRepo)Roles(tx *gorm.DB, tokenID string) ([]string, error) {
-  acc, err := repo.findByTokenID(tx, tokenID)
-  if err != nil {
-    return nil, err
-  }
-  roles := repo.Enforcer.GetRolesForUserInDomain(acc.UUID, strconv.FormatUint(uint64(acc.Namespace.ID), 10))
-  fmt.Println("roles: ", roles, " namespace: ", acc.Namespace.ID)
+func (repo *accountRepo) Roles(tx *gorm.DB, account *model.Account) ([]string, error) {
+  namespaceID := strconv.FormatUint(uint64(account.Namespace.ID), 10)
+  roles := repo.Enforcer.GetRolesForUserInDomain(account.UUID, namespaceID)
   return roles, nil
 }
