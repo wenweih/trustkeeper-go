@@ -18,7 +18,7 @@ func New(db *gorm.DB) IBiz {
     model.Group{})
   repo := repo{
     db,
-    &groupRepo{db}}
+    &groupRepo{}}
   var biz IBiz = &repo
   return biz
 }
