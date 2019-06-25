@@ -22,7 +22,7 @@ func New(redisPool *redis.Pool, db *gorm.DB, jwtKey string) IBiz {
   repo := repo{
     db,
     redisPool,
-    &accountRepo{db: db, Enforcer: enforcer.NewCasbinEnforcer(db)},
+    &accountRepo{Enforcer: enforcer.NewCasbinEnforcer(db)},
     &namespaceRepo{}}
   var biz IBiz = &repo
   return biz

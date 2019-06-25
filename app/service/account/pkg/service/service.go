@@ -22,7 +22,7 @@ type AccountService interface {
 	Signin(ctx context.Context, email, password string) (token string, err error)
 	Signout(ctx context.Context) error
 	Roles(ctx context.Context) ([]string, error)
-	Auth(ctx context.Context) (uuid string, err error)
+	Auth(ctx context.Context) (accountuid string, namespaceid *uint, err error)
 	Close() error
 }
 
@@ -78,10 +78,10 @@ func (b *basicAccountService) Roles(ctx context.Context) ([]string, error) {
 }
 
 
-func (b *basicAccountService) Auth(ctx context.Context) (uuid string, err error) {
+func (b *basicAccountService) Auth(ctx context.Context) (accountuid string, namespaceid *uint, err error) {
 	tokenID, err := extractTOkenIDFromContext(ctx, b.jwtKey)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 	return b.biz.Auth(tokenID)
 }

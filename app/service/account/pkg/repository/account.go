@@ -10,20 +10,19 @@ import (
 )
 
 type accountRepo struct {
-  db *gorm.DB
   *stdcasbin.Enforcer  // authorization service
 }
 
 type iAccountRepo interface {
   Create(tx *gorm.DB, m *model.Account) *gorm.DB
-  Query(query map[string]interface{}) ([]*model.Account, error)
-  Update(acc *model.Account, colums map[string]interface{}) error
-  Roles(tokenID string) (roles []string, err error)
+  Query(tx *gorm.DB, query map[string]interface{}) ([]*model.Account, error)
+  Update(tx *gorm.DB, acc *model.Account, colums map[string]interface{}) error
+  Roles(tx *gorm.DB, tokenID string) (roles []string, err error)
   AddRoleForUserInDomain(accountUID, NamespaceID, role string) (result bool)
 }
 
-func (repo *accountRepo)Query(query map[string]interface{}) (accounts []*model.Account, err error) {
-  err = repo.db.Where(query).Find(&accounts).Error
+func (repo *accountRepo)Query(tx *gorm.DB, query map[string]interface{}) (accounts []*model.Account, err error) {
+  err = tx.Preload("Namespace").Where(query).Find(&accounts).Error
   if len(accounts) < 1 {
     return nil, errors.New("Empty records")
   }
@@ -34,19 +33,19 @@ func (repo *accountRepo)Create(tx *gorm.DB, m *model.Account) *gorm.DB {
   return tx.Create(m)
 }
 
-func (repo *accountRepo) findByTokenID(id string) (*model.Account, error) {
+func (repo *accountRepo) findByTokenID(tx *gorm.DB, id string) (*model.Account, error) {
   var acc model.Account
-  if err := repo.db.Preload("Namespace").Find(&acc, "token_id = ?", id).Error; err != nil {
+  if err := tx.Preload("Namespace").Find(&acc, "token_id = ?", id).Error; err != nil {
     return nil, err
   }
   return &acc, nil
 }
 
-func (repo *accountRepo) Update(acc *model.Account, colums map[string]interface{}) error {
-  return repo.db.Model(acc).Update(colums).Error
+func (repo *accountRepo) Update(tx *gorm.DB, acc *model.Account, colums map[string]interface{}) error {
+  return tx.Model(acc).Update(colums).Error
 }
 
-func (repo *accountRepo) GetRoles(acc *model.Account) (roles []string) {
+func (repo *accountRepo) GetRoles(tx *gorm.DB, acc *model.Account) (roles []string) {
   roles = repo.Enforcer.GetRolesForUserInDomain(acc.UUID, strconv.FormatUint(uint64(acc.Namespace.ID), 10))
   fmt.Println("roles: ", roles, " namespace: ", acc.Namespace.ID)
   return
@@ -62,8 +61,8 @@ func (repo *accountRepo) AddRoleForUserInDomain(accountUID, NamespaceID, role st
   return
 }
 
-func (repo *accountRepo)Roles(tokenID string) ([]string, error) {
-  acc, err := repo.findByTokenID(tokenID)
+func (repo *accountRepo)Roles(tx *gorm.DB, tokenID string) ([]string, error) {
+  acc, err := repo.findByTokenID(tx, tokenID)
   if err != nil {
     return nil, err
   }

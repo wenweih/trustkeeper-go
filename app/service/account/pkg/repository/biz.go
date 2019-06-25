@@ -21,7 +21,7 @@ type IBiz interface {
   Signin(email, password, jwtKey string) (token string, err error)
   Signout(tokenID string) error
   QueryRoles(tokenID string) (roles []string, err error)
-  Auth(tokenID string) (uuid string, err error)
+  Auth(tokenID string) (accountuid string, namespaceid *uint, err error)
   Close() error
 }
 
@@ -63,7 +63,7 @@ func (repo *repo) Signup(email, password, orgName string) (uid string, namespace
 }
 
 func (repo *repo)Signin(email, password, jwtKey string) (string, error) {
-  accounts, err :=repo.iAccountRepo.Query(map[string]interface{}{
+  accounts, err :=repo.iAccountRepo.Query(repo.db, map[string]interface{}{
     "email": email,
   })
   if err != nil {
@@ -90,18 +90,19 @@ func (repo *repo)Signin(email, password, jwtKey string) (string, error) {
   if err != nil {
     return "", err
   }
-  if err := repo.iAccountRepo.Update(acc, map[string]interface{}{"token_id": tokenID}); err != nil {
+  ts := repo.db.Begin()
+  if err := repo.iAccountRepo.Update(ts, acc, map[string]interface{}{"token_id": tokenID}); err != nil {
     return "", err
   }
   return tokenStr, nil
 }
 
 func (repo *repo)QueryRoles(tokenID string) ([]string, error) {
-  return repo.Roles(tokenID)
+  return repo.Roles(repo.db, tokenID)
 }
 
 func (repo *repo)Signout(tokenID string) error {
-  accounts, err := repo.iAccountRepo.Query(map[string]interface{}{
+  accounts, err := repo.iAccountRepo.Query(repo.db, map[string]interface{}{
     "token_id": tokenID})
   if err != nil {
     return err
@@ -110,18 +111,22 @@ func (repo *repo)Signout(tokenID string) error {
   if len(accounts) > 1{
     return errors.New("database error")
   }
-  return repo.iAccountRepo.Update(accounts[0], map[string]interface{}{"token_id": nil})
+  tx := repo.db.Begin()
+  if err := repo.iAccountRepo.Update(tx, accounts[0], map[string]interface{}{"token_id": nil}); err != nil {
+    return err
+  }
+  return tx.Commit().Error
 }
 
-func (repo *repo)Auth(tokenID string) (string, error) {
-  accounts, err := repo.iAccountRepo.Query(map[string]interface{}{
+func (repo *repo)Auth(tokenID string) (string, *uint, error) {
+  accounts, err := repo.iAccountRepo.Query(repo.db, map[string]interface{}{
     "token_id": tokenID})
   if err != nil {
-    return "", err
+    return "", nil, err
   }
 
   if len(accounts) > 1{
-    return "", errors.New("database error")
+    return "", nil, errors.New("database error")
   }
-  return accounts[0].UUID, nil
+  return accounts[0].UUID, &accounts[0].Namespace.ID, nil
 }
