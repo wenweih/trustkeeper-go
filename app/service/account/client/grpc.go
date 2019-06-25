@@ -66,11 +66,11 @@ func encodeCreateRequest(_ context.Context, request interface{}) (interface{}, e
 // decodeCreateResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeCreateResponse(_ context.Context, reply interface{}) (interface{}, error) {
-  _, found := reply.(*pb.CreateReply)
+  resp, found := reply.(*pb.CreateReply)
   if !found{
     return nil, fmt.Errorf("pb CreateReply type assertion error")
   }
-  return endpoint1.CreateResponse{E1: nil}, nil
+  return endpoint1.CreateResponse{E1: nil, UUID: resp.Uuid}, nil
 }
 
 // encodeSigninRequest is a transport/grpc.EncodeRequestFunc that converts a

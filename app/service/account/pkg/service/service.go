@@ -52,7 +52,6 @@ func (b *basicAccountService) Create(ctx context.Context, email, password, orgNa
 		work.Q{"namespaceid": namespaceid}); err != nil {
 		return "", err
 	}
-	// TODO: add SignUp Jobs (send email etc)
 	return uuid, nil
 }
 
@@ -74,16 +73,15 @@ func (b *basicAccountService) Roles(ctx context.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	return b.biz.QueryRoles(tokenID)
+	return b.biz.QueryRoles(ctx, tokenID)
 }
-
 
 func (b *basicAccountService) Auth(ctx context.Context) (accountuid string, namespaceid *uint, err error) {
 	tokenID, err := extractTOkenIDFromContext(ctx, b.jwtKey)
 	if err != nil {
 		return "", nil, err
 	}
-	return b.biz.Auth(tokenID)
+	return b.biz.Auth(ctx, tokenID)
 }
 
 func extractTOkenIDFromContext(ctx context.Context, jwtKey string) (string, error) {
@@ -92,8 +90,12 @@ func extractTOkenIDFromContext(ctx context.Context, jwtKey string) (string, erro
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
 		return []byte(jwtKey), nil
 	})
-	if err != nil || !tkn.Valid {
-		return "", fmt.Errorf(err.Error())
+	if err != nil {
+		return "", fmt.Errorf("ExtractTOkenIDFromContext: %s", err.Error())
+	}
+
+	if !tkn.Valid {
+		return "", fmt.Errorf("ExtractTOkenIDFromContext: invalid token")
 	}
 	return claims.Id, nil
 }

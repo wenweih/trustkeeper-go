@@ -44,25 +44,27 @@ func main()  {
     logger.Log("Create error: ", err.Error())
   }
 
+  logger.Log("uuid: ", uuid)
+
   token, err := s.Signin(context.Background(), email, password)
-  if err != nil {
+  if err != nil || len(token) == 0{
     logger.Log("Signin error: ", err.Error())
   }
+  logger.Log("token: ", token)
 
   roles, err := s.Roles(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token))
   if err != nil {
     logger.Log("Roles error: ", err.Error())
   }
+  logger.Log("Roles:", strings.Join(roles," "))
 
-  authUUID, err := s.Auth(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token))
+  _, _, err = s.Auth(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token))
   if err != nil {
     logger.Log("Auth error: ", err.Error())
   }
-
+  //
   if err := s.Signout(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token)); err != nil {
     logger.Log("Signout error: ", err.Error())
   }
-
-  logger.Log("uuid:", uuid, " token:", token, " roles:", strings.Join(roles," "), " authUUID:", authUUID)
 
 }

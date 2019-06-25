@@ -191,8 +191,10 @@ type AuthResponse struct {
 func MakeAuthEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		uuid, namespaceid, err := s.Auth(ctx)
+		if err != nil {
+			return AuthResponse{Err: err}, err
+		}
 		return AuthResponse{
-			Err:  err,
 			Uuid: uuid,
 			NamespaceID: *namespaceid,
 		}, nil
