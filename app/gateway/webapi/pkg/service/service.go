@@ -10,10 +10,11 @@ import (
 	dashboardService "trustkeeper-go/app/service/dashboard/pkg/service"
 
 	log "github.com/go-kit/kit/log"
-
+	"github.com/jinzhu/copier"
 	accountGrpcClient "trustkeeper-go/app/service/account/client"
 	dashboardGrpcClient "trustkeeper-go/app/service/dashboard/client"
 	"github.com/caarlos0/env"
+	"trustkeeper-go/app/gateway/webapi/pkg/repository"
 )
 
 // WebapiService describes the service.
@@ -22,7 +23,7 @@ type WebapiService interface {
 	Signin(ctx context.Context, user Credentials) (token string, err error)
 	Signout(ctx context.Context) (result bool, err error)
 	GetRoles(ctx context.Context) ([]string, error)
-	GetGroups(ctx context.Context, uuid string) (groups []*dashboardService.Group, err error)
+	GetGroups(ctx context.Context) (groups []*repository.GetGroupsResp, err error)
 }
 
 // Credentials Signup Signin params
@@ -49,7 +50,7 @@ func makeError(ctx context.Context, err error) error {
 	}
 }
 
-func (b *basicWebapiService) auth(ctx context.Context) (uuid string, err error) {
+func (b *basicWebapiService) auth(ctx context.Context) (accountUID string, namespaceID *uint, err error) {
 	return b.accountSrv.Auth(ctx)
 }
 
@@ -83,9 +84,20 @@ func (b *basicWebapiService) GetRoles(ctx context.Context) (s0 []string, e1 erro
 	return roles, nil
 }
 
-func (b *basicWebapiService) GetGroups(ctx context.Context, uuid string) (groups []*dashboardService.Group, err error) {
-	// TODO implement the business logic of Group
-	return groups, err
+func (b *basicWebapiService) GetGroups(ctx context.Context) ([]*repository.GetGroupsResp, error) {
+	_, namespaceID, err := b.auth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	groups, err := b.dashboardSrv.GetGroups(ctx, *namespaceID)
+	if err != nil {
+		return nil, err
+	}
+	lgroups := []*repository.GetGroupsResp{}
+	if err := copier.Copy(&lgroups, &groups); err != nil {
+		return nil, err
+	}
+	return lgroups, nil
 }
 
 // NewBasicWebapiService returns a naive, stateless implementation of WebapiService.

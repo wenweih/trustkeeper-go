@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 	log "github.com/go-kit/kit/log"
-	groupService "trustkeeper-go/app/service/dashboard/pkg/service"
+	"trustkeeper-go/app/gateway/webapi/pkg/repository"
 )
 
 // Middleware describes a service middleware.
@@ -48,9 +48,9 @@ func (l loggingMiddleware) GetRoles(ctx context.Context) (roles []string, err er
 	return l.next.GetRoles(ctx)
 }
 
-func (l loggingMiddleware) GetGroups(ctx context.Context, uuid string) (groups []*groupService.Group, err error) {
+func (l loggingMiddleware) GetGroups(ctx context.Context) (groups []*repository.GetGroupsResp, err error) {
 	defer func() {
-		l.logger.Log("method", "Group", "uuid", uuid, "groups", groups, "err", err)
+		l.logger.Log("method", "Group", "err", err)
 	}()
-	return l.next.GetGroups(ctx, uuid)
+	return l.next.GetGroups(ctx)
 }

@@ -136,15 +136,13 @@ func encodeGetRolesResponse(ctx context.Context, w http.ResponseWriter, response
 
 // makeGroupHandler creates the handler logic
 func makeGroupHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
-	m.Handle("/group", http1.NewServer(endpoints.GetGroupsEndpoint, decodeGroupRequest, encodeGroupResponse, options...))
+	m.Handle("/groups", http1.NewServer(endpoints.GetGroupsEndpoint, decodeGroupRequest, encodeGroupResponse, options...))
 }
 
 // decodeGroupRequest is a transport/http.DecodeRequestFunc that decodes a
 // JSON-encoded request from the HTTP request body.
 func decodeGroupRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	req := endpoint.GetGroupsRequest{}
-	err := json.NewDecoder(r.Body).Decode(&req)
-	return req, err
+	return nil, nil
 }
 
 // encodeGroupResponse is a transport/http.EncodeResponseFunc that encodes

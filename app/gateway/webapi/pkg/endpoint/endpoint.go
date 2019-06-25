@@ -5,8 +5,7 @@ import (
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
 
 	endpoint "github.com/go-kit/kit/endpoint"
-	// groupModel "trustkeeper-go/app/service/dashboard/pkg/model"
-	groupService "trustkeeper-go/app/service/dashboard/pkg/service"
+	"trustkeeper-go/app/gateway/webapi/pkg/repository"
 )
 
 // SignupRequest collects the request parameters for the Signup method.
@@ -66,9 +65,7 @@ func (r SigninResponse) Failed() error {
 }
 
 // SignoutRequest collects the request parameters for the Signout method.
-type SignoutRequest struct {
-	// Token string `json:"token"`
-}
+type SignoutRequest struct {}
 
 // SignoutResponse collects the response parameters for the Signout method.
 type SignoutResponse struct {
@@ -165,21 +162,18 @@ func (e Endpoints) GetRoles(ctx context.Context, token string) (s0 []string, e1 
 }
 
 // GroupRequest collects the request parameters for the Group method.
-type GetGroupsRequest struct {
-	Uuid string `json:"uuid"`
-}
+type GetGroupsRequest struct {}
 
 // GetGroupsResponse collects the response parameters for the Group method.
 type GetGroupsResponse struct {
-	Groups []*groupService.Group `json:"groups"`
+	Groups []*repository.GetGroupsResp `json:"groups"`
 	Err    error               `json:"err"`
 }
 
 // MakeGetGroupsEndpoint returns an endpoint that invokes Group on the service.
 func MakeGetGroupsEndpoint(s service.WebapiService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(GetGroupsRequest)
-		groups, err := s.GetGroups(ctx, req.Uuid)
+		groups, err := s.GetGroups(ctx)
 		return GetGroupsResponse{
 			Err:    err,
 			Groups: groups,
@@ -193,11 +187,11 @@ func (r GetGroupsResponse) Failed() error {
 }
 
 // GetGroups implements Service. Primarily useful in a client.
-func (e Endpoints) GetGroups(ctx context.Context, uuid string) (groups []*groupService.Group, err error) {
-	request := GetGroupsRequest{Uuid: uuid}
+func (e Endpoints) GetGroups(ctx context.Context) (groups []*repository.GetGroupsResp, err error) {
+	request := GetGroupsRequest{}
 	response, err := e.GetGroupsEndpoint(ctx, request)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return response.(GetGroupsResponse).Groups, response.(GetGroupsResponse).Err
+	return response.(GetGroupsResponse).Groups, nil
 }
