@@ -31,7 +31,7 @@ func main()  {
   if err != nil {
     logger.Log("service client error: ", err.Error())
   }
-  _, err = s.CreateGroup(context.Background(), "546e1345-4c4c-44c9-9baf-04f3cdc908ec", "testGroup", "desc", uint(462832467565871105))
+  _, err = s.CreateGroup(context.Background(), "546e1345-4c4c-44c9-9baf-04f3cdc908ec", "testGroup", "desc", uint(463618738495979521))
   if err != nil {
     logger.Log("CreateGroup error: ", err.Error())
   }

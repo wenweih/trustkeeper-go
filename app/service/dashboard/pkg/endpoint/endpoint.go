@@ -1,6 +1,7 @@
 package endpoint
 
 import (
+	"errors"
 	"context"
 	service "trustkeeper-go/app/service/dashboard/pkg/service"
 	"trustkeeper-go/app/service/dashboard/pkg/repository"
@@ -62,7 +63,8 @@ type CreateGroupRequest struct {
 
 // CreateGroupResponse collects the response parameters for the CreateGroup method.
 type CreateGroupResponse struct {
-	Result bool  `json:"result"`
+	Name  string  `json:"name"`
+	Desc  string  `json:"desc"`
 	Err    error `json:"err"`
 }
 
@@ -70,12 +72,13 @@ type CreateGroupResponse struct {
 func MakeCreateGroupEndpoint(s service.DashboardService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateGroupRequest)
-		result, err := s.CreateGroup(ctx, req.UUID, req.Name, req.Desc, req.NamespaceID)
+		g, err := s.CreateGroup(ctx, req.UUID, req.Name, req.Desc, req.NamespaceID)
 		if err != nil {
 			return nil, err
 		}
 		return CreateGroupResponse{
-			Result: result,
+			Name: g.Name,
+			Desc: g.Desc,
 		}, nil
 	}
 }
@@ -86,13 +89,17 @@ func (r CreateGroupResponse) Failed() error {
 }
 
 // CreateGroup implements Service. Primarily useful in a client.
-func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (result bool, err error) {
+func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (group *repository.GetGroupsResp, err error) {
 	request := CreateGroupRequest{UUID: uuid, Name: name, Desc: desc, NamespaceID: namespaceID}
 	response, err := e.CreateGroupEndpoint(ctx, request)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return response.(CreateGroupResponse).Result, nil
+	g, ok := response.(CreateGroupResponse)
+	if !ok {
+		return nil, errors.New("Endpoint CreateGroupResponse type assersion error")
+	}
+	return &repository.GetGroupsResp{Name: g.Name, Desc: g.Desc}, nil
 }
 
 // Close implements Service. Primarily useful in a client.

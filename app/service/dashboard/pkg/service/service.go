@@ -14,7 +14,7 @@ import (
 
 // DashboardService describes the service.
 type DashboardService interface {
-	CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (result bool, err error)
+	CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (group *repository.GetGroupsResp, err error)
 	GetGroups(ctx context.Context, namespaceID uint) (groups []*repository.GetGroupsResp, err error)
 	Close() error
 }
@@ -32,13 +32,14 @@ func (b *basicDashboardService) GetGroups(ctx context.Context, namespaceID uint)
 	return b.biz.GetGroups(map[string]interface{}{"namespace_id": namespaceID})
 }
 
-func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc string, namespaceID uint) (bool, error) {
+func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc string, namespaceID uint) (g *repository.GetGroupsResp, err error) {
 	group := &model.Group{CreatorID: usrID, Name: name, Desc: desc, NamespaceID: namespaceID}
-	err := b.biz.Group(group)
+	err = b.biz.Group(group)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	return true, nil
+	g, err = &repository.GetGroupsResp{Name: group.Name, Desc: group.Desc}, nil
+	return
 }
 
 // NewBasicDashboardService returns a naive, stateless implementation of DashboardService.

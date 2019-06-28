@@ -8,7 +8,7 @@ import (
 type Group struct {
   gorm.Model
   NamespaceID uint
-  Name        string    `grom:"type:varchar(100);not null;index"`
+  Name        string    `gorm:"unique_index;not null"`
   Desc        string    `sql:"type:text;"`
   CreatorID   string    `gorm:"index;not null"`
 }

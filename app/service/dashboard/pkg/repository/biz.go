@@ -27,6 +27,7 @@ func (repo *repo) Close() error{
 
 type GetGroupsResp struct {
 	Name  string  `json:"name"`
+  Desc  string  `json:"desc"`
 }
 
 func (repo *repo) GetGroups(query map[string]interface{}) (groupsResp []*GetGroupsResp, err error) {

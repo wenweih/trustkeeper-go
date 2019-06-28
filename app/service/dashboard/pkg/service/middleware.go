@@ -29,9 +29,9 @@ func (l loggingMiddleware) GetGroups(ctx context.Context, namespaceID uint) (gro
 	return l.next.GetGroups(ctx, namespaceID)
 }
 
-func (l loggingMiddleware) CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (result bool, err error) {
+func (l loggingMiddleware) CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (group *repository.GetGroupsResp, err error) {
 	defer func() {
-		l.logger.Log("method", "CreateGroup", "uuid", uuid, "result", result, "err", err)
+		l.logger.Log("method", "CreateGroup", "uuid", uuid, "Group", group, "err", err)
 	}()
 	return l.next.CreateGroup(ctx, uuid, name, desc, namespaceID)
 }

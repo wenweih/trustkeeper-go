@@ -18,15 +18,16 @@ message GetGroupsReply {
 
 message Group {
  string name = 1;
+ string desc = 2;
 }
 
 message CreateGroupRequest {
   string uuid = 1;
   string name = 2;
   string desc = 3;
-  string namespaceID = 4;
+  uint32 namespaceID = 4;
 }
 
 message CreateGroupReply {
-  bool result = 1;
+  Group group = 1;
 }

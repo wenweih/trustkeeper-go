@@ -60,7 +60,7 @@ func decodeCreateGroupRequest(_ context.Context, r interface{}) (interface{}, er
 	if !ok {
 		return nil, fmt.Errorf("interface{} to pb CreateGroupRequest type assertion error")
 	}
-	return endpoint.CreateGroupRequest{UUID: req.Uuid, Name: req.Name, Desc: req.Desc}, nil
+	return endpoint.CreateGroupRequest{UUID: req.Uuid, Name: req.Name, Desc: req.Desc, NamespaceID: uint(req.NamespaceID)}, nil
 }
 
 // encodeCreateGroupResponse is a transport/grpc.EncodeResponseFunc that converts
@@ -70,7 +70,7 @@ func encodeCreateGroupResponse(_ context.Context, r interface{}) (interface{}, e
 	if resp.Err != nil {
 		return nil, resp.Err
 	}
-	return &pb.CreateGroupReply{Result: resp.Result}, nil
+	return &pb.CreateGroupReply{Group: &pb.Group{Name: resp.Name, Desc: resp.Desc}}, nil
 }
 
 func (g *grpcServer) CreateGroup(ctx context1.Context, req *pb.CreateGroupRequest) (*pb.CreateGroupReply, error) {
