@@ -52,5 +52,5 @@ message AuthRequest {}
 
 message AuthReply {
   string uuid = 1;
-  uint32 namespaceID = 2;
+  string namespaceID = 2;
 }

@@ -36,7 +36,7 @@ func (m *CreateRequest) Reset()         { *m = CreateRequest{} }
 func (m *CreateRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateRequest) ProtoMessage()    {}
 func (*CreateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{0}
+	return fileDescriptor_account_253483e40e713def, []int{0}
 }
 func (m *CreateRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateRequest.Unmarshal(m, b)
@@ -88,7 +88,7 @@ func (m *CreateReply) Reset()         { *m = CreateReply{} }
 func (m *CreateReply) String() string { return proto.CompactTextString(m) }
 func (*CreateReply) ProtoMessage()    {}
 func (*CreateReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{1}
+	return fileDescriptor_account_253483e40e713def, []int{1}
 }
 func (m *CreateReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateReply.Unmarshal(m, b)
@@ -127,7 +127,7 @@ func (m *SigninRequest) Reset()         { *m = SigninRequest{} }
 func (m *SigninRequest) String() string { return proto.CompactTextString(m) }
 func (*SigninRequest) ProtoMessage()    {}
 func (*SigninRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{2}
+	return fileDescriptor_account_253483e40e713def, []int{2}
 }
 func (m *SigninRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SigninRequest.Unmarshal(m, b)
@@ -172,7 +172,7 @@ func (m *SigninReply) Reset()         { *m = SigninReply{} }
 func (m *SigninReply) String() string { return proto.CompactTextString(m) }
 func (*SigninReply) ProtoMessage()    {}
 func (*SigninReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{3}
+	return fileDescriptor_account_253483e40e713def, []int{3}
 }
 func (m *SigninReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SigninReply.Unmarshal(m, b)
@@ -210,7 +210,7 @@ func (m *SignoutRequest) Reset()         { *m = SignoutRequest{} }
 func (m *SignoutRequest) String() string { return proto.CompactTextString(m) }
 func (*SignoutRequest) ProtoMessage()    {}
 func (*SignoutRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{4}
+	return fileDescriptor_account_253483e40e713def, []int{4}
 }
 func (m *SignoutRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SignoutRequest.Unmarshal(m, b)
@@ -248,7 +248,7 @@ func (m *SignoutReply) Reset()         { *m = SignoutReply{} }
 func (m *SignoutReply) String() string { return proto.CompactTextString(m) }
 func (*SignoutReply) ProtoMessage()    {}
 func (*SignoutReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{5}
+	return fileDescriptor_account_253483e40e713def, []int{5}
 }
 func (m *SignoutReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SignoutReply.Unmarshal(m, b)
@@ -286,7 +286,7 @@ func (m *RolesRequest) Reset()         { *m = RolesRequest{} }
 func (m *RolesRequest) String() string { return proto.CompactTextString(m) }
 func (*RolesRequest) ProtoMessage()    {}
 func (*RolesRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{6}
+	return fileDescriptor_account_253483e40e713def, []int{6}
 }
 func (m *RolesRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RolesRequest.Unmarshal(m, b)
@@ -324,7 +324,7 @@ func (m *RolesReply) Reset()         { *m = RolesReply{} }
 func (m *RolesReply) String() string { return proto.CompactTextString(m) }
 func (*RolesReply) ProtoMessage()    {}
 func (*RolesReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{7}
+	return fileDescriptor_account_253483e40e713def, []int{7}
 }
 func (m *RolesReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_RolesReply.Unmarshal(m, b)
@@ -361,7 +361,7 @@ func (m *AuthRequest) Reset()         { *m = AuthRequest{} }
 func (m *AuthRequest) String() string { return proto.CompactTextString(m) }
 func (*AuthRequest) ProtoMessage()    {}
 func (*AuthRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{8}
+	return fileDescriptor_account_253483e40e713def, []int{8}
 }
 func (m *AuthRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AuthRequest.Unmarshal(m, b)
@@ -383,7 +383,7 @@ var xxx_messageInfo_AuthRequest proto.InternalMessageInfo
 
 type AuthReply struct {
 	Uuid                 string   `protobuf:"bytes,1,opt,name=uuid" json:"uuid,omitempty"`
-	NamespaceID          uint32   `protobuf:"varint,2,opt,name=namespaceID" json:"namespaceID,omitempty"`
+	NamespaceID          string   `protobuf:"bytes,2,opt,name=namespaceID" json:"namespaceID,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -393,7 +393,7 @@ func (m *AuthReply) Reset()         { *m = AuthReply{} }
 func (m *AuthReply) String() string { return proto.CompactTextString(m) }
 func (*AuthReply) ProtoMessage()    {}
 func (*AuthReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_account_c3be93700ef927f8, []int{9}
+	return fileDescriptor_account_253483e40e713def, []int{9}
 }
 func (m *AuthReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AuthReply.Unmarshal(m, b)
@@ -420,11 +420,11 @@ func (m *AuthReply) GetUuid() string {
 	return ""
 }
 
-func (m *AuthReply) GetNamespaceID() uint32 {
+func (m *AuthReply) GetNamespaceID() string {
 	if m != nil {
 		return m.NamespaceID
 	}
-	return 0
+	return ""
 }
 
 func init() {
@@ -644,10 +644,10 @@ var _Account_serviceDesc = grpc.ServiceDesc{
 	Metadata: "account.proto",
 }
 
-func init() { proto.RegisterFile("account.proto", fileDescriptor_account_c3be93700ef927f8) }
+func init() { proto.RegisterFile("account.proto", fileDescriptor_account_253483e40e713def) }
 
-var fileDescriptor_account_c3be93700ef927f8 = []byte{
-	// 344 bytes of a gzipped FileDescriptorProto
+var fileDescriptor_account_253483e40e713def = []byte{
+	// 342 bytes of a gzipped FileDescriptorProto
 	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x9c, 0x92, 0xcd, 0x4a, 0xfb, 0x40,
 	0x14, 0xc5, 0x49, 0x3f, 0xd2, 0xf6, 0xa6, 0xe9, 0xff, 0xef, 0xa5, 0x48, 0xc8, 0xaa, 0x8e, 0x52,
 	0x14, 0x4a, 0x05, 0x7d, 0x82, 0xa0, 0x1b, 0xb7, 0x71, 0xe9, 0x2a, 0x6d, 0x87, 0x1a, 0x4c, 0x33,
@@ -663,11 +663,11 @@ var fileDescriptor_account_c3be93700ef927f8 = []byte{
 	0x85, 0xaa, 0xa4, 0xb1, 0x0d, 0x73, 0xa7, 0xc8, 0x15, 0x8c, 0x73, 0x56, 0x51, 0xf1, 0x7b, 0x1a,
 	0x01, 0x70, 0x2e, 0xf7, 0x65, 0x8d, 0x56, 0x49, 0x30, 0xeb, 0x6a, 0x8f, 0x11, 0x24, 0x86, 0x28,
 	0x53, 0xf2, 0xd5, 0x05, 0x91, 0x0c, 0x46, 0x56, 0xfe, 0x40, 0x0c, 0x67, 0x10, 0x69, 0xb8, 0x82,
-	0x17, 0x6b, 0xfa, 0xf4, 0x68, 0x68, 0xc4, 0xb9, 0x3f, 0xba, 0xfb, 0x0c, 0x60, 0x90, 0xd9, 0x4b,
-	0xe3, 0x02, 0x42, 0x7b, 0x02, 0x3c, 0x5b, 0xf2, 0xd5, 0xf2, 0xe4, 0xd6, 0xe9, 0x3f, 0x7f, 0xa4,
-	0xfb, 0x16, 0x10, 0x5a, 0x94, 0xd6, 0x7d, 0x72, 0x19, 0xeb, 0xf6, 0x49, 0xdf, 0xc2, 0xc0, 0xb1,
-	0x42, 0x6c, 0x77, 0x47, 0xc0, 0xe9, 0xff, 0x93, 0x99, 0x7e, 0xe1, 0x06, 0xfa, 0x06, 0x07, 0x9a,
-	0x95, 0xcf, 0x2f, 0x9d, 0x78, 0x13, 0x6d, 0x9d, 0x43, 0x4f, 0x63, 0x40, 0x53, 0xea, 0xf1, 0x49,
-	0xe3, 0xe3, 0x80, 0x57, 0xfb, 0x55, 0x68, 0x7e, 0xe5, 0xfb, 0xaf, 0x00, 0x00, 0x00, 0xff, 0xff,
-	0x33, 0x31, 0x14, 0x5a, 0xdb, 0x02, 0x00, 0x00,
+	0x17, 0x6b, 0xfa, 0xf4, 0xe8, 0x68, 0xf8, 0xa3, 0xbb, 0xcf, 0x00, 0x06, 0x99, 0xbd, 0x34, 0x2e,
+	0x20, 0xb4, 0x27, 0xc0, 0xb3, 0x25, 0x5f, 0x2d, 0x4f, 0x6e, 0x9d, 0xfe, 0xf3, 0x47, 0xba, 0x6f,
+	0x01, 0xa1, 0x45, 0x69, 0xdd, 0x27, 0x97, 0xb1, 0x6e, 0x9f, 0xf4, 0x2d, 0x0c, 0x1c, 0x2b, 0xc4,
+	0x76, 0x77, 0x04, 0x9c, 0xfe, 0x3f, 0x99, 0xe9, 0x17, 0x6e, 0xa0, 0x6f, 0x70, 0xa0, 0x59, 0xf9,
+	0xfc, 0xd2, 0x89, 0x37, 0xd1, 0xd6, 0x39, 0xf4, 0x34, 0x06, 0x34, 0xa5, 0x1e, 0x9f, 0x34, 0x3e,
+	0x0e, 0x78, 0xb5, 0x5f, 0x85, 0xe6, 0x57, 0xbe, 0xff, 0x0a, 0x00, 0x00, 0xff, 0xff, 0x43, 0x35,
+	0x26, 0x66, 0xdb, 0x02, 0x00, 0x00,
 }

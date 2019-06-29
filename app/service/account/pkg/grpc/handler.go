@@ -117,7 +117,7 @@ func encodeAuthResponse(_ context.Context, r interface{}) (interface{}, error) {
 	if resp.Err != nil {
 		return nil, resp.Err
 	}
-	return &pb.AuthReply{Uuid: resp.Uuid, NamespaceID: uint32(resp.NamespaceID)}, nil
+	return &pb.AuthReply{Uuid: resp.Uuid, NamespaceID: resp.NamespaceID}, nil
 }
 
 func (g *grpcServer) Auth(ctx context1.Context, req *pb.AuthRequest) (*pb.AuthReply, error) {

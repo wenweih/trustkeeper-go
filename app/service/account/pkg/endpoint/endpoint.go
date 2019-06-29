@@ -183,7 +183,7 @@ type AuthRequest struct{}
 // AuthResponse collects the response parameters for the Auth method.
 type AuthResponse struct {
 	Uuid string `json:"uuid"`
-	NamespaceID uint `json:"namespaceid"`
+	NamespaceID string `json:"namespaceid"`
 	Err  error  `json:"err"`
 }
 
@@ -196,7 +196,7 @@ func MakeAuthEndpoint(s service.AccountService) endpoint.Endpoint {
 		}
 		return AuthResponse{
 			Uuid: uuid,
-			NamespaceID: *namespaceid,
+			NamespaceID: namespaceid,
 		}, nil
 	}
 }
@@ -207,15 +207,15 @@ func (r AuthResponse) Failed() error {
 }
 
 // Auth implements Service. Primarily useful in a client.
-func (e Endpoints) Auth(ctx context.Context) (string, *uint, error) {
+func (e Endpoints) Auth(ctx context.Context) (string, string, error) {
 	request := AuthRequest{}
 	response, err := e.AuthEndpoint(ctx, request)
 	if err != nil {
-		return "", nil, err
+		return "", "", err
 	}
 	namespaceID := response.(AuthResponse).NamespaceID
 	uuid := response.(AuthResponse).Uuid
-	return uuid, &namespaceID, nil
+	return uuid, namespaceID, nil
 }
 
 // Close implements Service. Primarily useful in a client.

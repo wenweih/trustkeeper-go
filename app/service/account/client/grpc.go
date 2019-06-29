@@ -142,5 +142,5 @@ func decodeAuthResponse(_ context.Context, reply interface{}) (interface{}, erro
     e := errors.New("'AuthReply' Decoder is not impelemented")
     return endpoint1.AuthResponse{Err: e}, e
   }
-  return endpoint1.AuthResponse{Uuid: r.Uuid}, nil
+  return endpoint1.AuthResponse{Uuid: r.Uuid, NamespaceID: r.NamespaceID}, nil
 }
