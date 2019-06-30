@@ -37,7 +37,7 @@ func (repo *repo) GetGroups(query map[string]interface{}) (groupsResp []*GetGrou
   }
   groupsResp = make([]*GetGroupsResp, len(groups))
   for i, group := range groups {
-    groupsResp[i] = &GetGroupsResp{Name: group.Name}
+    groupsResp[i] = &GetGroupsResp{Name: group.Name, Desc: group.Desc}
   }
   return groupsResp, nil
 }

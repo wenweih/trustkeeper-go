@@ -7,7 +7,7 @@ import (
 // Group group
 type Group struct {
   gorm.Model
-  NamespaceID uint
+  NamespaceID string
   Name        string    `gorm:"unique_index;not null"`
   Desc        string    `sql:"type:text;"`
   CreatorID   string    `gorm:"index;not null"`

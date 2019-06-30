@@ -14,8 +14,8 @@ import (
 
 // DashboardService describes the service.
 type DashboardService interface {
-	CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (group *repository.GetGroupsResp, err error)
-	GetGroups(ctx context.Context, namespaceID uint) (groups []*repository.GetGroupsResp, err error)
+	CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID string) (group *repository.GetGroupsResp, err error)
+	GetGroups(ctx context.Context, namespaceID string) (groups []*repository.GetGroupsResp, err error)
 	Close() error
 }
 
@@ -28,11 +28,11 @@ func (b *basicDashboardService) Close() error{
 	return b.biz.Close()
 }
 
-func (b *basicDashboardService) GetGroups(ctx context.Context, namespaceID uint) (groups []*repository.GetGroupsResp, err error) {
+func (b *basicDashboardService) GetGroups(ctx context.Context, namespaceID string) (groups []*repository.GetGroupsResp, err error) {
 	return b.biz.GetGroups(map[string]interface{}{"namespace_id": namespaceID})
 }
 
-func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc string, namespaceID uint) (g *repository.GetGroupsResp, err error) {
+func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc string, namespaceID string) (g *repository.GetGroupsResp, err error) {
 	group := &model.Group{CreatorID: usrID, Name: name, Desc: desc, NamespaceID: namespaceID}
 	err = b.biz.Group(group)
 	if err != nil {

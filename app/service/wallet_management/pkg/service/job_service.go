@@ -32,7 +32,9 @@ func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, names
     return err
   }
   localBip44ThirdXpubsForChains := []*repository.Bip44ThirdXpubsForChain{}
-  copier.Copy(&localBip44ThirdXpubsForChains, &bip44ThirdXpubsForChains)
+  if err := copier.Copy(&localBip44ThirdXpubsForChains, &bip44ThirdXpubsForChains); err != nil {
+    return err
+  }
 
   return b.biz.Signup(version, localBip44ThirdXpubsForChains)
 }

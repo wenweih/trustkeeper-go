@@ -4,8 +4,9 @@ import (
 	"context"
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
 
-	endpoint "github.com/go-kit/kit/endpoint"
 	"trustkeeper-go/app/gateway/webapi/pkg/repository"
+
+	endpoint "github.com/go-kit/kit/endpoint"
 )
 
 // SignupRequest collects the request parameters for the Signup method.
@@ -65,7 +66,7 @@ func (r SigninResponse) Failed() error {
 }
 
 // SignoutRequest collects the request parameters for the Signout method.
-type SignoutRequest struct {}
+type SignoutRequest struct{}
 
 // SignoutResponse collects the response parameters for the Signout method.
 type SignoutResponse struct {
@@ -162,12 +163,12 @@ func (e Endpoints) GetRoles(ctx context.Context, token string) (s0 []string, e1 
 }
 
 // GroupRequest collects the request parameters for the Group method.
-type GetGroupsRequest struct {}
+type GetGroupsRequest struct{}
 
 // GetGroupsResponse collects the response parameters for the Group method.
 type GetGroupsResponse struct {
 	Groups []*repository.GetGroupsResp `json:"groups"`
-	Err    error               `json:"err"`
+	Err    error                       `json:"err"`
 }
 
 // MakeGetGroupsEndpoint returns an endpoint that invokes Group on the service.
@@ -194,4 +195,51 @@ func (e Endpoints) GetGroups(ctx context.Context) (groups []*repository.GetGroup
 		return nil, err
 	}
 	return response.(GetGroupsResponse).Groups, nil
+}
+
+// CreateGroupRequest collects the request parameters for the CreateGroup method.
+type CreateGroupRequest struct {
+	Name string `json:"name"`
+	Desc string `json:"desc"`
+}
+
+// CreateGroupResponse collects the response parameters for the CreateGroup method.
+type CreateGroupResponse struct {
+	Group *repository.GetGroupsResp `json:"group"`
+	Err   error                     `json:"err"`
+}
+
+// MakeCreateGroupEndpoint returns an endpoint that invokes CreateGroup on the service.
+func MakeCreateGroupEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(CreateGroupRequest)
+		group, err := s.CreateGroup(ctx, req.Name, req.Desc)
+		if err != nil {
+			return CreateGroupResponse{
+				Err: err,
+			}, err
+		}
+		return CreateGroupResponse{
+			Err:   nil,
+			Group: group,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r CreateGroupResponse) Failed() error {
+	return r.Err
+}
+
+// CreateGroup implements Service. Primarily useful in a client.
+func (e Endpoints) CreateGroup(ctx context.Context, name string, desc string) (group *repository.GetGroupsResp, err error) {
+	request := CreateGroupRequest{
+		Desc: desc,
+		Name: name,
+	}
+	response, err := e.CreateGroupEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(CreateGroupResponse).Group, nil
 }

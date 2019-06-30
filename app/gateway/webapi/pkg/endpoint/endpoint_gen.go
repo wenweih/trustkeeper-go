@@ -10,22 +10,24 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	SignupEndpoint		endpoint.Endpoint
-	SigninEndpoint		endpoint.Endpoint
-	SignoutEndpoint		endpoint.Endpoint
-	GetRolesEndpoint	endpoint.Endpoint
-	GetGroupsEndpoint	endpoint.Endpoint
+	SignupEndpoint      endpoint.Endpoint
+	SigninEndpoint      endpoint.Endpoint
+	SignoutEndpoint     endpoint.Endpoint
+	GetRolesEndpoint    endpoint.Endpoint
+	GetGroupsEndpoint   endpoint.Endpoint
+	CreateGroupEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
-		GetRolesEndpoint:   MakeGetRolesEndpoint(s),
-		GetGroupsEndpoint:	MakeGetGroupsEndpoint(s),
-		SigninEndpoint:   	MakeSigninEndpoint(s),
-		SignoutEndpoint:  	MakeSignoutEndpoint(s),
-		SignupEndpoint:   	MakeSignupEndpoint(s),
+		CreateGroupEndpoint: MakeCreateGroupEndpoint(s),
+		GetGroupsEndpoint:   MakeGetGroupsEndpoint(s),
+		GetRolesEndpoint:    MakeGetRolesEndpoint(s),
+		SigninEndpoint:      MakeSigninEndpoint(s),
+		SignoutEndpoint:     MakeSignoutEndpoint(s),
+		SignupEndpoint:      MakeSignupEndpoint(s),
 	}
 	for _, m := range mdw["Signup"] {
 		eps.SignupEndpoint = m(eps.SignupEndpoint)
@@ -41,6 +43,9 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 	}
 	for _, m := range mdw["GetGroups"] {
 		eps.GetGroupsEndpoint = m(eps.GetGroupsEndpoint)
+	}
+	for _, m := range mdw["CreateGroup"] {
+		eps.CreateGroupEndpoint = m(eps.CreateGroupEndpoint)
 	}
 	return eps
 }

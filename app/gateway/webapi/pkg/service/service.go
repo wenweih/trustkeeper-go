@@ -1,20 +1,21 @@
 package service
 
 import (
-	"fmt"
-	"errors"
-	"strings"
 	"context"
+	"errors"
+	"fmt"
 	"regexp"
+	"strings"
 	accountService "trustkeeper-go/app/service/account/pkg/service"
 	dashboardService "trustkeeper-go/app/service/dashboard/pkg/service"
 
-	log "github.com/go-kit/kit/log"
-	"github.com/jinzhu/copier"
+	"trustkeeper-go/app/gateway/webapi/pkg/repository"
 	accountGrpcClient "trustkeeper-go/app/service/account/client"
 	dashboardGrpcClient "trustkeeper-go/app/service/dashboard/client"
+
 	"github.com/caarlos0/env"
-	"trustkeeper-go/app/gateway/webapi/pkg/repository"
+	log "github.com/go-kit/kit/log"
+	"github.com/jinzhu/copier"
 )
 
 // WebapiService describes the service.
@@ -24,23 +25,24 @@ type WebapiService interface {
 	Signout(ctx context.Context) (result bool, err error)
 	GetRoles(ctx context.Context) ([]string, error)
 	GetGroups(ctx context.Context) (groups []*repository.GetGroupsResp, err error)
+	CreateGroup(ctx context.Context, name, desc string) (group *repository.GetGroupsResp, err error)
 }
 
 // Credentials Signup Signin params
 type Credentials struct {
-	Email    	string	`json:"email"`
-	Password 	string	`json:"password"`
-	OrgName		string	`json:"orgname"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	OrgName  string `json:"orgname"`
 }
 
 type basicWebapiService struct {
-	accountSrv accountService.AccountService
+	accountSrv   accountService.AccountService
 	dashboardSrv dashboardService.DashboardService
 }
 
 func makeError(ctx context.Context, err error) error {
 	errStr := err.Error()
-	switch  {
+	switch {
 	case strings.Contains(errStr, "violates unique constraint"):
 		re := regexp.MustCompile(`[(](.*?)[)]`)
 		result := re.FindAll([]byte(err.Error()), -1)
@@ -50,8 +52,14 @@ func makeError(ctx context.Context, err error) error {
 	}
 }
 
-func (b *basicWebapiService) auth(ctx context.Context) (accountUID string, namespaceID *uint, err error) {
-	return b.accountSrv.Auth(ctx)
+func (b *basicWebapiService) auth(ctx context.Context) (accountUID string, namespaceID string, err error) {
+	uid, nid, err := b.accountSrv.Auth(ctx)
+	if err != nil {
+		return "", "", err
+	}
+	namespaceID = nid
+	accountUID = uid
+	return
 }
 
 func (b *basicWebapiService) Signup(ctx context.Context, user Credentials) (bool, error) {
@@ -89,7 +97,7 @@ func (b *basicWebapiService) GetGroups(ctx context.Context) ([]*repository.GetGr
 	if err != nil {
 		return nil, err
 	}
-	groups, err := b.dashboardSrv.GetGroups(ctx, *namespaceID)
+	groups, err := b.dashboardSrv.GetGroups(ctx, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -121,7 +129,7 @@ func NewBasicWebapiService(logger log.Logger) (WebapiService, error) {
 	}
 
 	return &basicWebapiService{
-		accountSrv: accountClient,
+		accountSrv:   accountClient,
 		dashboardSrv: dashboardClient,
 	}, nil
 }
@@ -137,4 +145,17 @@ func New(logger log.Logger, middleware []Middleware) (WebapiService, error) {
 		svc = m(svc)
 	}
 	return svc, nil
+}
+
+func (b *basicWebapiService) CreateGroup(ctx context.Context, name string, desc string) (*repository.GetGroupsResp, error) {
+	accountUID, namespaceid, err := b.auth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := b.dashboardSrv.CreateGroup(ctx, accountUID, name, desc, namespaceid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &repository.GetGroupsResp{Name: resp.Name, Desc: resp.Desc}, nil
 }

@@ -10,7 +10,7 @@ import (
 
 // GetGroupsRequest collects the request parameters for the GetGroups method.
 type GetGroupsRequest struct {
-	NamespaceID uint `json:"namespaceid"`
+	NamespaceID string `json:"namespaceid"`
 }
 
 // GetGroupsResponse collects the response parameters for the GetGroups method.
@@ -44,8 +44,8 @@ type Failure interface {
 }
 
 // GetGroups implements Service. Primarily useful in a client.
-func (e Endpoints) GetGroups(ctx context.Context, namespaceID uint) (groups []*repository.GetGroupsResp, err error) {
-	request := GetGroupsRequest{}
+func (e Endpoints) GetGroups(ctx context.Context, namespaceID string) (groups []*repository.GetGroupsResp, err error) {
+	request := GetGroupsRequest{NamespaceID: namespaceID}
 	response, err := e.GetGroupsEndpoint(ctx, request)
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ type CreateGroupRequest struct {
 	UUID 			string `json:"uuid"`
 	Name 			string `json:"name"`
 	Desc			string `json:"desc"`
-	NamespaceID	uint `json:"namespaceid"`
+	NamespaceID	string `json:"namespaceid"`
 }
 
 // CreateGroupResponse collects the response parameters for the CreateGroup method.
@@ -89,7 +89,7 @@ func (r CreateGroupResponse) Failed() error {
 }
 
 // CreateGroup implements Service. Primarily useful in a client.
-func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID uint) (group *repository.GetGroupsResp, err error) {
+func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID string) (group *repository.GetGroupsResp, err error) {
 	request := CreateGroupRequest{UUID: uuid, Name: name, Desc: desc, NamespaceID: namespaceID}
 	response, err := e.CreateGroupEndpoint(ctx, request)
 	if err != nil {

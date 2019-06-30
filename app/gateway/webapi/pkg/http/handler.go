@@ -1,11 +1,11 @@
 package http
 
 import (
-	"strings"
 	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 	endpoint "trustkeeper-go/app/gateway/webapi/pkg/endpoint"
 
 	http1 "github.com/go-kit/kit/transport/http"
@@ -99,7 +99,7 @@ func ErrorDecoder(r *http.Response) error {
 // This is used to set the http status, see an example here :
 // https://github.com/go-kit/kit/blob/master/examples/addsvc/pkg/addtransport/http.go#L133
 func err2code(err error) int {
-	switch  {
+	switch {
 	case strings.HasPrefix(err.Error(), "Fields exist"):
 		return http.StatusBadRequest
 	default:
@@ -148,6 +148,54 @@ func decodeGroupRequest(_ context.Context, r *http.Request) (interface{}, error)
 // encodeGroupResponse is a transport/http.EncodeResponseFunc that encodes
 // the response as JSON to the response writer
 func encodeGroupResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
+
+// makeGetGroupsHandler creates the handler logic
+func makeGetGroupsHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/get-groups", http1.NewServer(endpoints.GetGroupsEndpoint, decodeGetGroupsRequest, encodeGetGroupsResponse, options...))
+}
+
+// decodeGetGroupsRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeGetGroupsRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	return nil, nil
+}
+
+// encodeGetGroupsResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeGetGroupsResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
+
+// makeCreateGroupHandler creates the handler logic
+func makeCreateGroupHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/create-group", http1.NewServer(endpoints.CreateGroupEndpoint, decodeCreateGroupRequest, encodeCreateGroupResponse, options...))
+}
+
+// decodeCreateGroupRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeCreateGroupRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	req := endpoint.CreateGroupRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeCreateGroupResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeCreateGroupResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
 	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
 		ErrorEncoder(ctx, f.Failed(), w)
 		return nil

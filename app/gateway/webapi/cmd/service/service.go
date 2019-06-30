@@ -104,6 +104,7 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options["GetRoles"] = append(options["GetRoles"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["Signout"] = append(options["Signout"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["GetGroups"] = append(options["GetGroups"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
+	options["CreateGroup"] = append(options["CreateGroup"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	httpHandler := http.NewHTTPHandler(endpoints, options)
 	httpListener, err := net.Listen("tcp", *httpAddr)
 	if err != nil {

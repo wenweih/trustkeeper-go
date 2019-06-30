@@ -22,7 +22,7 @@ func decodeGetGroupsRequest(_ context.Context, r interface{}) (interface{}, erro
 	if !ok {
 		return nil, fmt.Errorf("interface{} to pb GetGroupsRequest type assertion error")
 	}
-	return endpoint.GetGroupsRequest{NamespaceID: uint(req.NamespaceID)}, nil
+	return endpoint.GetGroupsRequest{NamespaceID: req.NamespaceID}, nil
 }
 
 // encodeGetGroupsResponse is a transport/grpc.EncodeResponseFunc that converts
@@ -32,9 +32,10 @@ func encodeGetGroupsResponse(_ context.Context, r interface{}) (interface{}, err
 	if !ok {
 		return nil, fmt.Errorf("interface{} to endpoint GetGroupsResponse type assertion error")
 	}
-	pbGroups := []*pb.Group{}
-	for _, g := range resp.Groups {
-		pbGroups = append(pbGroups, &pb.Group{Name: g.Name})
+
+	pbGroups := make([]*pb.Group, len(resp.Groups))
+	for i, g := range resp.Groups {
+		pbGroups[i] = &pb.Group{Name: g.Name, Desc: g.Desc}
 	}
 	return &pb.GetGroupsReply{Groups: pbGroups}, nil
 }
@@ -60,7 +61,7 @@ func decodeCreateGroupRequest(_ context.Context, r interface{}) (interface{}, er
 	if !ok {
 		return nil, fmt.Errorf("interface{} to pb CreateGroupRequest type assertion error")
 	}
-	return endpoint.CreateGroupRequest{UUID: req.Uuid, Name: req.Name, Desc: req.Desc, NamespaceID: uint(req.NamespaceID)}, nil
+	return endpoint.CreateGroupRequest{UUID: req.Uuid, Name: req.Name, Desc: req.Desc, NamespaceID: req.NamespaceID}, nil
 }
 
 // encodeCreateGroupResponse is a transport/grpc.EncodeResponseFunc that converts
