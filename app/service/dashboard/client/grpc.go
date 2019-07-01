@@ -51,7 +51,7 @@ func decodeCreateGroupResponse(_ context.Context, reply interface{}) (interface{
   if !ok{
     return nil, fmt.Errorf("pb CreateReply type assertion error")
   }
-  return endpoint1.CreateGroupResponse{Name: resp.Group.Name, Desc: resp.Group.Desc}, nil
+  return endpoint1.CreateGroupResponse{Name: resp.Group.Name, Desc: resp.Group.Desc, ID: resp.Group.Id}, nil
 }
 
 // encodeGetGroupsRequest is a transport/grpc.EncodeRequestFunc that converts a
@@ -74,7 +74,7 @@ func decodeGetGroupsResponse(_ context.Context, reply interface{}) (interface{},
 
   groupsResp := make([]*repository.GetGroupsResp, len(resp.Groups))
   for i, g := range resp.Groups {
-    groupsResp[i] = &repository.GetGroupsResp{Name: g.Name, Desc: g.Desc}
+    groupsResp[i] = &repository.GetGroupsResp{Name: g.Name, Desc: g.Desc, ID: g.Id}
   }
 
   return endpoint1.GetGroupsResponse{Groups: groupsResp}, nil

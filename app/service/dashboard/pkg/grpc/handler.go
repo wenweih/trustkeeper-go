@@ -35,7 +35,7 @@ func encodeGetGroupsResponse(_ context.Context, r interface{}) (interface{}, err
 
 	pbGroups := make([]*pb.Group, len(resp.Groups))
 	for i, g := range resp.Groups {
-		pbGroups[i] = &pb.Group{Name: g.Name, Desc: g.Desc}
+		pbGroups[i] = &pb.Group{Name: g.Name, Desc: g.Desc, Id: g.ID}
 	}
 	return &pb.GetGroupsReply{Groups: pbGroups}, nil
 }
@@ -71,7 +71,7 @@ func encodeCreateGroupResponse(_ context.Context, r interface{}) (interface{}, e
 	if resp.Err != nil {
 		return nil, resp.Err
 	}
-	return &pb.CreateGroupReply{Group: &pb.Group{Name: resp.Name, Desc: resp.Desc}}, nil
+	return &pb.CreateGroupReply{Group: &pb.Group{Name: resp.Name, Desc: resp.Desc, Id: resp.ID}}, nil
 }
 
 func (g *grpcServer) CreateGroup(ctx context1.Context, req *pb.CreateGroupRequest) (*pb.CreateGroupReply, error) {

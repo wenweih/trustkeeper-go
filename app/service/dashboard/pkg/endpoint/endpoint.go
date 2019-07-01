@@ -63,6 +63,7 @@ type CreateGroupRequest struct {
 
 // CreateGroupResponse collects the response parameters for the CreateGroup method.
 type CreateGroupResponse struct {
+	ID    string  `json:"id"`
 	Name  string  `json:"name"`
 	Desc  string  `json:"desc"`
 	Err    error `json:"err"`
@@ -79,6 +80,7 @@ func MakeCreateGroupEndpoint(s service.DashboardService) endpoint.Endpoint {
 		return CreateGroupResponse{
 			Name: g.Name,
 			Desc: g.Desc,
+			ID: g.ID,
 		}, nil
 	}
 }
@@ -99,7 +101,7 @@ func (e Endpoints) CreateGroup(ctx context.Context, uuid, name, desc string, nam
 	if !ok {
 		return nil, errors.New("Endpoint CreateGroupResponse type assersion error")
 	}
-	return &repository.GetGroupsResp{Name: g.Name, Desc: g.Desc}, nil
+	return &repository.GetGroupsResp{Name: g.Name, Desc: g.Desc, ID: g.ID}, nil
 }
 
 // Close implements Service. Primarily useful in a client.

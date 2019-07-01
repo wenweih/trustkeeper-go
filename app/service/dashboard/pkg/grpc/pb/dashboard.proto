@@ -19,6 +19,7 @@ message GetGroupsReply {
 message Group {
  string name = 1;
  string desc = 2;
+ string id = 3;
 }
 
 message CreateGroupRequest {

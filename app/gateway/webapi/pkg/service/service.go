@@ -157,5 +157,5 @@ func (b *basicWebapiService) CreateGroup(ctx context.Context, name string, desc 
 		return nil, err
 	}
 
-	return &repository.GetGroupsResp{Name: resp.Name, Desc: resp.Desc}, nil
+	return &repository.GetGroupsResp{Name: resp.Name, Desc: resp.Desc, ID: resp.ID}, nil
 }

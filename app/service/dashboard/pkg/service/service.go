@@ -2,6 +2,7 @@ package service
 
 import (
 	"fmt"
+	"strconv"
 	"context"
 	"trustkeeper-go/app/service/dashboard/pkg/configure"
 	"trustkeeper-go/app/service/dashboard/pkg/repository"
@@ -38,7 +39,7 @@ func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, de
 	if err != nil {
 		return nil, err
 	}
-	g, err = &repository.GetGroupsResp{Name: group.Name, Desc: group.Desc}, nil
+	g, err = &repository.GetGroupsResp{Name: group.Name, Desc: group.Desc, ID: strconv.FormatUint(uint64(group.ID), 10)}, nil
 	return
 }
 

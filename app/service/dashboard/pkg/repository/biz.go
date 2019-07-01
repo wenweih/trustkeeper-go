@@ -1,6 +1,7 @@
 package repository
 
 import (
+  "strconv"
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
 
@@ -29,6 +30,7 @@ func (repo *repo) Close() error{
 }
 
 type GetGroupsResp struct {
+  ID    string  `json:"id"`
 	Name  string  `json:"name"`
   Desc  string  `json:"desc"`
 }
@@ -40,7 +42,7 @@ func (repo *repo) GetGroups(query map[string]interface{}) (groupsResp []*GetGrou
   }
   groupsResp = make([]*GetGroupsResp, len(groups))
   for i, group := range groups {
-    groupsResp[i] = &GetGroupsResp{Name: group.Name, Desc: group.Desc}
+    groupsResp[i] = &GetGroupsResp{Name: group.Name, Desc: group.Desc, ID: strconv.FormatUint(uint64(group.ID), 10)}
   }
   return groupsResp, nil
 }
