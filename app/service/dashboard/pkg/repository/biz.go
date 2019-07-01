@@ -17,7 +17,10 @@ func (repo *repo) Signup(uuid, email, name, xpub string) error {
 
 func (repo *repo) Group(m *model.Group) error {
   tx := repo.db.Begin()
-  repo.iGroupRepo.Create(tx, m)
+  if err := repo.iGroupRepo.Create(tx, m).Error; err != nil {
+    tx.Rollback()
+    return err
+  }
   return tx.Commit().Error
 }
 
