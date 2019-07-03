@@ -5,6 +5,7 @@ import (
   "github.com/jinzhu/gorm"
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
+const groupResource = "group"
 
 type groupRepo struct {}
 

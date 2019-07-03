@@ -4,12 +4,13 @@ import(
   "github.com/jinzhu/gorm"
   "github.com/gomodule/redigo/redis"
   "trustkeeper-go/app/service/account/pkg/model"
-  "trustkeeper-go/app/service/account/pkg/enforcer"
+  "trustkeeper-go/library/casbin"
 )
 
 type repo struct {
   db *gorm.DB
   redisPool *redis.Pool
+  iCasbinRepo
   iAccountRepo
   iNamespaceRepo
 }
@@ -22,7 +23,8 @@ func New(redisPool *redis.Pool, db *gorm.DB, jwtKey string) IBiz {
   repo := repo{
     db,
     redisPool,
-    &accountRepo{Enforcer: enforcer.NewCasbinEnforcer(db)},
+    &casbinRepo{casbin.NewCasbinRepo(db)},
+    &accountRepo{},
     &namespaceRepo{}}
   var biz IBiz = &repo
   return biz

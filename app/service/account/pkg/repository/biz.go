@@ -9,6 +9,7 @@ import (
   "golang.org/x/crypto/bcrypt"
   "github.com/dgrijalva/jwt-go"
   "trustkeeper-go/app/service/account/pkg/model"
+  account_const "trustkeeper-go/library/const/account"
 )
 
 // Claims jwt clains struct
@@ -59,7 +60,7 @@ func (repo *repo) Signup(email, password, orgName string) (uid, namespaceID stri
   }
 
   namespaceID = strconv.FormatUint(uint64(namespace.ID), 10)
-  repo.iAccountRepo.AddRoleForUserInDomain(acc.UUID, namespaceID, "admin")
+  repo.iCasbinRepo.AddRoleForUserInDomain(acc.UUID, namespaceID, account_const.MerchantAdmin)
   return uuid.String(), namespaceID, nil
 }
 
@@ -107,7 +108,9 @@ func (repo *repo) QueryRoles(ctx context.Context, tokenID string) ([]string, err
   if len(accounts) != 1 {
     return nil, errors.New("multiple accounts when query roles")
   }
-  return repo.iAccountRepo.Roles(repo.db, accounts[0])
+  acc := accounts[0]
+  namespaceID := strconv.FormatUint(uint64(acc.Namespace.ID), 10)
+  return repo.iCasbinRepo.GetRoles(acc.UUID, namespaceID)
 }
 
 func (repo *repo) Signout(tokenID string) error {
@@ -132,8 +135,8 @@ func (repo *repo) Auth(ctx context.Context, tokenID string) (string, string, err
     return "", "", errors.New("Biz query accounts error:" + err.Error())
   }
 
-  if len(accounts) > 1{
-    return "", "", errors.New("database error")
+  if len(accounts) != 1{
+    return "", "", errors.New("account record in database error")
   }
   nstr := strconv.FormatUint(uint64(accounts[0].Namespace.ID), 10)
   return accounts[0].UUID, nstr, nil

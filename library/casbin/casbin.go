@@ -1,4 +1,4 @@
-package enforcer
+package casbin
 
 import (
 	"github.com/jinzhu/gorm"
@@ -7,8 +7,12 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-func NewCasbinEnforcer(db *gorm.DB) *stdcasbin.Enforcer {
+type CasbinRepo struct {
+  *stdcasbin.Enforcer  // authorization service
+}
+
+func NewCasbinRepo(db *gorm.DB) *CasbinRepo {
 	Adapter := gormadapter.NewAdapterByDB(db)
 	enforcer := stdcasbin.NewEnforcer(stdcasbin.NewModel(CasbinConf), Adapter)
-	return enforcer
+	return &CasbinRepo{enforcer}
 }

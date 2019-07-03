@@ -2,6 +2,9 @@ package repository
 
 import(
   "github.com/jinzhu/gorm"
+  "trustkeeper-go/library/casbin"
+  // trustkeeper-go/library/database/orm
+  account_const "trustkeeper-go/library/const/account"
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
 
@@ -9,6 +12,7 @@ import(
 type repo struct {
   db *gorm.DB
   // redisPool *redis.Pool
+  iCasbinRepo
   iGroupRepo
 }
 
@@ -18,7 +22,9 @@ func New(db *gorm.DB) IBiz {
     model.Group{})
   repo := repo{
     db,
+    &casbinRepo{casbin.NewCasbinRepo(db)},
     &groupRepo{}}
+  repo.iCasbinRepo.AddResoucreCreatePolicyForRole(account_const.MerchantAdmin, "", []string{groupResource}...)
   var biz IBiz = &repo
   return biz
 }

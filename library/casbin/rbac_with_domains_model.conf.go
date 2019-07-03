@@ -1,4 +1,4 @@
-package enforcer
+package casbin
 
 // https://www.cnblogs.com/wang_yb/archive/2018/11/20/9987397.html
 var CasbinConf = `
