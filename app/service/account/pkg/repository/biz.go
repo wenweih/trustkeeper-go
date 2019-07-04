@@ -23,7 +23,7 @@ type IBiz interface {
   Signin(email, password, jwtKey string) (token string, err error)
   Signout(tokenID string) error
   QueryRoles(ctx context.Context, tokenID string) (roles []string, err error)
-  Auth(ctx context.Context, tokenID string) (accountuid string, namespaceid string, err error)
+  Auth(ctx context.Context, tokenID string) (accountuid string, namespaceid string, roles []string, err error)
   Close() error
 }
 
@@ -129,15 +129,20 @@ func (repo *repo) Signout(tokenID string) error {
   return tx.Commit().Error
 }
 
-func (repo *repo) Auth(ctx context.Context, tokenID string) (string, string, error) {
+func (repo *repo) Auth(ctx context.Context, tokenID string) (string, string, []string, error) {
   accounts, err := repo.iAccountRepo.Query(ctx, repo.db, &model.Account{TokenID: tokenID})
   if err != nil {
-    return "", "", errors.New("Biz query accounts error:" + err.Error())
+    return "", "", nil, errors.New("Biz query accounts error:" + err.Error())
   }
 
   if len(accounts) != 1{
-    return "", "", errors.New("account record in database error")
+    return "", "", nil, errors.New("account record in database error")
   }
-  nstr := strconv.FormatUint(uint64(accounts[0].Namespace.ID), 10)
-  return accounts[0].UUID, nstr, nil
+  acc := accounts[0]
+  nstr := strconv.FormatUint(uint64(acc.Namespace.ID), 10)
+  roles, err := repo.iCasbinRepo.GetRoles(acc.UUID, nstr)
+  if err != nil {
+    return "", "", nil, err
+  }
+  return acc.UUID, nstr, roles, nil
 }

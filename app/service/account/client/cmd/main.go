@@ -58,7 +58,7 @@ func main()  {
   }
   logger.Log("Roles:", strings.Join(roles," "))
 
-  _, _, err = s.Auth(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token))
+  _, _,_, err = s.Auth(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token))
   if err != nil {
     logger.Log("Auth error: ", err.Error())
   }

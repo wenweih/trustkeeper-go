@@ -53,4 +53,5 @@ message AuthRequest {}
 message AuthReply {
   string uuid = 1;
   string namespaceID = 2;
+  repeated string roles = 3;
 }
