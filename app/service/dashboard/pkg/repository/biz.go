@@ -44,9 +44,7 @@ func (repo *repo) CreateGroup(ctx context.Context, m *model.Group) error {
   if err := tx.Commit().Error; err != nil {
     return err
   }
-  for _, r := range allowRoles {
-    repo.iCasbinRepo.AddReadWriteForRoleInDomain(r, m.NamespaceID, strconv.FormatUint(uint64(m.ID), 10))
-  }
+  repo.iCasbinRepo.AddReadWriteForRoleInDomain(m.CreatorID, m.NamespaceID, strconv.FormatUint(uint64(m.ID), 10))
   return nil
 }
 
@@ -61,7 +59,15 @@ type GetGroupsResp struct {
 }
 
 func (repo *repo) GetGroups(ctx context.Context, query map[string]interface{}) (groupsResp []*GetGroupsResp, err error) {
-  groups, err := repo.iGroupRepo.Query(repo.db, query)
+  md, ok := metadata.FromIncomingContext(ctx)
+  if !ok {
+    return nil, fmt.Errorf("fail to extract auth info from ctx")
+  }
+  uid := md["uid"][0]
+  nid := md["nid"][0]
+
+  ids := repo.iCasbinRepo.GetObjForUserInDomain(uid, nid, "read")
+  groups, err := repo.iGroupRepo.Query(repo.db, ids, query)
   if err != nil {
     return nil, err
   }

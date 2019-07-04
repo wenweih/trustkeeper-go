@@ -84,7 +84,7 @@ func contextToGRPC() grpctransport.ClientRequestFunc {
       // capital "Key" is illegal in HTTP/2.
       (*md)["roles"] = authinfo.Roles
       (*md)["uid"] = []string{authinfo.UID}
-      (*md)["uid"] = []string{authinfo.NID}
+      (*md)["nid"] = []string{authinfo.NID}
     }
 		return ctx
 	}
