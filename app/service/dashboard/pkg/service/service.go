@@ -30,12 +30,12 @@ func (b *basicDashboardService) Close() error{
 }
 
 func (b *basicDashboardService) GetGroups(ctx context.Context, namespaceID string) (groups []*repository.GetGroupsResp, err error) {
-	return b.biz.GetGroups(map[string]interface{}{"namespace_id": namespaceID})
+	return b.biz.GetGroups(ctx, map[string]interface{}{"namespace_id": namespaceID})
 }
 
 func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, desc string, namespaceID string) (g *repository.GetGroupsResp, err error) {
 	group := &model.Group{CreatorID: usrID, Name: name, Desc: desc, NamespaceID: namespaceID}
-	err = b.biz.Group(group)
+	err = b.biz.CreateGroup(ctx, group)
 	if err != nil {
 		return nil, err
 	}

@@ -52,10 +52,10 @@ func makeError(ctx context.Context, err error) error {
 	}
 }
 
-func (b *basicWebapiService) auth(ctx context.Context) (accountUID string, namespaceID string, err error) {
-	uid, nid, err := b.accountSrv.Auth(ctx)
+func (b *basicWebapiService) auth(ctx context.Context) (accountUID string, namespaceID string, roles []string, err error) {
+	uid, nid, roles, err := b.accountSrv.Auth(ctx)
 	if err != nil {
-		return "", "", err
+		return "", "", nil, err
 	}
 	namespaceID = nid
 	accountUID = uid
@@ -93,11 +93,13 @@ func (b *basicWebapiService) GetRoles(ctx context.Context) (s0 []string, e1 erro
 }
 
 func (b *basicWebapiService) GetGroups(ctx context.Context) ([]*repository.GetGroupsResp, error) {
-	_, namespaceID, err := b.auth(ctx)
+	accountUID, namespaceID, roles, err := b.auth(ctx)
 	if err != nil {
 		return nil, err
 	}
-	groups, err := b.dashboardSrv.GetGroups(ctx, namespaceID)
+	ctxWithAuthInfo := context.WithValue(ctx, "auth",
+		struct{Roles []string;UID string;NID string}{roles, accountUID, namespaceID})
+	groups, err := b.dashboardSrv.GetGroups(ctxWithAuthInfo, namespaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -148,11 +150,14 @@ func New(logger log.Logger, middleware []Middleware) (WebapiService, error) {
 }
 
 func (b *basicWebapiService) CreateGroup(ctx context.Context, name string, desc string) (*repository.GetGroupsResp, error) {
-	accountUID, namespaceid, err := b.auth(ctx)
+	accountUID, namespaceid, roles, err := b.auth(ctx)
 	if err != nil {
 		return nil, err
 	}
-	resp, err := b.dashboardSrv.CreateGroup(ctx, accountUID, name, desc, namespaceid)
+	ctxWithAuthInfo := context.WithValue(ctx, "auth",
+		struct{Roles []string;UID string;NID string}{roles, accountUID, namespaceid})
+
+	resp, err := b.dashboardSrv.CreateGroup(ctxWithAuthInfo, accountUID, name, desc, namespaceid)
 	if err != nil {
 		return nil, err
 	}

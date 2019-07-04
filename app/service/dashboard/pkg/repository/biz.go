@@ -1,28 +1,53 @@
 package repository
 
 import (
+  "fmt"
+  "context"
   "strconv"
+  "google.golang.org/grpc/metadata"
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
 
 type IBiz interface {
   Signup(uuid, email, name, xpub string) error
-  Group(m *model.Group) error
+  CreateGroup(ctx context.Context, m *model.Group) error
   Close() error
-  GetGroups(query map[string]interface{}) (groups []*GetGroupsResp, err error)
+  GetGroups(ctx context.Context, query map[string]interface{}) (groups []*GetGroupsResp, err error)
 }
 
 func (repo *repo) Signup(uuid, email, name, xpub string) error {
   return nil
 }
 
-func (repo *repo) Group(m *model.Group) error {
+func (repo *repo) CreateGroup(ctx context.Context, m *model.Group) error {
+  md, ok := metadata.FromIncomingContext(ctx)
+  if !ok {
+    return fmt.Errorf("fail to extract auth info from ctx")
+  }
+  allowRoles := make([]string, 0, len(md["roles"]))
+  for _, role := range md["roles"] {
+   allow := repo.iCasbinRepo.HasPolicy([]string{role, "group", "create"})
+   if allow {
+     allowRoles = append(allowRoles, role)
+   }
+  }
+
+  if len(allowRoles) <= 0 {
+    return fmt.Errorf("not allow")
+  }
+
   tx := repo.db.Begin()
   if err := repo.iGroupRepo.Create(tx, m).Error; err != nil {
     tx.Rollback()
     return err
   }
-  return tx.Commit().Error
+  if err := tx.Commit().Error; err != nil {
+    return err
+  }
+  for _, r := range allowRoles {
+    repo.iCasbinRepo.AddReadWriteForRoleInDomain(r, m.NamespaceID, strconv.FormatUint(uint64(m.ID), 10))
+  }
+  return nil
 }
 
 func (repo *repo) Close() error{
@@ -35,7 +60,7 @@ type GetGroupsResp struct {
   Desc  string  `json:"desc"`
 }
 
-func (repo *repo) GetGroups(query map[string]interface{}) (groupsResp []*GetGroupsResp, err error) {
+func (repo *repo) GetGroups(ctx context.Context, query map[string]interface{}) (groupsResp []*GetGroupsResp, err error) {
   groups, err := repo.iGroupRepo.Query(repo.db, query)
   if err != nil {
     return nil, err
