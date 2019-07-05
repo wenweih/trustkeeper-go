@@ -13,6 +13,9 @@ import (
 	accountGrpcClient "trustkeeper-go/app/service/account/client"
 	dashboardGrpcClient "trustkeeper-go/app/service/dashboard/client"
 
+	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
+	walletManagementGrpcClient "trustkeeper-go/app/service/wallet_management/client"
+
 	"github.com/caarlos0/env"
 	log "github.com/go-kit/kit/log"
 	"github.com/jinzhu/copier"
@@ -38,6 +41,7 @@ type Credentials struct {
 type basicWebapiService struct {
 	accountSrv   accountService.AccountService
 	dashboardSrv dashboardService.DashboardService
+	WalletSrv walletManagementService.WalletManagementService
 }
 
 func makeError(ctx context.Context, err error) error {
@@ -130,9 +134,15 @@ func NewBasicWebapiService(logger log.Logger) (WebapiService, error) {
 		return nil, fmt.Errorf("dashboardGrpcClient: %s", err.Error())
 	}
 
+	wmClient, err := walletManagementGrpcClient.New(cfg.ConsulAddr, logger)
+	if err != nil {
+		return nil, fmt.Errorf("walletManagementGrpcClient: %s", err.Error())
+	}
+
 	return &basicWebapiService{
 		accountSrv:   accountClient,
 		dashboardSrv: dashboardClient,
+		WalletSrv: wmClient,
 	}, nil
 }
 
@@ -159,6 +169,10 @@ func (b *basicWebapiService) CreateGroup(ctx context.Context, name string, desc 
 
 	resp, err := b.dashboardSrv.CreateGroup(ctxWithAuthInfo, accountUID, name, desc, namespaceid)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := b.WalletSrv.AssignedXpubToGroup(ctxWithAuthInfo, resp.ID); err != nil {
 		return nil, err
 	}
 
