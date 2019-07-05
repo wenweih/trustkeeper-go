@@ -16,10 +16,8 @@ import (
   grpctransport "github.com/go-kit/kit/transport/grpc"
   libconsule "trustkeeper-go/library/consul"
   "trustkeeper-go/library/util"
-
   "context"
   "google.golang.org/grpc/metadata"
-
 )
 
 // https://github.com/go-kit/kit/blob/master/examples/apigateway/main.go

@@ -4,6 +4,7 @@ import (
   "io"
   "fmt"
   "time"
+  "context"
   "github.com/go-kit/kit/log"
   "trustkeeper-go/app/service/wallet_management/pkg/service"
   walletmanagementEndpoint "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
@@ -15,6 +16,7 @@ import (
   grpctransport "github.com/go-kit/kit/transport/grpc"
   libconsule "trustkeeper-go/library/consul"
   "trustkeeper-go/library/util"
+  "google.golang.org/grpc/metadata"
 )
 
 // https://github.com/go-kit/kit/blob/master/examples/apigateway/main.go
@@ -56,12 +58,24 @@ func factoryFor(makeEndpoint func(service.WalletManagementService) endpoint.Endp
       return nil, nil, err
     }
 
-    srv, err := newGRPCClient(conn, []grpctransport.ClientOption{})
+    srv, err := newGRPCClient(conn, []grpctransport.ClientOption{grpctransport.ClientBefore(contextToGRPC())})
 		if err != nil {
 			return nil, nil, err
 		}
 
 		endpoints := makeEndpoint(srv)
     return endpoints, conn, err
+	}
+}
+
+func contextToGRPC() grpctransport.ClientRequestFunc {
+	return func(ctx context.Context, md *metadata.MD) context.Context {
+		if authinfo, ok := ctx.Value("auth").(struct{Roles []string; UID string; NID string}); ok {
+      // capital "Key" is illegal in HTTP/2.
+      (*md)["roles"] = authinfo.Roles
+      (*md)["uid"] = []string{authinfo.UID}
+      (*md)["nid"] = []string{authinfo.NID}
+    }
+		return ctx
 	}
 }
