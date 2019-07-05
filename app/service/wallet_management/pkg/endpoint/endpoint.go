@@ -1,9 +1,10 @@
 package endpoint
 
 import (
+	"errors"
 	"context"
-	endpoint "github.com/go-kit/kit/endpoint"
 	service "trustkeeper-go/app/service/wallet_management/pkg/service"
+	endpoint "github.com/go-kit/kit/endpoint"
 )
 
 // CreateChainRequest collects the request parameters for the CreateChain method.
@@ -54,5 +55,44 @@ func (e Endpoints) CreateChain(ctx context.Context, symbol string, bit44ID strin
 
 // Close implements Service. Primarily useful in a client.
 func (e Endpoints) Close() error {
+	return nil
+}
+
+// AssignedXpubToGroupRequest collects the request parameters for the UpdateXpubState method.
+type AssignedXpubToGroupRequest struct {
+	GroupID string `json:"groupid"`
+}
+
+// AssignedXpubToGroupResponse collects the response parameters for the UpdateXpubState method.
+type AssignedXpubToGroupResponse struct {
+	Err error `json:"err"`
+}
+
+// MakeAssignedXpubToGroupEndpoint returns an endpoint that invokes UpdateXpubState on the service.
+func MakeAssignedXpubToGroupEndpoint(s service.WalletManagementService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req, ok := request.(AssignedXpubToGroupRequest)
+		if !ok {
+			return nil, errors.New("endpoint AssignedXpubToGroupRequest type assersion error")
+		}
+		if err := s.AssignedXpubToGroup(ctx, req.GroupID); err != nil {
+			return nil, err
+		}
+		return AssignedXpubToGroupResponse{}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r AssignedXpubToGroupResponse) Failed() error {
+	return r.Err
+}
+
+// AssignedXpubToGroup implements Service. Primarily useful in a client.
+func (e Endpoints) AssignedXpubToGroup(ctx context.Context, groupid string) (err error) {
+	request := AssignedXpubToGroupRequest{GroupID: groupid}
+	_, err = e.AssignedXpubToGroupEndpoint(ctx, request)
+	if err != nil {
+		return err
+	}
 	return nil
 }

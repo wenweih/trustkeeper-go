@@ -1,29 +1,31 @@
 package service
 
 import (
-	"fmt"
 	"context"
-	"trustkeeper-go/library/database/orm"
-	log "github.com/go-kit/kit/log"
+	"fmt"
+	walletKeyGrpcClient "trustkeeper-go/app/service/wallet_key/client"
+	walletKeyService "trustkeeper-go/app/service/wallet_key/pkg/service"
 	"trustkeeper-go/app/service/wallet_management/pkg/configure"
 	"trustkeeper-go/app/service/wallet_management/pkg/repository"
-	walletKeyService "trustkeeper-go/app/service/wallet_key/pkg/service"
-	walletKeyGrpcClient "trustkeeper-go/app/service/wallet_key/client"
+	"trustkeeper-go/library/database/orm"
 	"trustkeeper-go/library/database/redis"
+
+	log "github.com/go-kit/kit/log"
 )
 
 // WalletManagementService describes the service.
 type WalletManagementService interface {
 	CreateChain(ctx context.Context, symbol, bit44ID string, status bool) (err error)
+	AssignedXpubToGroup(ctx context.Context, groupid string) (err error)
 	Close() error
 }
 
-type basicWalletManagementService struct{
-	biz  repository.IBiz
-	KeySrv	walletKeyService.WalletKeyService
+type basicWalletManagementService struct {
+	biz    repository.IBiz
+	KeySrv walletKeyService.WalletKeyService
 }
 
-func (b *basicWalletManagementService) Close() error{
+func (b *basicWalletManagementService) Close() error {
 	return b.biz.Close()
 }
 
@@ -46,7 +48,7 @@ func newBasicWalletManagementService(conf configure.Conf, logger log.Logger) (*b
 	}
 
 	bas := basicWalletManagementService{
-		biz: repository.New(redisPool, db),
+		biz:    repository.New(redisPool, db),
 		KeySrv: wkClient,
 	}
 	return &bas, nil
@@ -72,4 +74,14 @@ func NewJobsService(conf configure.Conf, logger log.Logger) (JobService, error) 
 	}
 	var svc JobService = bs
 	return svc, nil
+}
+
+func (b *basicWalletManagementService) AssignedXpubToGroup(ctx context.Context, groupid string) (err error) {
+	err = b.biz.UpdateXpubState(ctx, repository.Idle, repository.Assigned, groupid)
+	return
+}
+
+// NewBasicWalletManagementService returns a naive, stateless implementation of WalletManagementService.
+func NewBasicWalletManagementService() WalletManagementService {
+	return &basicWalletManagementService{}
 }

@@ -10,15 +10,22 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	CreateChainEndpoint endpoint.Endpoint
+	CreateChainEndpoint     endpoint.Endpoint
+	AssignedXpubToGroupEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.WalletManagementService, mdw map[string][]endpoint.Middleware) Endpoints {
-	eps := Endpoints{CreateChainEndpoint: MakeCreateChainEndpoint(s)}
+	eps := Endpoints{
+		CreateChainEndpoint:     MakeCreateChainEndpoint(s),
+		AssignedXpubToGroupEndpoint: MakeAssignedXpubToGroupEndpoint(s),
+	}
 	for _, m := range mdw["CreateChain"] {
 		eps.CreateChainEndpoint = m(eps.CreateChainEndpoint)
+	}
+	for _, m := range mdw["UpdateXpubState"] {
+		eps.AssignedXpubToGroupEndpoint = m(eps.AssignedXpubToGroupEndpoint)
 	}
 	return eps
 }

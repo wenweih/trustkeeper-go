@@ -3,6 +3,20 @@ package service
 import (
 	"flag"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"trustkeeper-go/app/service/wallet_management/pkg/configure"
+	endpoint "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
+	grpc "trustkeeper-go/app/service/wallet_management/pkg/grpc"
+	pb "trustkeeper-go/app/service/wallet_management/pkg/grpc/pb"
+	"trustkeeper-go/app/service/wallet_management/pkg/jobs"
+	service "trustkeeper-go/app/service/wallet_management/pkg/service"
+	"trustkeeper-go/library/consul"
+	common "trustkeeper-go/library/util"
+
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
@@ -13,22 +27,9 @@ import (
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	grpc1 "google.golang.org/grpc"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"syscall"
-	endpoint "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
-	grpc "trustkeeper-go/app/service/wallet_management/pkg/grpc"
-	pb "trustkeeper-go/app/service/wallet_management/pkg/grpc/pb"
-	service "trustkeeper-go/app/service/wallet_management/pkg/service"
-	"trustkeeper-go/app/service/wallet_management/pkg/configure"
-	"trustkeeper-go/library/consul"
-	"trustkeeper-go/library/util"
-	"google.golang.org/grpc/health/grpc_health_v1"
-	"trustkeeper-go/app/service/wallet_management/pkg/jobs"
 )
 
 var (
@@ -110,7 +111,7 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 
 	// call grpc listen should not use Loopback address
 	// https://stackoverflow.com/questions/43911793/cannot-connect-to-go-grpc-server-running-in-local-docker-container
-	grpcListener, err := net.Listen("tcp", common.LocalIP() + ":0")
+	grpcListener, err := net.Listen("tcp", common.LocalIP()+":0")
 	if err != nil {
 		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
 		os.Exit(1)
@@ -150,7 +151,7 @@ func initJobs(logger log.Logger, g *group.Group) {
 		select {
 		case sig := <-c:
 			return fmt.Errorf("received signal %s", sig)
-		case <- cancelInterrupt:
+		case <-cancelInterrupt:
 			return nil
 		}
 	}, func(err error) {

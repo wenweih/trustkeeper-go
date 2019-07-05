@@ -6,15 +6,22 @@ package pb;
 
 //The WalletManagement service definition.
 service WalletManagement {
- rpc CreateChain (CreateChainRequest) returns (CreateChainReply);
+ rpc CreateChain     (CreateChainRequest    ) returns (CreateChainReply    );
+ rpc AssignedXpubToGroup (AssignedXpubToGroupRequest) returns (AssignedXpubToGroupReply);
 }
 
 message CreateChainRequest {
-  string symbol = 1;
-  string bitid = 2;
-  bool status = 3;
+ string symbol = 1;
+ string bitid  = 2;
+ bool   status = 3;
 }
 
 message CreateChainReply {
-  bool result = 1;
+ bool result = 1;
 }
+
+message AssignedXpubToGroupRequest {
+  string groupid = 1;
+}
+
+message AssignedXpubToGroupReply {}

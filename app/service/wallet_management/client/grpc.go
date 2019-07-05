@@ -21,7 +21,15 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		createChainEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "CreateChain", encodeCreateChainRequest, decodeCreateChainResponse, pb.CreateChainReply{}, options...).Endpoint()
 	}
 
-	return endpoint1.Endpoints{CreateChainEndpoint: createChainEndpoint}, nil
+	var assignedXpubToGroupEndpoint endpoint.Endpoint
+	{
+		assignedXpubToGroupEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "AssignedXpubToGroup", encodeAssignedXpubToGroupRequest, decodeAssignedXpubToGroupResponse, pb.AssignedXpubToGroupReply{}, options...).Endpoint()
+	}
+
+	return endpoint1.Endpoints{
+		CreateChainEndpoint: createChainEndpoint,
+		AssignedXpubToGroupEndpoint: assignedXpubToGroupEndpoint,
+	}, nil
 }
 
 // encodeCreateChainRequest is a transport/grpc.EncodeRequestFunc that converts a
@@ -46,4 +54,24 @@ func decodeCreateChainResponse(_ context.Context, reply interface{}) (interface{
     return &endpoint1.CreateChainResponse{Err: e}, e
   }
   return &endpoint1.CreateChainResponse{}, nil
+}
+
+// encodeUpdateXpubStateRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain UpdateXpubState request to a gRPC request.
+func encodeAssignedXpubToGroupRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.AssignedXpubToGroupRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint AssignedXpubToGroupRequest type assertion error")
+	}
+	return &pb.AssignedXpubToGroupRequest{Groupid: r.GroupID}, nil
+}
+
+// decodeUpdateXpubStateResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeAssignedXpubToGroupResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	_, ok := reply.(*pb.AssignedXpubToGroupReply)
+	if !ok {
+		return nil, fmt.Errorf("pb UpdateXpubStateReply type assertion error")
+	}
+	return &endpoint1.AssignedXpubToGroupResponse{}, nil
 }

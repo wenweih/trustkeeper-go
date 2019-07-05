@@ -19,17 +19,21 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	return g
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
-	options := map[string][]grpc.ServerOption{"CreateChain": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateChain", logger))}}
+	options := map[string][]grpc.ServerOption{
+		"CreateChain":     {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateChain", logger))},
+		"UpdateXpubState": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "UpdateXpubState", logger))},
+	}
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
 	mw["CreateChain"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateChain")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateChain"))}
+	mw["UpdateXpubState"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "UpdateXpubState")), endpoint.InstrumentingMiddleware(duration.With("method", "UpdateXpubState"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"CreateChain"}
+	methods := []string{"CreateChain", "UpdateXpubState"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

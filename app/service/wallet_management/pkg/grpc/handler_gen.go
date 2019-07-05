@@ -9,9 +9,13 @@ import (
 
 // NewGRPCServer makes a set of endpoints available as a gRPC AddServer
 type grpcServer struct {
-	createChain grpc.Handler
+	createChain     grpc.Handler
+	assignedXpubToGroup grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.WalletManagementServer {
-	return &grpcServer{createChain: makeCreateChainHandler(endpoints, options["CreateChain"])}
+	return &grpcServer{
+		createChain:     makeCreateChainHandler(endpoints, options["CreateChain"]),
+		assignedXpubToGroup: makeAssignedXpubToGroupHandler(endpoints, options["AssignedXpubToGroupReply"]),
+	}
 }

@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+
 	log "github.com/go-kit/kit/log"
 )
 
@@ -34,4 +35,11 @@ func (l loggingMiddleware) Close() error {
 		l.logger.Log("method", "Close", "close resource", "(database, redis etc...)")
 	}()
 	return l.next.Close()
+}
+
+func (l loggingMiddleware) AssignedXpubToGroup(ctx context.Context, groupid string) (err error) {
+	defer func() {
+		l.logger.Log("method", "AssignedXpubToGroup", "groupid", groupid, "err", err)
+	}()
+	return l.next.AssignedXpubToGroup(ctx, groupid)
 }

@@ -31,11 +31,16 @@ func main()  {
   if err != nil {
     logger.Log("service client error: ", err.Error())
   }
-  ctx := context.Background()
+  ctxWithAuthInfo := context.WithValue(context.Background(), "auth",
+		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "466054237439852545", "466054237547266049"})
 
   for _, str := range []string{"aa", "bb", "ccc", "ee", "dd", "ff", "gg", "hh"} {
-    if err := s.CreateChain(ctx, str, "bit44ID", true); err != nil {
+    if err := s.CreateChain(ctxWithAuthInfo, str, "bit44ID", true); err != nil {
       logger.Log("CreateChain BTC error: ", err.Error())
     }
+  }
+
+  if err := s.AssignedXpubToGroup(ctxWithAuthInfo, "466126082655944705"); err != nil {
+    logger.Log("err:", err.Error())
   }
 }

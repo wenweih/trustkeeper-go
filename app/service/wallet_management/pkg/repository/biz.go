@@ -1,8 +1,11 @@
 package repository
 
 import (
-  "trustkeeper-go/app/service/wallet_management/pkg/model"
+  "fmt"
+  "context"
+  "google.golang.org/grpc/metadata"
   "github.com/gomodule/redigo/redis"
+  "trustkeeper-go/app/service/wallet_management/pkg/model"
 )
 
 type IBiz interface {
@@ -12,6 +15,7 @@ type IBiz interface {
   Close() error
   RedisInstance() *redis.Pool
   GetChains() (chains []*model.Chain, err error)
+  UpdateXpubState(ctx context.Context, from, to, groupid string) error
 }
 
 type Bip44AccountKey struct {
@@ -56,4 +60,40 @@ func (repo *repo) RedisInstance() *redis.Pool {
 
 func (repo *repo)GetChains() (chains []*model.Chain, err error) {
   return repo.iChainRepo.Query(repo.db, map[string]interface{}{})
+}
+
+func (repo *repo) UpdateXpubState(ctx context.Context, from, to, groupid string) error {
+  md, ok := metadata.FromIncomingContext(ctx)
+  if !ok {
+    return fmt.Errorf("fail to extract auth info from ctx")
+  }
+  // uid := md["uid"][0]
+  nid := md["nid"][0]
+
+  mnemonicVs, err := repo.imnemonicVersionRepo.VersionLikeQuery(repo.db, nid)
+  if err != nil {
+    return err
+  }
+
+  if len(mnemonicVs) != 1 {
+    return fmt.Errorf("records error")
+  }
+  xpub := model.Xpub{}
+  switch from {
+  case Idle:
+    repo.db.Where("state = ? AND mnemonic_version_id = ?", Idle, uint(mnemonicVs[0].ID)).First(&xpub)
+  case Assigned:
+    repo.db.Where("state = ? AND mnemonic_version_id = ?", Assigned, uint(mnemonicVs[0].ID)).First(&xpub)
+  case Abandon:
+    repo.db.Where("state = ? AND mnemonic_version_id = ?", Abandon, uint(mnemonicVs[0].ID)).First(&xpub)
+  default:
+    return fmt.Errorf("invalid state:" + from)
+  }
+  if err := repo.iXpubRepo.UpdateState(repo.db, &xpub, to); err != nil {
+    return err
+  }
+  if err := repo.db.Model(&xpub).Updates(map[string]interface{}{"state": to, "group_id": groupid}).Error; err != nil {
+    return err
+  }
+  return nil
 }
