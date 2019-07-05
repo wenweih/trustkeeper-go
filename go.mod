@@ -12,6 +12,7 @@ require (
 	github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 // indirect
 	github.com/armon/go-metrics v0.0.0-20190430140413-ec5e00d3c878 // indirect
 	github.com/armon/go-radix v1.0.0 // indirect
+	github.com/asaskevich/govalidator v0.0.0-20190424111038-f61b66f89f4a // indirect
 	github.com/btcsuite/btcd v0.0.0-20190605094302-a0d1e3e36d50
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/caarlos0/env v3.5.0+incompatible
@@ -32,6 +33,8 @@ require (
 	github.com/google/go-cmp v0.3.0 // indirect
 	github.com/google/pprof v0.0.0-20190515194954-54271f7e092f // indirect
 	github.com/gorilla/mux v1.7.2 // indirect
+	github.com/gorilla/sessions v1.1.3 // indirect
+	github.com/gosimple/slug v1.5.0 // indirect
 	github.com/hashicorp/consul/api v1.1.0
 	github.com/hashicorp/go-hclog v0.9.2 // indirect
 	github.com/hashicorp/go-immutable-radix v1.1.0 // indirect
@@ -52,6 +55,7 @@ require (
 	github.com/lightstep/lightstep-tracer-common v1.0.3 // indirect
 	github.com/lightstep/lightstep-tracer-go v0.16.0
 	github.com/mattn/go-colorable v0.1.2 // indirect
+	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/miekg/dns v1.1.14 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/mitchellh/reflectwalk v1.0.1 // indirect
@@ -66,6 +70,17 @@ require (
 	github.com/posener/complete v1.2.1 // indirect
 	github.com/prometheus/client_golang v0.9.4
 	github.com/prometheus/tsdb v0.8.0 // indirect
+	github.com/qor/admin v0.0.0-20190702111835-26c9050ce4ed // indirect
+	github.com/qor/assetfs v0.0.0-20170713023933-ff57fdc13a14 // indirect
+	github.com/qor/audited v0.0.0-20171228121055-b52c9c2f0571 // indirect
+	github.com/qor/middlewares v0.0.0-20170822143614-781378b69454 // indirect
+	github.com/qor/qor v0.0.0-20190319081902-186b0237364b // indirect
+	github.com/qor/responder v0.0.0-20171031032654-b6def473574f // indirect
+	github.com/qor/roles v0.0.0-20171127035124-d6375609fe3e // indirect
+	github.com/qor/session v0.0.0-20170907035918-8206b0adab70 // indirect
+	github.com/qor/transition v0.0.0-20190608002025-f17b56902e4b
+	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46 // indirect
+	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
 	github.com/robfig/cron v1.1.0 // indirect
 	github.com/rs/cors v1.6.0
 	github.com/satori/go.uuid v1.2.0
@@ -74,6 +89,7 @@ require (
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/syndtr/goleveldb v1.0.0
+	github.com/theplant/cldr v0.0.0-20190423050709-9f76f7ce4ee8 // indirect
 	github.com/tyler-smith/go-bip39 v1.0.0
 	go.etcd.io/etcd v3.3.13+incompatible // indirect
 	golang.org/x/crypto v0.0.0-20190611184440-5c40567a22f8

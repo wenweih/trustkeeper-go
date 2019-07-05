@@ -2,6 +2,7 @@ package repository
 
 import(
   "github.com/jinzhu/gorm"
+  "github.com/qor/transition"
   "github.com/gomodule/redigo/redis"
   "trustkeeper-go/app/service/wallet_management/pkg/model"
 )
@@ -21,7 +22,8 @@ func New(redisPool *redis.Pool, db *gorm.DB) IBiz {
   db.AutoMigrate(
     model.Wallet{},
     model.Xpub{},
-    model.MnemonicVersion{})
+    model.MnemonicVersion{},
+    &transition.StateChangeLog{})
   repo := repo{
     db,
     redisPool,
