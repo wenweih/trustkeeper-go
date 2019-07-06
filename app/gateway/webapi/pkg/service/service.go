@@ -13,8 +13,8 @@ import (
 	accountGrpcClient "trustkeeper-go/app/service/account/client"
 	dashboardGrpcClient "trustkeeper-go/app/service/dashboard/client"
 
-	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
 	walletManagementGrpcClient "trustkeeper-go/app/service/wallet_management/client"
+	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
 
 	"github.com/caarlos0/env"
 	log "github.com/go-kit/kit/log"
@@ -29,6 +29,7 @@ type WebapiService interface {
 	GetRoles(ctx context.Context) ([]string, error)
 	GetGroups(ctx context.Context) (groups []*repository.GetGroupsResp, err error)
 	CreateGroup(ctx context.Context, name, desc string) (group *repository.GetGroupsResp, err error)
+	UpdateGroup(ctx context.Context, groupid, name, desc string) (err error)
 }
 
 // Credentials Signup Signin params
@@ -41,7 +42,7 @@ type Credentials struct {
 type basicWebapiService struct {
 	accountSrv   accountService.AccountService
 	dashboardSrv dashboardService.DashboardService
-	WalletSrv walletManagementService.WalletManagementService
+	WalletSrv    walletManagementService.WalletManagementService
 }
 
 func makeError(ctx context.Context, err error) error {
@@ -101,8 +102,7 @@ func (b *basicWebapiService) GetGroups(ctx context.Context) ([]*repository.GetGr
 	if err != nil {
 		return nil, err
 	}
-	ctxWithAuthInfo := context.WithValue(ctx, "auth",
-		struct{Roles []string;UID string;NID string}{roles, accountUID, namespaceID})
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, accountUID, namespaceID)
 	groups, err := b.dashboardSrv.GetGroups(ctxWithAuthInfo, namespaceID)
 	if err != nil {
 		return nil, err
@@ -142,7 +142,7 @@ func NewBasicWebapiService(logger log.Logger) (WebapiService, error) {
 	return &basicWebapiService{
 		accountSrv:   accountClient,
 		dashboardSrv: dashboardClient,
-		WalletSrv: wmClient,
+		WalletSrv:    wmClient,
 	}, nil
 }
 
@@ -165,7 +165,11 @@ func (b *basicWebapiService) CreateGroup(ctx context.Context, name string, desc 
 		return nil, err
 	}
 	ctxWithAuthInfo := context.WithValue(ctx, "auth",
-		struct{Roles []string;UID string;NID string}{roles, accountUID, namespaceid})
+		struct {
+			Roles []string
+			UID   string
+			NID   string
+		}{roles, accountUID, namespaceid})
 
 	resp, err := b.dashboardSrv.CreateGroup(ctxWithAuthInfo, accountUID, name, desc, namespaceid)
 	if err != nil {
@@ -177,4 +181,24 @@ func (b *basicWebapiService) CreateGroup(ctx context.Context, name string, desc 
 	}
 
 	return &repository.GetGroupsResp{Name: resp.Name, Desc: resp.Desc, ID: resp.ID}, nil
+}
+
+func (b *basicWebapiService) UpdateGroup(ctx context.Context, groupid string, name string, desc string) (err error) {
+	accountUID, namespaceid, roles, err := b.auth(ctx)
+	if err != nil {
+		return err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, accountUID, namespaceid)
+	err = b.dashboardSrv.UpdateGroup(ctxWithAuthInfo, groupid, name, desc)
+	return err
+}
+
+func constructAuthInfoContext(ctx context.Context, roles []string, uid, nid string) (ctxWithAuthInfo context.Context) {
+	ctxWithAuthInfo = context.WithValue(ctx, "auth",
+		struct {
+			Roles []string
+			UID   string
+			NID   string
+		}{roles, uid, nid})
+	return
 }

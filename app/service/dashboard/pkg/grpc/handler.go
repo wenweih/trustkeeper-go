@@ -1,8 +1,8 @@
 package grpc
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	endpoint "trustkeeper-go/app/service/dashboard/pkg/endpoint"
 	pb "trustkeeper-go/app/service/dashboard/pkg/grpc/pb"
 
@@ -10,13 +10,10 @@ import (
 	context1 "golang.org/x/net/context"
 )
 
-// makeGetGroupsHandler creates the handler logic
 func makeGetGroupsHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
 	return grpc.NewServer(endpoints.GetGroupsEndpoint, decodeGetGroupsRequest, encodeGetGroupsResponse, options...)
 }
 
-// decodeGetGroupsResponse is a transport/grpc.DecodeRequestFunc that converts a
-// gRPC request to a user-domain GetGroups request.
 func decodeGetGroupsRequest(_ context.Context, r interface{}) (interface{}, error) {
 	req, ok := r.(*pb.GetGroupsRequest)
 	if !ok {
@@ -25,8 +22,6 @@ func decodeGetGroupsRequest(_ context.Context, r interface{}) (interface{}, erro
 	return endpoint.GetGroupsRequest{NamespaceID: req.NamespaceID}, nil
 }
 
-// encodeGetGroupsResponse is a transport/grpc.EncodeResponseFunc that converts
-// a user-domain response to a gRPC reply.
 func encodeGetGroupsResponse(_ context.Context, r interface{}) (interface{}, error) {
 	resp, ok := r.(endpoint.GetGroupsResponse)
 	if !ok {
@@ -48,14 +43,10 @@ func (g *grpcServer) GetGroups(ctx context1.Context, req *pb.GetGroupsRequest) (
 	return rep.(*pb.GetGroupsReply), nil
 }
 
-// makeCreateGroupHandler creates the handler logic
 func makeCreateGroupHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
 	return grpc.NewServer(endpoints.CreateGroupEndpoint, decodeCreateGroupRequest, encodeCreateGroupResponse, options...)
 }
 
-// decodeCreateGroupResponse is a transport/grpc.DecodeRequestFunc that converts a
-// gRPC request to a user-domain CreateGroup request.
-// TODO implement the decoder
 func decodeCreateGroupRequest(_ context.Context, r interface{}) (interface{}, error) {
 	req, ok := r.(*pb.CreateGroupRequest)
 	if !ok {
@@ -64,8 +55,6 @@ func decodeCreateGroupRequest(_ context.Context, r interface{}) (interface{}, er
 	return endpoint.CreateGroupRequest{UUID: req.Uuid, Name: req.Name, Desc: req.Desc, NamespaceID: req.NamespaceID}, nil
 }
 
-// encodeCreateGroupResponse is a transport/grpc.EncodeResponseFunc that converts
-// a user-domain response to a gRPC reply.
 func encodeCreateGroupResponse(_ context.Context, r interface{}) (interface{}, error) {
 	resp := r.(endpoint.CreateGroupResponse)
 	if resp.Err != nil {
@@ -80,4 +69,32 @@ func (g *grpcServer) CreateGroup(ctx context1.Context, req *pb.CreateGroupReques
 		return nil, err
 	}
 	return rep.(*pb.CreateGroupReply), nil
+}
+
+func makeUpdateGroupHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.UpdateGroupEndpoint, decodeUpdateGroupRequest, encodeUpdateGroupResponse, options...)
+}
+
+func decodeUpdateGroupRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.UpdateGroupRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb UpdateGroupRequest type assertion error")
+	}
+	return endpoint.UpdateGroupRequest{GroupID: req.Groupid, Name: req.Name, Desc: req.Desc}, nil
+}
+
+func encodeUpdateGroupResponse(_ context.Context, r interface{}) (interface{}, error) {
+	_, ok := r.(endpoint.UpdateGroupResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint UpdateGroupRequest type assertion error")
+	}
+	return &pb.UpdateGroupReply{}, nil
+}
+
+func (g *grpcServer) UpdateGroup(ctx context1.Context, req *pb.UpdateGroupRequest) (*pb.UpdateGroupReply, error) {
+	_, rep, err := g.updateGroup.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.UpdateGroupReply), nil
 }

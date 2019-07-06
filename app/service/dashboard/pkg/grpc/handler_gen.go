@@ -11,11 +11,13 @@ import (
 type grpcServer struct {
 	createGroup grpc.Handler
 	getGroups   grpc.Handler
+	updateGroup grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.DashboardServer {
 	return &grpcServer{
 		createGroup: makeCreateGroupHandler(endpoints, options["CreateGroup"]),
 		getGroups:   makeGetGroupsHandler(endpoints, options["GetGroups"]),
+		updateGroup: makeUpdateGroupHandler(endpoints, options["UpdateGroup"]),
 	}
 }

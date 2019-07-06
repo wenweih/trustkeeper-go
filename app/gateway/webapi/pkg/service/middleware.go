@@ -51,7 +51,7 @@ func (l loggingMiddleware) GetRoles(ctx context.Context) (roles []string, err er
 
 func (l loggingMiddleware) GetGroups(ctx context.Context) (groups []*repository.GetGroupsResp, err error) {
 	defer func() {
-		l.logger.Log("method", "Group", "err", err)
+		l.logger.Log("method", "GetGroups", "err", err)
 	}()
 	return l.next.GetGroups(ctx)
 }
@@ -61,4 +61,11 @@ func (l loggingMiddleware) CreateGroup(ctx context.Context, name string, desc st
 		l.logger.Log("method", "CreateGroup", "name", name, "desc", desc, "group", group, "err", err)
 	}()
 	return l.next.CreateGroup(ctx, name, desc)
+}
+
+func (l loggingMiddleware) UpdateGroup(ctx context.Context, groupid string, name string, desc string) (err error) {
+	defer func() {
+		l.logger.Log("method", "UpdateGroup", "groupid", groupid, "name", name, "desc", desc, "err", err)
+	}()
+	return l.next.UpdateGroup(ctx, groupid, name, desc)
 }

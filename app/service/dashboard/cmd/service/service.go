@@ -9,11 +9,14 @@ import (
 	"os/signal"
 	"syscall"
 	"trustkeeper-go/app/service/dashboard/pkg/configure"
-	"trustkeeper-go/app/service/dashboard/pkg/jobs"
 	endpoint "trustkeeper-go/app/service/dashboard/pkg/endpoint"
 	grpc "trustkeeper-go/app/service/dashboard/pkg/grpc"
 	pb "trustkeeper-go/app/service/dashboard/pkg/grpc/pb"
+	"trustkeeper-go/app/service/dashboard/pkg/jobs"
 	service "trustkeeper-go/app/service/dashboard/pkg/service"
+
+	"trustkeeper-go/library/consul"
+	common "trustkeeper-go/library/util"
 
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
@@ -25,11 +28,9 @@ import (
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	grpc1 "google.golang.org/grpc"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"trustkeeper-go/library/util"
-	"trustkeeper-go/library/consul"
-	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 var (
@@ -92,7 +93,7 @@ func Run() {
 
 	svc, err := service.New(conf, logger, getServiceMiddleware(logger))
 	if err != nil {
-		logger.Log("new service error: ",  err.Error())
+		logger.Log("new service error: ", err.Error())
 		os.Exit(1)
 	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
@@ -108,7 +109,7 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	// Add your GRPC options here
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
 
-	grpcListener, err := net.Listen("tcp", common.LocalIP() + ":0")
+	grpcListener, err := net.Listen("tcp", common.LocalIP()+":0")
 	if err != nil {
 		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
 		os.Exit(1)
@@ -148,7 +149,7 @@ func initJobs(logger log.Logger, g *group.Group) {
 		select {
 		case sig := <-c:
 			return fmt.Errorf("received signal %s", sig)
-		case <- cancelInterrupt:
+		case <-cancelInterrupt:
 			return nil
 		}
 	}, func(err error) {

@@ -34,7 +34,7 @@ func (m *GetGroupsRequest) Reset()         { *m = GetGroupsRequest{} }
 func (m *GetGroupsRequest) String() string { return proto.CompactTextString(m) }
 func (*GetGroupsRequest) ProtoMessage()    {}
 func (*GetGroupsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dashboard_41603ad4e2eee9ea, []int{0}
+	return fileDescriptor_dashboard_703095747baa5ed5, []int{0}
 }
 func (m *GetGroupsRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetGroupsRequest.Unmarshal(m, b)
@@ -72,7 +72,7 @@ func (m *GetGroupsReply) Reset()         { *m = GetGroupsReply{} }
 func (m *GetGroupsReply) String() string { return proto.CompactTextString(m) }
 func (*GetGroupsReply) ProtoMessage()    {}
 func (*GetGroupsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dashboard_41603ad4e2eee9ea, []int{1}
+	return fileDescriptor_dashboard_703095747baa5ed5, []int{1}
 }
 func (m *GetGroupsReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetGroupsReply.Unmarshal(m, b)
@@ -112,7 +112,7 @@ func (m *Group) Reset()         { *m = Group{} }
 func (m *Group) String() string { return proto.CompactTextString(m) }
 func (*Group) ProtoMessage()    {}
 func (*Group) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dashboard_41603ad4e2eee9ea, []int{2}
+	return fileDescriptor_dashboard_703095747baa5ed5, []int{2}
 }
 func (m *Group) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Group.Unmarshal(m, b)
@@ -167,7 +167,7 @@ func (m *CreateGroupRequest) Reset()         { *m = CreateGroupRequest{} }
 func (m *CreateGroupRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateGroupRequest) ProtoMessage()    {}
 func (*CreateGroupRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dashboard_41603ad4e2eee9ea, []int{3}
+	return fileDescriptor_dashboard_703095747baa5ed5, []int{3}
 }
 func (m *CreateGroupRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateGroupRequest.Unmarshal(m, b)
@@ -226,7 +226,7 @@ func (m *CreateGroupReply) Reset()         { *m = CreateGroupReply{} }
 func (m *CreateGroupReply) String() string { return proto.CompactTextString(m) }
 func (*CreateGroupReply) ProtoMessage()    {}
 func (*CreateGroupReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_dashboard_41603ad4e2eee9ea, []int{4}
+	return fileDescriptor_dashboard_703095747baa5ed5, []int{4}
 }
 func (m *CreateGroupReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateGroupReply.Unmarshal(m, b)
@@ -253,12 +253,98 @@ func (m *CreateGroupReply) GetGroup() *Group {
 	return nil
 }
 
+type UpdateGroupRequest struct {
+	Groupid              string   `protobuf:"bytes,1,opt,name=groupid" json:"groupid,omitempty"`
+	Name                 string   `protobuf:"bytes,2,opt,name=name" json:"name,omitempty"`
+	Desc                 string   `protobuf:"bytes,3,opt,name=desc" json:"desc,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateGroupRequest) Reset()         { *m = UpdateGroupRequest{} }
+func (m *UpdateGroupRequest) String() string { return proto.CompactTextString(m) }
+func (*UpdateGroupRequest) ProtoMessage()    {}
+func (*UpdateGroupRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_dashboard_703095747baa5ed5, []int{5}
+}
+func (m *UpdateGroupRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateGroupRequest.Unmarshal(m, b)
+}
+func (m *UpdateGroupRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateGroupRequest.Marshal(b, m, deterministic)
+}
+func (dst *UpdateGroupRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateGroupRequest.Merge(dst, src)
+}
+func (m *UpdateGroupRequest) XXX_Size() int {
+	return xxx_messageInfo_UpdateGroupRequest.Size(m)
+}
+func (m *UpdateGroupRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateGroupRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateGroupRequest proto.InternalMessageInfo
+
+func (m *UpdateGroupRequest) GetGroupid() string {
+	if m != nil {
+		return m.Groupid
+	}
+	return ""
+}
+
+func (m *UpdateGroupRequest) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+func (m *UpdateGroupRequest) GetDesc() string {
+	if m != nil {
+		return m.Desc
+	}
+	return ""
+}
+
+type UpdateGroupReply struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *UpdateGroupReply) Reset()         { *m = UpdateGroupReply{} }
+func (m *UpdateGroupReply) String() string { return proto.CompactTextString(m) }
+func (*UpdateGroupReply) ProtoMessage()    {}
+func (*UpdateGroupReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_dashboard_703095747baa5ed5, []int{6}
+}
+func (m *UpdateGroupReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UpdateGroupReply.Unmarshal(m, b)
+}
+func (m *UpdateGroupReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UpdateGroupReply.Marshal(b, m, deterministic)
+}
+func (dst *UpdateGroupReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UpdateGroupReply.Merge(dst, src)
+}
+func (m *UpdateGroupReply) XXX_Size() int {
+	return xxx_messageInfo_UpdateGroupReply.Size(m)
+}
+func (m *UpdateGroupReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_UpdateGroupReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UpdateGroupReply proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*GetGroupsRequest)(nil), "pb.GetGroupsRequest")
 	proto.RegisterType((*GetGroupsReply)(nil), "pb.GetGroupsReply")
 	proto.RegisterType((*Group)(nil), "pb.Group")
 	proto.RegisterType((*CreateGroupRequest)(nil), "pb.CreateGroupRequest")
 	proto.RegisterType((*CreateGroupReply)(nil), "pb.CreateGroupReply")
+	proto.RegisterType((*UpdateGroupRequest)(nil), "pb.UpdateGroupRequest")
+	proto.RegisterType((*UpdateGroupReply)(nil), "pb.UpdateGroupReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -275,6 +361,7 @@ const _ = grpc.SupportPackageIsVersion4
 type DashboardClient interface {
 	GetGroups(ctx context.Context, in *GetGroupsRequest, opts ...grpc.CallOption) (*GetGroupsReply, error)
 	CreateGroup(ctx context.Context, in *CreateGroupRequest, opts ...grpc.CallOption) (*CreateGroupReply, error)
+	UpdateGroup(ctx context.Context, in *UpdateGroupRequest, opts ...grpc.CallOption) (*UpdateGroupReply, error)
 }
 
 type dashboardClient struct {
@@ -303,10 +390,20 @@ func (c *dashboardClient) CreateGroup(ctx context.Context, in *CreateGroupReques
 	return out, nil
 }
 
+func (c *dashboardClient) UpdateGroup(ctx context.Context, in *UpdateGroupRequest, opts ...grpc.CallOption) (*UpdateGroupReply, error) {
+	out := new(UpdateGroupReply)
+	err := c.cc.Invoke(ctx, "/pb.Dashboard/UpdateGroup", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DashboardServer is the server API for Dashboard service.
 type DashboardServer interface {
 	GetGroups(context.Context, *GetGroupsRequest) (*GetGroupsReply, error)
 	CreateGroup(context.Context, *CreateGroupRequest) (*CreateGroupReply, error)
+	UpdateGroup(context.Context, *UpdateGroupRequest) (*UpdateGroupReply, error)
 }
 
 func RegisterDashboardServer(s *grpc.Server, srv DashboardServer) {
@@ -349,6 +446,24 @@ func _Dashboard_CreateGroup_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Dashboard_UpdateGroup_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateGroupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DashboardServer).UpdateGroup(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.Dashboard/UpdateGroup",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DashboardServer).UpdateGroup(ctx, req.(*UpdateGroupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Dashboard_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.Dashboard",
 	HandlerType: (*DashboardServer)(nil),
@@ -361,30 +476,36 @@ var _Dashboard_serviceDesc = grpc.ServiceDesc{
 			MethodName: "CreateGroup",
 			Handler:    _Dashboard_CreateGroup_Handler,
 		},
+		{
+			MethodName: "UpdateGroup",
+			Handler:    _Dashboard_UpdateGroup_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "dashboard.proto",
 }
 
-func init() { proto.RegisterFile("dashboard.proto", fileDescriptor_dashboard_41603ad4e2eee9ea) }
+func init() { proto.RegisterFile("dashboard.proto", fileDescriptor_dashboard_703095747baa5ed5) }
 
-var fileDescriptor_dashboard_41603ad4e2eee9ea = []byte{
-	// 262 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x6c, 0x91, 0xb1, 0x6e, 0xc2, 0x30,
-	0x10, 0x86, 0x15, 0x27, 0x20, 0xe5, 0x22, 0x51, 0x74, 0x42, 0x55, 0xc4, 0xd2, 0x34, 0x13, 0x53,
-	0x06, 0x68, 0xa7, 0x0e, 0x1d, 0x8a, 0x84, 0xba, 0xe6, 0x0d, 0x1c, 0x7c, 0x6a, 0x23, 0xd1, 0xc6,
-	0xb5, 0x93, 0x81, 0xa9, 0xaf, 0x8e, 0x7c, 0x09, 0xc8, 0x04, 0xb6, 0xcb, 0x97, 0xf3, 0x7d, 0xfe,
-	0xcf, 0xf0, 0xa0, 0xa4, 0xfd, 0xae, 0x1a, 0x69, 0x54, 0xa1, 0x4d, 0xd3, 0x36, 0x28, 0x74, 0x95,
-	0xbf, 0xc0, 0x7c, 0x47, 0xed, 0xce, 0x34, 0x9d, 0xb6, 0x25, 0xfd, 0x75, 0x64, 0x5b, 0xcc, 0x20,
-	0xf9, 0x95, 0x3f, 0x64, 0xb5, 0xdc, 0xd3, 0xe7, 0x36, 0x0d, 0xb2, 0x60, 0x15, 0x97, 0x3e, 0xca,
-	0x37, 0x30, 0xf3, 0x4e, 0xe9, 0xc3, 0x11, 0x9f, 0x61, 0xfa, 0xc5, 0x9f, 0x69, 0x90, 0x85, 0xab,
-	0x64, 0x1d, 0x17, 0xba, 0x2a, 0xb8, 0xa1, 0x1c, 0x7e, 0xe4, 0xef, 0x30, 0x61, 0x80, 0x08, 0x91,
-	0x1b, 0x36, 0x0c, 0xe6, 0xda, 0x31, 0x45, 0x76, 0x9f, 0x8a, 0x9e, 0xb9, 0x1a, 0x67, 0x20, 0x6a,
-	0x95, 0x86, 0x4c, 0x44, 0xad, 0x72, 0x03, 0xf8, 0x61, 0x48, 0xb6, 0xd4, 0xcf, 0x1d, 0x6e, 0x8b,
-	0x10, 0x75, 0x5d, 0xad, 0xce, 0xd3, 0x5c, 0x7d, 0x31, 0x88, 0x3b, 0x86, 0xd0, 0x33, 0x8c, 0x92,
-	0x46, 0xf7, 0x92, 0xce, 0xaf, 0x9c, 0x2e, 0xeb, 0x13, 0x4c, 0x38, 0x12, 0x2b, 0xaf, 0xa2, 0xf6,
-	0x7c, 0xfd, 0x0f, 0xf1, 0xf6, 0xbc, 0x6b, 0x7c, 0x85, 0xf8, 0xb2, 0x2b, 0x5c, 0x70, 0xef, 0x68,
-	0xe1, 0x4b, 0x1c, 0x51, 0x27, 0x79, 0x83, 0xc4, 0x13, 0xe3, 0xa3, 0x6b, 0xb9, 0x4d, 0xbf, 0x5c,
-	0xdc, 0x70, 0x7d, 0x38, 0x56, 0x53, 0x7e, 0xe0, 0xcd, 0x29, 0x00, 0x00, 0xff, 0xff, 0xb4, 0x55,
-	0x90, 0x13, 0xf3, 0x01, 0x00, 0x00,
+var fileDescriptor_dashboard_703095747baa5ed5 = []byte{
+	// 299 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x52, 0x3d, 0x6f, 0xb3, 0x30,
+	0x10, 0x16, 0x1f, 0xc9, 0x2b, 0x0e, 0x29, 0x2f, 0x3a, 0x45, 0x15, 0xca, 0x52, 0xea, 0x29, 0x13,
+	0x43, 0xd2, 0x4e, 0x1d, 0x3a, 0x34, 0x52, 0xd4, 0x15, 0xa9, 0xdd, 0x21, 0xb6, 0x5a, 0xa4, 0xb4,
+	0xb8, 0x7c, 0x0c, 0xf9, 0x6f, 0xfd, 0x71, 0x95, 0xcf, 0x80, 0x8c, 0xc9, 0xd0, 0xed, 0xfc, 0xd8,
+	0xcf, 0x17, 0x07, 0xfc, 0xe7, 0x79, 0xf3, 0x51, 0x54, 0x79, 0xcd, 0x53, 0x59, 0x57, 0x6d, 0x85,
+	0xae, 0x2c, 0xd8, 0x3d, 0x44, 0x47, 0xd1, 0x1e, 0xeb, 0xaa, 0x93, 0x4d, 0x26, 0xbe, 0x3b, 0xd1,
+	0xb4, 0x98, 0x40, 0xf8, 0x95, 0x7f, 0x8a, 0x46, 0xe6, 0x27, 0xf1, 0x72, 0x88, 0x9d, 0xc4, 0xd9,
+	0x06, 0x99, 0x09, 0xb1, 0x3d, 0xac, 0x0c, 0x96, 0x3c, 0x5f, 0xf0, 0x0e, 0x96, 0xef, 0x74, 0x8c,
+	0x9d, 0xc4, 0xdb, 0x86, 0xbb, 0x20, 0x95, 0x45, 0x4a, 0x0f, 0xb2, 0xfe, 0x82, 0x3d, 0xc1, 0x82,
+	0x00, 0x44, 0xf0, 0x95, 0x58, 0x2f, 0x4c, 0xb3, 0xc2, 0xb8, 0x68, 0x4e, 0xb1, 0xab, 0x31, 0x35,
+	0xe3, 0x0a, 0xdc, 0x92, 0xc7, 0x1e, 0x21, 0x6e, 0xc9, 0x59, 0x0d, 0xf8, 0x5c, 0x8b, 0xbc, 0x15,
+	0x5a, 0xb7, 0x4f, 0x8b, 0xe0, 0x77, 0x5d, 0xc9, 0x07, 0x35, 0x35, 0x8f, 0x0e, 0xee, 0x15, 0x07,
+	0xcf, 0x70, 0xb0, 0x9a, 0xfa, 0xd7, 0x9a, 0x46, 0x13, 0x4f, 0xd5, 0xf5, 0x16, 0x16, 0x54, 0x89,
+	0x2c, 0x27, 0x55, 0x35, 0xce, 0xde, 0x00, 0x5f, 0x25, 0xb7, 0x83, 0xc6, 0xf0, 0x8f, 0xae, 0xc7,
+	0xac, 0xc3, 0xf1, 0xaf, 0x71, 0x19, 0x42, 0x34, 0xd1, 0x95, 0xe7, 0xcb, 0xee, 0xc7, 0x81, 0xe0,
+	0x30, 0x2c, 0x16, 0x1f, 0x20, 0x18, 0x17, 0x83, 0x6b, 0x0a, 0x66, 0x6d, 0x77, 0x83, 0x16, 0xaa,
+	0x1a, 0x3d, 0x42, 0x68, 0xb4, 0xc4, 0x1b, 0xf5, 0x64, 0xfe, 0xa9, 0x37, 0xeb, 0x19, 0xde, 0x93,
+	0x8d, 0x54, 0x9a, 0x3c, 0xaf, 0xaf, 0xc9, 0x76, 0xfc, 0x62, 0x49, 0xbf, 0xe2, 0xfe, 0x37, 0x00,
+	0x00, 0xff, 0xff, 0xe5, 0x52, 0x42, 0x27, 0x9d, 0x02, 0x00, 0x00,
 }

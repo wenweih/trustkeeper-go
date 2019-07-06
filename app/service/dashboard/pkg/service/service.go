@@ -1,27 +1,29 @@
 package service
 
 import (
-	"strconv"
 	"context"
+	"strconv"
 	"trustkeeper-go/app/service/dashboard/pkg/configure"
-	"trustkeeper-go/app/service/dashboard/pkg/repository"
 	"trustkeeper-go/app/service/dashboard/pkg/model"
-	log "github.com/go-kit/kit/log"
+	"trustkeeper-go/app/service/dashboard/pkg/repository"
 	"trustkeeper-go/library/database/orm"
+
+	log "github.com/go-kit/kit/log"
 )
 
 // DashboardService describes the service.
 type DashboardService interface {
 	CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID string) (group *repository.GetGroupsResp, err error)
 	GetGroups(ctx context.Context, namespaceID string) (groups []*repository.GetGroupsResp, err error)
+	UpdateGroup(ctx context.Context, groupID, name, desc string) (err error)
 	Close() error
 }
 
 type basicDashboardService struct {
-	biz				repository.IBiz
+	biz repository.IBiz
 }
 
-func (b *basicDashboardService) Close() error{
+func (b *basicDashboardService) Close() error {
 	return b.biz.Close()
 }
 
@@ -53,7 +55,7 @@ func NewBasicDashboardService(conf configure.Conf, logger log.Logger) (*basicDas
 }
 
 // New returns a DashboardService with all of the expected middleware wired in.
-func New(conf configure.Conf, logger log.Logger, middleware []Middleware) (DashboardService, error ){
+func New(conf configure.Conf, logger log.Logger, middleware []Middleware) (DashboardService, error) {
 	bs, err := NewBasicDashboardService(conf, logger)
 	if err != nil {
 		return nil, err
@@ -73,4 +75,9 @@ func NewJobsService(conf configure.Conf, logger log.Logger) (JobService, error) 
 	}
 	var svc JobService = bs
 	return svc, nil
+}
+
+func (b *basicDashboardService) UpdateGroup(ctx context.Context, groupID string, name string, desc string) (err error) {
+	err = b.biz.UpdateGroup(ctx, groupID, name, desc)
+	return
 }

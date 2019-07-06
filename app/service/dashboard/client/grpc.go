@@ -28,9 +28,15 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		getGroupsEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "GetGroups", encodeGetGroupsRequest, decodeGetGroupsResponse, pb.GetGroupsReply{}, options...).Endpoint()
 	}
 
+  var updateGroupEndpoint endpoint.Endpoint
+	{
+		updateGroupEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "UpdateGroup", encodeUpdateGroupRequest, decodeUpdateGroupResponse, pb.UpdateGroupReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		CreateGroupEndpoint: createGroupEndpoint,
 		GetGroupsEndpoint:   getGroupsEndpoint,
+    UpdateGroupEndpoint: updateGroupEndpoint,
 	}, nil
 }
 
@@ -78,4 +84,24 @@ func decodeGetGroupsResponse(_ context.Context, reply interface{}) (interface{},
   }
 
   return endpoint1.GetGroupsResponse{Groups: groupsResp}, nil
+}
+
+// encodeUpdateGroupRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain UpdateGroup request to a gRPC request.
+func encodeUpdateGroupRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.UpdateGroupRequest)
+  if !ok {
+    return nil, fmt.Errorf("endpoint UpdateGroupRequest type assertion error")
+  }
+  return &pb.UpdateGroupRequest{Groupid: r.GroupID, Name: r.Name, Desc: r.Desc}, nil
+}
+
+// decodeUpdateGroupResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeUpdateGroupResponse(_ context.Context, reply interface{}) (interface{}, error) {
+  _, ok := reply.(*pb.UpdateGroupReply)
+  if !ok {
+    return nil, fmt.Errorf("pb UpdateGroupReply type assertion error")
+  }
+	return endpoint1.UpdateGroupResponse{}, nil
 }

@@ -243,3 +243,43 @@ func (e Endpoints) CreateGroup(ctx context.Context, name string, desc string) (g
 	}
 	return response.(CreateGroupResponse).Group, nil
 }
+
+// UpdateGroupRequest collects the request parameters for the UpdateGroup method.
+type UpdateGroupRequest struct {
+	Groupid string `json:"id"`
+	Name    string `json:"name"`
+	Desc    string `json:"desc"`
+}
+
+// UpdateGroupResponse collects the response parameters for the UpdateGroup method.
+type UpdateGroupResponse struct {
+	Err error `json:"err"`
+}
+
+// MakeUpdateGroupEndpoint returns an endpoint that invokes UpdateGroup on the service.
+func MakeUpdateGroupEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(UpdateGroupRequest)
+		err := s.UpdateGroup(ctx, req.Groupid, req.Name, req.Desc)
+		if err != nil {
+			return UpdateGroupResponse{}, err
+		}
+		return UpdateGroupResponse{}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r UpdateGroupResponse) Failed() error {
+	return r.Err
+}
+
+// UpdateGroup implements Service. Primarily useful in a client.
+func (e Endpoints) UpdateGroup(ctx context.Context, groupid string, name string, desc string) (err error) {
+	request := UpdateGroupRequest{
+		Desc:    desc,
+		Groupid: groupid,
+		Name:    name,
+	}
+	_, err = e.UpdateGroupEndpoint(ctx, request)
+	return
+}

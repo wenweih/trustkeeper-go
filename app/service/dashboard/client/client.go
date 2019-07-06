@@ -56,6 +56,13 @@ func New(consulAddr string, logger log.Logger) (service.DashboardService, error)
     retry := lb.Retry(retryMax, retryTimeout, balancer)
     endpoints.CreateGroupEndpoint = retry
   }
+  {
+    factory := factoryFor(dashboardEndpoint.MakeUpdateGroupEndpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.UpdateGroupEndpoint = retry
+  }
   return endpoints, nil
 }
 

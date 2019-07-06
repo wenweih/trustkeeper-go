@@ -12,6 +12,7 @@ import (
 type Endpoints struct {
 	CreateGroupEndpoint endpoint.Endpoint
 	GetGroupsEndpoint   endpoint.Endpoint
+	UpdateGroupEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -20,12 +21,16 @@ func New(s service.DashboardService, mdw map[string][]endpoint.Middleware) Endpo
 	eps := Endpoints{
 		CreateGroupEndpoint: MakeCreateGroupEndpoint(s),
 		GetGroupsEndpoint:   MakeGetGroupsEndpoint(s),
+		UpdateGroupEndpoint: MakeUpdateGroupEndpoint(s),
 	}
 	for _, m := range mdw["CreateGroup"] {
 		eps.CreateGroupEndpoint = m(eps.CreateGroupEndpoint)
 	}
 	for _, m := range mdw["GetGroups"] {
 		eps.GetGroupsEndpoint = m(eps.GetGroupsEndpoint)
+	}
+	for _, m := range mdw["UpdateGroup"] {
+		eps.UpdateGroupEndpoint = m(eps.UpdateGroupEndpoint)
 	}
 	return eps
 }

@@ -16,6 +16,7 @@ type Endpoints struct {
 	GetRolesEndpoint    endpoint.Endpoint
 	GetGroupsEndpoint   endpoint.Endpoint
 	CreateGroupEndpoint endpoint.Endpoint
+	UpdateGroupEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -28,6 +29,7 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 		SigninEndpoint:      MakeSigninEndpoint(s),
 		SignoutEndpoint:     MakeSignoutEndpoint(s),
 		SignupEndpoint:      MakeSignupEndpoint(s),
+		UpdateGroupEndpoint: MakeUpdateGroupEndpoint(s),
 	}
 	for _, m := range mdw["Signup"] {
 		eps.SignupEndpoint = m(eps.SignupEndpoint)
@@ -46,6 +48,9 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 	}
 	for _, m := range mdw["CreateGroup"] {
 		eps.CreateGroupEndpoint = m(eps.CreateGroupEndpoint)
+	}
+	for _, m := range mdw["UpdateGroup"] {
+		eps.UpdateGroupEndpoint = m(eps.UpdateGroupEndpoint)
 	}
 	return eps
 }

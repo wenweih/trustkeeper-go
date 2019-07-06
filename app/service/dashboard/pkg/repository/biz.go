@@ -13,6 +13,7 @@ type IBiz interface {
   CreateGroup(ctx context.Context, m *model.Group) error
   Close() error
   GetGroups(ctx context.Context, query map[string]interface{}) (groups []*GetGroupsResp, err error)
+  UpdateGroup(ctx context.Context, groupID, name, desc string) error
 }
 
 func (repo *repo) Signup(uuid, email, name, xpub string) error {
@@ -20,12 +21,13 @@ func (repo *repo) Signup(uuid, email, name, xpub string) error {
 }
 
 func (repo *repo) CreateGroup(ctx context.Context, m *model.Group) error {
-  md, ok := metadata.FromIncomingContext(ctx)
-  if !ok {
-    return fmt.Errorf("fail to extract auth info from ctx")
+  uid, _, roles, err := extractAuthInfoFromContext(ctx)
+  if err != nil {
+    return err
   }
-  allowRoles := make([]string, 0, len(md["roles"]))
-  for _, role := range md["roles"] {
+
+  allowRoles := make([]string, 0, len(roles))
+  for _, role := range roles {
    allow := repo.iCasbinRepo.HasPolicy([]string{role, "group", "create"})
    if allow {
      allowRoles = append(allowRoles, role)
@@ -44,7 +46,7 @@ func (repo *repo) CreateGroup(ctx context.Context, m *model.Group) error {
   if err := tx.Commit().Error; err != nil {
     return err
   }
-  repo.iCasbinRepo.AddReadWriteForRoleInDomain(m.CreatorID, m.NamespaceID, strconv.FormatUint(uint64(m.ID), 10))
+  repo.iCasbinRepo.AddReadWriteForRoleInDomain(uid, m.NamespaceID, strconv.FormatUint(uint64(m.ID), 10))
   return nil
 }
 
@@ -59,12 +61,10 @@ type GetGroupsResp struct {
 }
 
 func (repo *repo) GetGroups(ctx context.Context, query map[string]interface{}) (groupsResp []*GetGroupsResp, err error) {
-  md, ok := metadata.FromIncomingContext(ctx)
-  if !ok {
-    return nil, fmt.Errorf("fail to extract auth info from ctx")
+  uid, nid, _, err := extractAuthInfoFromContext(ctx)
+  if err != nil {
+    return nil, err
   }
-  uid := md["uid"][0]
-  nid := md["nid"][0]
 
   ids := repo.iCasbinRepo.GetObjForUserInDomain(uid, nid, "read")
   groups, err := repo.iGroupRepo.Query(repo.db, ids, query)
@@ -76,4 +76,56 @@ func (repo *repo) GetGroups(ctx context.Context, query map[string]interface{}) (
     groupsResp[i] = &GetGroupsResp{Name: group.Name, Desc: group.Desc, ID: strconv.FormatUint(uint64(group.ID), 10)}
   }
   return groupsResp, nil
+}
+
+func (repo *repo) UpdateGroup(ctx context.Context, groupID, name, desc string) error {
+  uid, nid, _, err := extractAuthInfoFromContext(ctx)
+  if err != nil {
+    return err
+  }
+  fmt.Println("uid: ", uid, "nid:", nid, "groupid:", groupID)
+  allow := repo.iCasbinRepo.HasPolicy([]string{uid, nid, groupID, "write"})
+  if !allow {
+    return fmt.Errorf("not allow")
+  }
+
+  groups, err := repo.iGroupRepo.Query(repo.db, []interface{}{groupID}, nil)
+  if err != nil {
+    return err
+  }
+  if len(groups) != 1 {
+    return fmt.Errorf("query group error")
+  }
+
+  tx := repo.db.Begin()
+  group := groups[0]
+  group.Name = name
+  group.Desc = desc
+  if err := repo.iGroupRepo.Update(tx, group).Error; err != nil {
+    return err
+  }
+  if err := tx.Commit().Error; err != nil {
+    tx.Rollback()
+    return err
+  }
+  return nil
+}
+
+func extractAuthInfoFromContext(ctx context.Context) (string, string, []string, error) {
+  md, ok := metadata.FromIncomingContext(ctx)
+  if !ok {
+    return "", "", nil, fmt.Errorf("fail to extract auth info from ctx")
+  }
+  if len(md["uid"]) < 1 {
+    return "", "", nil, fmt.Errorf("uid empty")
+  }
+  if len(md["nid"]) < 1 {
+    return "", "", nil, fmt.Errorf("nid empty")
+  }
+
+  if len(md["roles"]) < 1 {
+    return "", "", nil, fmt.Errorf("roles empty")
+  }
+
+  return md["uid"][0], md["nid"][0], md["roles"], nil
 }

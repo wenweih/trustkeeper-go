@@ -2,10 +2,13 @@ syntax = "proto3";
 
 package pb;
 
+
+
 //The Dashboard service definition.
 service Dashboard {
  rpc GetGroups   (GetGroupsRequest  ) returns (GetGroupsReply  );
  rpc CreateGroup (CreateGroupRequest) returns (CreateGroupReply);
+ rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupReply);
 }
 
 message GetGroupsRequest {
@@ -19,16 +22,24 @@ message GetGroupsReply {
 message Group {
  string name = 1;
  string desc = 2;
- string id = 3;
+ string id   = 3;
 }
 
 message CreateGroupRequest {
-  string uuid = 1;
-  string name = 2;
-  string desc = 3;
-  string namespaceID = 4;
+ string uuid        = 1;
+ string name        = 2;
+ string desc        = 3;
+ string namespaceID = 4;
 }
 
 message CreateGroupReply {
-  Group group = 1;
+ Group group = 1;
 }
+
+message UpdateGroupRequest {
+  string groupid = 1;
+  string name = 2;
+  string desc = 3;
+}
+
+message UpdateGroupReply {}

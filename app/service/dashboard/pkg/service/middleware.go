@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"trustkeeper-go/app/service/dashboard/pkg/repository"
+
 	log "github.com/go-kit/kit/log"
 )
 
@@ -41,4 +42,11 @@ func (l loggingMiddleware) Close() error {
 		l.logger.Log("method", "Close", "close resource", "(database, redis etc...)")
 	}()
 	return l.next.Close()
+}
+
+func (l loggingMiddleware) UpdateGroup(ctx context.Context, groupID string, name string, desc string) (err error) {
+	defer func() {
+		l.logger.Log("method", "UpdateGroup", "groupID", groupID, "name", name, "desc", desc, "err", err)
+	}()
+	return l.next.UpdateGroup(ctx, groupID, name, desc)
 }

@@ -22,18 +22,20 @@ func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 	options := map[string][]grpc.ServerOption{
 		"CreateGroup": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateGroup", logger))},
 		"GetGroups":   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetGroups", logger))},
+		"UpdateGroup": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "UpdateGroup", logger))},
 	}
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
 	mw["CreateGroup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateGroup")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateGroup"))}
 	mw["GetGroups"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetGroups")), endpoint.InstrumentingMiddleware(duration.With("method", "GetGroups"))}
+	mw["UpdateGroup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "UpdateGroup")), endpoint.InstrumentingMiddleware(duration.With("method", "UpdateGroup"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"CreateGroup", "GetGroups"}
+	methods := []string{"CreateGroup", "GetGroups", "UpdateGroup"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

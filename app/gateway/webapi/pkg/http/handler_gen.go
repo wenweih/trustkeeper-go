@@ -17,5 +17,6 @@ func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]http.Serv
 	makeGetRolesHandler(m, endpoints, options["GetRoles"])
 	makeGetGroupsHandler(m, endpoints, options["GetGroups"])
 	makeCreateGroupHandler(m, endpoints, options["CreateGroup"])
+	makeUpdateGroupHandler(m, endpoints, options["UpdateGroup"])
 	return m
 }

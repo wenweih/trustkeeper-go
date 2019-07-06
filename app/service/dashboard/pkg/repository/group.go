@@ -12,6 +12,7 @@ type groupRepo struct {}
 type iGroupRepo interface {
   Create(tx *gorm.DB, m *model.Group) *gorm.DB
   Query(tx *gorm.DB, ids []interface{}, query map[string]interface{}) ([]*model.Group, error)
+  Update(tx *gorm.DB, m *model.Group) *gorm.DB
 }
 
 // Create save repo
@@ -25,4 +26,8 @@ func (repo *groupRepo) Query(tx *gorm.DB, ids []interface{}, query map[string]in
     return nil, errors.New("Empty records")
   }
   return
+}
+
+func (repo *groupRepo) Update(tx *gorm.DB, m *model.Group) *gorm.DB {
+  return tx.Save(m)
 }
