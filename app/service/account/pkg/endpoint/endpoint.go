@@ -9,15 +9,15 @@ import (
 
 // CreateRequest collects the request parameters for the Create method.
 type CreateRequest struct {
-	Email    	string	`json:"email"`
-	Password 	string	`json:"password"`
-	OrgName		string	`json:"orgname"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	OrgName  string `json:"orgname"`
 }
 
 // CreateResponse collects the response parameters for the Create method.
 type CreateResponse struct {
-	UUID		string
-	E1     	error `json:"e1"`
+	UUID string
+	E1   error `json:"e1"`
 }
 
 // MakeCreateEndpoint returns an endpoint that invokes Create on the service.
@@ -53,7 +53,7 @@ func (e Endpoints) Create(ctx context.Context, email, password, orgName string) 
 	request := CreateRequest{
 		Email:    email,
 		Password: password,
-		OrgName: orgName,
+		OrgName:  orgName,
 	}
 	resp, err := e.CreateEndpoint(ctx, request)
 	if err != nil {
@@ -182,10 +182,10 @@ type AuthRequest struct{}
 
 // AuthResponse collects the response parameters for the Auth method.
 type AuthResponse struct {
-	Uuid string `json:"uuid"`
-	NamespaceID string `json:"namespaceid"`
-	Roles []string `json:"roles"`
-	Err  error  `json:"err"`
+	Uuid        string   `json:"uuid"`
+	NamespaceID string   `json:"namespaceid"`
+	Roles       []string `json:"roles"`
+	Err         error    `json:"err"`
 }
 
 // MakeAuthEndpoint returns an endpoint that invokes Auth on the service.
@@ -196,9 +196,9 @@ func MakeAuthEndpoint(s service.AccountService) endpoint.Endpoint {
 			return AuthResponse{Err: err}, err
 		}
 		return AuthResponse{
-			Uuid: uuid,
+			Uuid:        uuid,
 			NamespaceID: namespaceid,
-			Roles: roles,
+			Roles:       roles,
 		}, nil
 	}
 }
@@ -223,4 +223,44 @@ func (e Endpoints) Auth(ctx context.Context) (string, string, []string, error) {
 // Close implements Service. Primarily useful in a client.
 func (e Endpoints) Close() error {
 	return nil
+}
+
+// UserInfoRequest collects the request parameters for the UserInfo method.
+type UserInfoRequest struct{}
+
+// UserInfoResponse collects the response parameters for the UserInfo method.
+type UserInfoResponse struct {
+	Roles   []string `json:"roles"`
+	OrgName string   `json:"org_name"`
+	Err     error    `json:"err"`
+}
+
+// MakeUserInfoEndpoint returns an endpoint that invokes UserInfo on the service.
+func MakeUserInfoEndpoint(s service.AccountService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		roles, orgName, err := s.UserInfo(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		return UserInfoResponse{
+			OrgName: orgName,
+			Roles:   roles,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r UserInfoResponse) Failed() error {
+	return r.Err
+}
+
+// UserInfo implements Service. Primarily useful in a client.
+func (e Endpoints) UserInfo(ctx context.Context) (roles []string, orgName string, err error) {
+	request := UserInfoRequest{}
+	response, err := e.UserInfoEndpoint(ctx, request)
+	if err != nil {
+		return nil, "", err
+	}
+	return response.(UserInfoResponse).Roles, response.(UserInfoResponse).OrgName, nil
 }

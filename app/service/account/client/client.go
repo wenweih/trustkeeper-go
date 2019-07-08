@@ -56,6 +56,13 @@ func New(consulAddr string, logger log.Logger) (service.AccountService, error) {
     endpoints.RolesEndpoint = retry
   }
   {
+    factory := factoryFor(accountEndpoint.MakeUserInfoEndpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.UserInfoEndpoint = retry
+  }
+  {
     factory := factoryFor(accountEndpoint.MakeCreateEndpoint)
     endpointer := sd.NewEndpointer(instancer, factory, logger)
     balancer := lb.NewRoundRobin(endpointer)

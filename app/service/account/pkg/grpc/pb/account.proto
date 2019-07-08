@@ -6,17 +6,18 @@ package pb;
 
 //The Account service definition.
 service Account {
- rpc Create  (CreateRequest ) returns (CreateReply );
- rpc Signin  (SigninRequest ) returns (SigninReply );
- rpc Signout (SignoutRequest) returns (SignoutReply);
- rpc Roles   (RolesRequest  ) returns (RolesReply  );
- rpc Auth    (AuthRequest   ) returns (AuthReply   );
+ rpc Create   (CreateRequest  ) returns (CreateReply  );
+ rpc Signin   (SigninRequest  ) returns (SigninReply  );
+ rpc Signout  (SignoutRequest ) returns (SignoutReply );
+ rpc Roles    (RolesRequest   ) returns (RolesReply   );
+ rpc Auth     (AuthRequest    ) returns (AuthReply    );
+ rpc UserInfo (UserInfoRequest) returns (UserInfoReply);
 }
 
 message CreateRequest {
  string email    = 1;
  string password = 2;
- string orgname = 3;
+ string orgname  = 3;
 }
 
 message CreateReply {
@@ -51,7 +52,14 @@ message RolesReply {
 message AuthRequest {}
 
 message AuthReply {
-  string uuid = 1;
-  string namespaceID = 2;
-  repeated string roles = 3;
+          string uuid        = 1;
+          string namespaceID = 2;
+ repeated string roles       = 3;
+}
+
+message UserInfoRequest {}
+
+message UserInfoReply {
+  repeated string roles = 1;
+  string orgName = 2;
 }

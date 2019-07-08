@@ -102,6 +102,7 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	// 所以需要把请求头的 Authorization 参数到请求上下文中
 	// https://github.com/go-kit/kit/blob/master/auth/jwt/README.md  HTTPToContext
 	options["GetRoles"] = append(options["GetRoles"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
+	options["UserInfo"] = append(options["UserInfo"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["Signout"] = append(options["Signout"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["GetGroups"] = append(options["GetGroups"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["CreateGroup"] = append(options["CreateGroup"], httptransport.ServerBefore(stdjwt.HTTPToContext()))

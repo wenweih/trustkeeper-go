@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strings"
+
 	log "github.com/go-kit/kit/log"
 )
 
@@ -59,4 +60,11 @@ func (l loggingMiddleware) Close() error {
 		l.logger.Log("method", "Close", "close resource", "(database, redis etc...)")
 	}()
 	return l.next.Close()
+}
+
+func (l loggingMiddleware) UserInfo(ctx context.Context) (roles []string, orgName string, err error) {
+	defer func() {
+		l.logger.Log("method", "UserInfo", "roles", strings.Join(roles, " "), "orgName", orgName, "err", err)
+	}()
+	return l.next.UserInfo(ctx)
 }

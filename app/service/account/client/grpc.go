@@ -39,6 +39,11 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		rolesEndpoint = grpc1.NewClient(conn, "pb.Account", "Roles", encodeRolesRequest, decodeRolesResponse, pb.RolesReply{}, options...).Endpoint()
 	}
 
+	var userInfoEndpoint endpoint.Endpoint
+	{
+		userInfoEndpoint = grpc1.NewClient(conn, "pb.Account", "UserInfo", encodeUserInfoRequest, decodeUserInfoResponse, pb.UserInfoReply{}, options...).Endpoint()
+	}
+
 	var authEndpoint endpoint.Endpoint
 	{
 		authEndpoint = grpc1.NewClient(conn, "pb.Account", "Auth", encodeAuthRequest, decodeAuthResponse, pb.AuthReply{}, options...).Endpoint()
@@ -50,6 +55,7 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		RolesEndpoint:         rolesEndpoint,
 		SigninEndpoint:        signinEndpoint,
 		SignoutEndpoint:       signoutEndpoint,
+		UserInfoEndpoint: userInfoEndpoint,
 	}, nil
 }
 
@@ -126,6 +132,24 @@ func decodeRolesResponse(_ context.Context, reply interface{}) (interface{}, err
     return endpoint1.RolesResponse{E1: e}, e
   }
   return endpoint1.RolesResponse{S0: r.Roles}, nil
+}
+
+// encodeUserInfoRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain UserInfo request to a gRPC request.
+func encodeUserInfoRequest(_ context.Context, request interface{}) (interface{}, error) {
+	return &pb.UserInfoRequest{}, nil
+	// return nil, errors.New("'Account' Encoder is not impelemented")
+}
+
+// decodeUserInfoResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeUserInfoResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	r, ok := reply.(*pb.UserInfoReply)
+  if !ok {
+    e := errors.New("pb UserInfoReply type assertion error")
+    return nil, e
+  }
+  return endpoint1.UserInfoResponse{Roles: r.Roles, OrgName: r.OrgName}, nil
 }
 
 // encodeAuthRequest is a transport/grpc.EncodeRequestFunc that converts a

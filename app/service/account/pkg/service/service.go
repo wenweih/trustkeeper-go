@@ -10,10 +10,11 @@ import (
 
 	stdjwt "github.com/go-kit/kit/auth/jwt"
 
-	"github.com/gocraft/work"
-	"trustkeeper-go/library/database/redis"
-	"trustkeeper-go/library/util"
 	"trustkeeper-go/library/database/orm"
+	"trustkeeper-go/library/database/redis"
+	common "trustkeeper-go/library/util"
+
+	"github.com/gocraft/work"
 )
 
 // AccountService describes the service.
@@ -22,13 +23,14 @@ type AccountService interface {
 	Signin(ctx context.Context, email, password string) (token string, err error)
 	Signout(ctx context.Context) error
 	Roles(ctx context.Context) ([]string, error)
+	UserInfo(ctx context.Context) (roles []string, orgName string, err error)
 	Auth(ctx context.Context) (accountuid string, namespaceid string, roles []string, err error)
 	Close() error
 }
 
 type basicAccountService struct {
-	biz  repository.IBiz
-	jwtKey string
+	biz         repository.IBiz
+	jwtKey      string
 	jobEnqueuer *work.Enqueuer
 }
 
@@ -37,14 +39,14 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func (b *basicAccountService) Close() error{
+func (b *basicAccountService) Close() error {
 	return b.biz.Close()
 }
 
 // https://www.sohamkamani.com/blog/2018/02/25/golang-password-authentication-and-storage/
 func (b *basicAccountService) Create(ctx context.Context, email, password, orgName string) (string, error) {
 	uuid, namespaceid, err := b.biz.Signup(email, password, orgName)
-	if err != nil{
+	if err != nil {
 		return "", err
 	}
 
@@ -84,7 +86,18 @@ func (b *basicAccountService) Auth(ctx context.Context) (accountuid string, name
 	return b.biz.Auth(ctx, tokenID)
 }
 
+func (b *basicAccountService) UserInfo(ctx context.Context) (roles []string, orgName string, err error) {
+	tokenID, err := extractTOkenIDFromContext(ctx, b.jwtKey)
+	if err != nil {
+		return nil, "", err
+	}
+	return b.biz.UserInfo(ctx, tokenID)
+}
+
 func extractTOkenIDFromContext(ctx context.Context, jwtKey string) (string, error) {
+	if ctx.Value(stdjwt.JWTTokenContextKey) == nil {
+		return "", fmt.Errorf("fail to extract jwt token from context")
+	}
 	token := ctx.Value(stdjwt.JWTTokenContextKey).(string)
 	claims := &Claims{}
 	tkn, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
@@ -109,9 +122,9 @@ func NewBasicAccountService(conf configure.Conf) (AccountService, error) {
 	redisPool := redis.NewPool(conf.Redis)
 	enqueuer := work.NewEnqueuer(redis.Namespace, redisPool)
 	bas := basicAccountService{
-		biz: repository.New(redisPool, db, conf.JWTKey),
+		biz:         repository.New(redisPool, db, conf.JWTKey),
 		jobEnqueuer: enqueuer,
-		jwtKey: conf.JWTKey,
+		jwtKey:      conf.JWTKey,
 	}
 	return &bas, nil
 }

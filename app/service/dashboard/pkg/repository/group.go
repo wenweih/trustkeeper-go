@@ -21,7 +21,7 @@ func (repo groupRepo) Create(tx *gorm.DB, m *model.Group) *gorm.DB {
 }
 
 func (repo *groupRepo) Query(tx *gorm.DB, ids []interface{}, query map[string]interface{}) (groups []*model.Group, err error) {
-  err = tx.Where(query).Where("id in (?)", ids).Find(&groups).Error
+  err = tx.Order("created_at desc").Where(query).Where("id in (?)", ids).Find(&groups).Error
   if len(groups) < 1 {
     return nil, errors.New("Empty records")
   }

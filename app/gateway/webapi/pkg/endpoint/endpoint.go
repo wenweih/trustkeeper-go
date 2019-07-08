@@ -283,3 +283,40 @@ func (e Endpoints) UpdateGroup(ctx context.Context, groupid string, name string,
 	_, err = e.UpdateGroupEndpoint(ctx, request)
 	return
 }
+
+// UserInfoRequest collects the request parameters for the UserInfo method.
+type UserInfoRequest struct{}
+
+// UserInfoResponse collects the response parameters for the UserInfo method.
+type UserInfoResponse struct {
+	Roles   []string `json:"roles"`
+	OrgName string   `json:"org_name"`
+	Err     error    `json:"err"`
+}
+
+// MakeUserInfoEndpoint returns an endpoint that invokes UserInfo on the service.
+func MakeUserInfoEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		roles, orgName, err := s.UserInfo(ctx)
+		return UserInfoResponse{
+			Err:     err,
+			OrgName: orgName,
+			Roles:   roles,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r UserInfoResponse) Failed() error {
+	return r.Err
+}
+
+// UserInfo implements Service. Primarily useful in a client.
+func (e Endpoints) UserInfo(ctx context.Context) (roles []string, orgName string, err error) {
+	request := UserInfoRequest{}
+	response, err := e.UserInfoEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(UserInfoResponse).Roles, response.(UserInfoResponse).OrgName, response.(UserInfoResponse).Err
+}

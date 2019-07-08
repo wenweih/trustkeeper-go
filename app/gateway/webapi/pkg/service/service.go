@@ -27,6 +27,7 @@ type WebapiService interface {
 	Signin(ctx context.Context, user Credentials) (token string, err error)
 	Signout(ctx context.Context) (result bool, err error)
 	GetRoles(ctx context.Context) ([]string, error)
+	UserInfo(ctx context.Context) (roles []string, orgName string, err error)
 	GetGroups(ctx context.Context) (groups []*repository.GetGroupsResp, err error)
 	CreateGroup(ctx context.Context, name, desc string) (group *repository.GetGroupsResp, err error)
 	UpdateGroup(ctx context.Context, groupid, name, desc string) (err error)
@@ -95,6 +96,10 @@ func (b *basicWebapiService) GetRoles(ctx context.Context) (s0 []string, e1 erro
 		return nil, err
 	}
 	return roles, nil
+}
+
+func (b *basicWebapiService) UserInfo(ctx context.Context) (roles []string, orgName string, err error) {
+	return b.accountSrv.UserInfo(ctx)
 }
 
 func (b *basicWebapiService) GetGroups(ctx context.Context) ([]*repository.GetGroupsResp, error) {

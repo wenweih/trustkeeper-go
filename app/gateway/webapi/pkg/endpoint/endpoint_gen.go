@@ -14,6 +14,7 @@ type Endpoints struct {
 	SigninEndpoint      endpoint.Endpoint
 	SignoutEndpoint     endpoint.Endpoint
 	GetRolesEndpoint    endpoint.Endpoint
+	UserInfoEndpoint    endpoint.Endpoint
 	GetGroupsEndpoint   endpoint.Endpoint
 	CreateGroupEndpoint endpoint.Endpoint
 	UpdateGroupEndpoint endpoint.Endpoint
@@ -30,6 +31,7 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 		SignoutEndpoint:     MakeSignoutEndpoint(s),
 		SignupEndpoint:      MakeSignupEndpoint(s),
 		UpdateGroupEndpoint: MakeUpdateGroupEndpoint(s),
+		UserInfoEndpoint:    MakeUserInfoEndpoint(s),
 	}
 	for _, m := range mdw["Signup"] {
 		eps.SignupEndpoint = m(eps.SignupEndpoint)
@@ -42,6 +44,9 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 	}
 	for _, m := range mdw["GetRoles"] {
 		eps.GetRolesEndpoint = m(eps.GetRolesEndpoint)
+	}
+	for _, m := range mdw["UserInfo"] {
+		eps.UserInfoEndpoint = m(eps.UserInfoEndpoint)
 	}
 	for _, m := range mdw["GetGroups"] {
 		eps.GetGroupsEndpoint = m(eps.GetGroupsEndpoint)

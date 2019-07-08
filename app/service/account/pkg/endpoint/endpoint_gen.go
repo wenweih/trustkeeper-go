@@ -10,22 +10,24 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	CreateEndpoint  endpoint.Endpoint
-	SigninEndpoint  endpoint.Endpoint
-	SignoutEndpoint endpoint.Endpoint
-	RolesEndpoint   endpoint.Endpoint
-	AuthEndpoint    endpoint.Endpoint
+	CreateEndpoint   endpoint.Endpoint
+	SigninEndpoint   endpoint.Endpoint
+	SignoutEndpoint  endpoint.Endpoint
+	RolesEndpoint    endpoint.Endpoint
+	UserInfoEndpoint endpoint.Endpoint
+	AuthEndpoint     endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.AccountService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
-		AuthEndpoint:    MakeAuthEndpoint(s),
-		CreateEndpoint:  MakeCreateEndpoint(s),
-		RolesEndpoint:   MakeRolesEndpoint(s),
-		SigninEndpoint:  MakeSigninEndpoint(s),
-		SignoutEndpoint: MakeSignoutEndpoint(s),
+		AuthEndpoint:     MakeAuthEndpoint(s),
+		CreateEndpoint:   MakeCreateEndpoint(s),
+		RolesEndpoint:    MakeRolesEndpoint(s),
+		SigninEndpoint:   MakeSigninEndpoint(s),
+		SignoutEndpoint:  MakeSignoutEndpoint(s),
+		UserInfoEndpoint: MakeUserInfoEndpoint(s),
 	}
 	for _, m := range mdw["Create"] {
 		eps.CreateEndpoint = m(eps.CreateEndpoint)
@@ -38,6 +40,9 @@ func New(s service.AccountService, mdw map[string][]endpoint.Middleware) Endpoin
 	}
 	for _, m := range mdw["Roles"] {
 		eps.RolesEndpoint = m(eps.RolesEndpoint)
+	}
+	for _, m := range mdw["UserInfo"] {
+		eps.UserInfoEndpoint = m(eps.UserInfoEndpoint)
 	}
 	for _, m := range mdw["Auth"] {
 		eps.AuthEndpoint = m(eps.AuthEndpoint)

@@ -2,6 +2,7 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	endpoint "trustkeeper-go/app/service/account/pkg/endpoint"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 
@@ -126,4 +127,30 @@ func (g *grpcServer) Auth(ctx context1.Context, req *pb.AuthRequest) (*pb.AuthRe
 		return nil, err
 	}
 	return rep.(*pb.AuthReply), nil
+}
+
+func makeUserInfoHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.UserInfoEndpoint, decodeUserInfoRequest, encodeUserInfoResponse, options...)
+}
+
+func decodeUserInfoRequest(_ context.Context, r interface{}) (interface{}, error) {
+	return endpoint.UserInfoRequest{}, nil
+}
+
+func encodeUserInfoResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.UserInfoResponse)
+	if !ok {
+		return nil, errors.New("endpoint UserInfoRequest type assertion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.UserInfoReply{Roles: resp.Roles, OrgName: resp.OrgName}, nil
+}
+func (g *grpcServer) UserInfo(ctx context1.Context, req *pb.UserInfoRequest) (*pb.UserInfoReply, error) {
+	_, rep, err := g.userInfo.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.UserInfoReply), nil
 }

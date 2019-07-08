@@ -23,6 +23,7 @@ type IBiz interface {
   Signin(email, password, jwtKey string) (token string, err error)
   Signout(tokenID string) error
   QueryRoles(ctx context.Context, tokenID string) (roles []string, err error)
+  UserInfo(ctx context.Context, tokenID string) (roles []string, orgName string, err error)
   Auth(ctx context.Context, tokenID string) (accountuid string, namespaceid string, roles []string, err error)
   Close() error
 }
@@ -111,6 +112,23 @@ func (repo *repo) QueryRoles(ctx context.Context, tokenID string) ([]string, err
   acc := accounts[0]
   namespaceID := strconv.FormatUint(uint64(acc.Namespace.ID), 10)
   return repo.iCasbinRepo.GetRoles(acc.UUID, namespaceID)
+}
+
+func (repo *repo) UserInfo(ctx context.Context, tokenID string) ([]string, string, error) {
+  accounts, err := repo.iAccountRepo.Query(ctx, repo.db, &model.Account{TokenID: tokenID})
+  if err != nil {
+    return nil, "", err
+  }
+  if len(accounts) != 1 {
+    return nil, "", errors.New("multiple accounts when query roles")
+  }
+  acc := accounts[0]
+  namespaceID := strconv.FormatUint(uint64(acc.Namespace.ID), 10)
+  roles, err := repo.iCasbinRepo.GetRoles(acc.UUID, namespaceID)
+  if err != nil {
+    return nil, "", err
+  }
+  return roles, acc.Namespace.Name, nil
 }
 
 func (repo *repo) Signout(tokenID string) error {

@@ -62,6 +62,12 @@ func main()  {
   if err != nil {
     logger.Log("Auth error: ", err.Error())
   }
+
+  if roles, orgName, err := s.UserInfo(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey, token)); err != nil {
+    logger.Log("UserInfo error", err.Error())
+  }else {
+    logger.Log("roles", strings.Join(roles, " "), "orgName", orgName)
+  }
   //
   if err := s.Signout(context.WithValue(context.Background(), stdjwt.JWTTokenContextKey , token)); err != nil {
     logger.Log("Signout error: ", err.Error())

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strings"
 	"context"
 	"trustkeeper-go/app/gateway/webapi/pkg/repository"
 
@@ -68,4 +69,11 @@ func (l loggingMiddleware) UpdateGroup(ctx context.Context, groupid string, name
 		l.logger.Log("method", "UpdateGroup", "groupid", groupid, "name", name, "desc", desc, "err", err)
 	}()
 	return l.next.UpdateGroup(ctx, groupid, name, desc)
+}
+
+func (l loggingMiddleware) UserInfo(ctx context.Context) (roles []string, orgName string, err error) {
+	defer func() {
+		l.logger.Log("method", "UserInfo", "roles", strings.Join(roles, " "), "orgName", orgName, "err", err)
+	}()
+	return l.next.UserInfo(ctx)
 }
