@@ -2,6 +2,7 @@ package repository
 
 import (
   "fmt"
+  "strconv"
   "context"
   "google.golang.org/grpc/metadata"
   "github.com/gomodule/redigo/redis"
@@ -14,7 +15,7 @@ type IBiz interface {
   Signup(version string, bip44ThirdXpubsForChains []*Bip44ThirdXpubsForChain) error
   Close() error
   RedisInstance() *redis.Pool
-  GetChains() (chains []*model.Chain, err error)
+  GetChains(ctx context.Context, query map[string]interface{}) (chains []*SimpleChain, err error)
   UpdateXpubState(ctx context.Context, from, to, groupid string) error
 }
 
@@ -58,8 +59,21 @@ func (repo *repo) RedisInstance() *redis.Pool {
   return repo.redisPool
 }
 
-func (repo *repo)GetChains() (chains []*model.Chain, err error) {
-  return repo.iChainRepo.Query(repo.db, map[string]interface{}{})
+func (repo *repo)GetChains(ctx context.Context, query map[string]interface{}) ([]*SimpleChain, error) {
+  chains, err := repo.iChainRepo.Query(repo.db, query)
+  if err != nil {
+    return nil, err
+  }
+  simpleChains := make([]*SimpleChain, len(chains))
+  for i, c := range chains {
+    simpleChains[i] = &SimpleChain{
+      ID: strconv.FormatUint(uint64(c.ID), 10),
+      Name: c.Name,
+      Coin: c.Coin,
+      Bip44id: c.Bip44id,
+      Status: c.Status}
+  }
+  return simpleChains, nil
 }
 
 func (repo *repo) UpdateXpubState(ctx context.Context, from, to, groupid string) error {

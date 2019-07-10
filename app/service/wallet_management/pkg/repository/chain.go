@@ -6,6 +6,15 @@ import (
   "trustkeeper-go/app/service/wallet_management/pkg/model"
 )
 
+// SimpleChain simple chain
+type SimpleChain struct {
+  ID    string  `json:"id"`
+  Name  string  `json:"name"`
+  Coin  string  `json:"desc"`
+  Bip44id int   `json:"bip44id"`
+  Status  bool  `json:"status"`
+}
+
 type chainRepo struct {}
 
 type iChainRepo interface {

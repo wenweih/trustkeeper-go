@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"trustkeeper-go/app/service/wallet_management/pkg/repository"
 
 	log "github.com/go-kit/kit/log"
 )
@@ -42,4 +43,11 @@ func (l loggingMiddleware) AssignedXpubToGroup(ctx context.Context, groupid stri
 		l.logger.Log("method", "AssignedXpubToGroup", "groupid", groupid, "err", err)
 	}()
 	return l.next.AssignedXpubToGroup(ctx, groupid)
+}
+
+func (l loggingMiddleware) GetChains(ctx context.Context) (chains []*repository.SimpleChain, err error) {
+	defer func() {
+		l.logger.Log("method", "GetChains", "chains", chains, "err", err)
+	}()
+	return l.next.GetChains(ctx)
 }

@@ -55,6 +55,13 @@ func New(consulAddr string, logger log.Logger) (service.WalletManagementService,
     retry := lb.Retry(retryMax, retryTimeout, balancer)
     endpoints.AssignedXpubToGroupEndpoint = retry
   }
+  {
+    factory := factoryFor(walletmanagementEndpoint.MakeGetChainsEndpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.GetChainsEndpoint = retry
+  }
   return endpoints, nil
 }
 

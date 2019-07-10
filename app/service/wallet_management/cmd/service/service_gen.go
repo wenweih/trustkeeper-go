@@ -20,20 +20,22 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
 	options := map[string][]grpc.ServerOption{
-		"CreateChain":     {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateChain", logger))},
-		"UpdateXpubState": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "UpdateXpubState", logger))},
+		"AssignedXpubToGroup": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "AssignedXpubToGroup", logger))},
+		"CreateChain":         {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateChain", logger))},
+		"GetChains":           {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetChains", logger))},
 	}
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
+	mw["GetChains"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetChains")), endpoint.InstrumentingMiddleware(duration.With("method", "GetChains"))}
 	mw["CreateChain"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateChain")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateChain"))}
-	mw["UpdateXpubState"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "UpdateXpubState")), endpoint.InstrumentingMiddleware(duration.With("method", "UpdateXpubState"))}
+	mw["AssignedXpubToGroup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "AssignedXpubToGroup")), endpoint.InstrumentingMiddleware(duration.With("method", "AssignedXpubToGroup"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"CreateChain", "UpdateXpubState"}
+	methods := []string{"GetChains", "CreateChain", "AssignedXpubToGroup"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

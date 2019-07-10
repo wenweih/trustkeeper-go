@@ -9,6 +9,7 @@ import (
 	endpoint1 "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
 	pb "trustkeeper-go/app/service/wallet_management/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/wallet_management/pkg/service"
+	"trustkeeper-go/app/service/wallet_management/pkg/repository"
 )
 
 // New returns an AddService backed by a gRPC server at the other end
@@ -26,9 +27,15 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		assignedXpubToGroupEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "AssignedXpubToGroup", encodeAssignedXpubToGroupRequest, decodeAssignedXpubToGroupResponse, pb.AssignedXpubToGroupReply{}, options...).Endpoint()
 	}
 
+	var getChainsEndpoint endpoint.Endpoint
+	{
+		getChainsEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "GetChains", encodeGetChainsRequest, decodeGetChainsResponse, pb.GetChainsReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		CreateChainEndpoint: createChainEndpoint,
 		AssignedXpubToGroupEndpoint: assignedXpubToGroupEndpoint,
+		GetChainsEndpoint:           getChainsEndpoint,
 	}, nil
 }
 
@@ -74,4 +81,35 @@ func decodeAssignedXpubToGroupResponse(_ context.Context, reply interface{}) (in
 		return nil, fmt.Errorf("pb UpdateXpubStateReply type assertion error")
 	}
 	return &endpoint1.AssignedXpubToGroupResponse{}, nil
+}
+
+// encodeGetChainsRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain GetChains request to a gRPC request.
+func encodeGetChainsRequest(_ context.Context, request interface{}) (interface{}, error) {
+	_, ok := request.(endpoint1.GetChainsRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint GetChainsRequest type assertion error")
+	}
+	return &pb.GetChainsRequest{}, nil
+}
+
+// decodeGetChainsResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeGetChainsResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.GetChainsReply)
+  if !ok{
+    return nil, fmt.Errorf("pb GetChainsReply type assertion error")
+  }
+
+  chainsResp := make([]*repository.SimpleChain, len(resp.Chains))
+  for i, c := range resp.Chains {
+    chainsResp[i] = &repository.SimpleChain{
+			ID: c.Id,
+			Name: c.Name,
+			Coin: c.Coin,
+			Bip44id: int(c.Bip44Id),
+			Status: c.Status}
+  }
+
+  return endpoint1.GetChainsResponse{Chains: chainsResp}, nil
 }

@@ -43,4 +43,12 @@ func main()  {
   if err := s.AssignedXpubToGroup(ctxWithAuthInfo, "466126082655944705"); err != nil {
     logger.Log("err:", err.Error())
   }
+
+  chains, err := s.GetChains(ctxWithAuthInfo)
+  if err != nil {
+    logger.Log("Fail to get chains", err.Error())
+  }
+  for _, c := range chains {
+   logger.Log("chain: id", c.ID, "Name", c.Name, "Coin", c.Coin, "Bip44id", c.Bip44id, "status", c.Status)
+  }
 }

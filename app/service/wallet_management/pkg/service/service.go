@@ -15,6 +15,7 @@ import (
 
 // WalletManagementService describes the service.
 type WalletManagementService interface {
+	GetChains(ctx context.Context) (chains []*repository.SimpleChain, err error)
 	CreateChain(ctx context.Context, symbol, bit44ID string, status bool) (err error)
 	AssignedXpubToGroup(ctx context.Context, groupid string) (err error)
 	Close() error
@@ -84,4 +85,9 @@ func (b *basicWalletManagementService) AssignedXpubToGroup(ctx context.Context, 
 // NewBasicWalletManagementService returns a naive, stateless implementation of WalletManagementService.
 func NewBasicWalletManagementService() WalletManagementService {
 	return &basicWalletManagementService{}
+}
+
+func (b *basicWalletManagementService) GetChains(ctx context.Context) (chains []*repository.SimpleChain, err error) {
+	chains, err = b.biz.GetChains(ctx, map[string]interface{}{})
+	return
 }

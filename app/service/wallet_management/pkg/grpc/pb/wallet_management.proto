@@ -6,8 +6,9 @@ package pb;
 
 //The WalletManagement service definition.
 service WalletManagement {
- rpc CreateChain     (CreateChainRequest    ) returns (CreateChainReply    );
+ rpc CreateChain         (CreateChainRequest        ) returns (CreateChainReply        );
  rpc AssignedXpubToGroup (AssignedXpubToGroupRequest) returns (AssignedXpubToGroupReply);
+ rpc GetChains           (GetChainsRequest          ) returns (GetChainsReply          );
 }
 
 message CreateChainRequest {
@@ -21,7 +22,21 @@ message CreateChainReply {
 }
 
 message AssignedXpubToGroupRequest {
-  string groupid = 1;
+ string groupid = 1;
 }
 
 message AssignedXpubToGroupReply {}
+
+message GetChainsRequest {}
+
+message SimpleChain {
+  string id = 1;
+  string name = 2;
+  int32 bip44id = 3;
+  string coin = 4;
+  bool status = 5;
+}
+
+message GetChainsReply {
+  repeated SimpleChain chains = 1;
+}

@@ -17,7 +17,7 @@ func (b *basicWalletManagementService) RedisInstance() *redis.Pool {
 }
 
 func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, namespaceID string) error {
-  chains, err := b.biz.GetChains()
+  chains, err := b.biz.GetChains(ctx, map[string]interface{}{})
   if err != nil {
     return err
   }

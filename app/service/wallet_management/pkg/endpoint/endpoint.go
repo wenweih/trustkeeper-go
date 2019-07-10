@@ -1,9 +1,11 @@
 package endpoint
 
 import (
-	"errors"
 	"context"
+	"errors"
+	"trustkeeper-go/app/service/wallet_management/pkg/repository"
 	service "trustkeeper-go/app/service/wallet_management/pkg/service"
+
 	endpoint "github.com/go-kit/kit/endpoint"
 )
 
@@ -95,4 +97,39 @@ func (e Endpoints) AssignedXpubToGroup(ctx context.Context, groupid string) (err
 		return err
 	}
 	return nil
+}
+
+// GetChainsRequest collects the request parameters for the GetChains method.
+type GetChainsRequest struct{}
+
+// GetChainsResponse collects the response parameters for the GetChains method.
+type GetChainsResponse struct {
+	Chains []*repository.SimpleChain `json:"chains"`
+	Err    error                    `json:"err"`
+}
+
+// MakeGetChainsEndpoint returns an endpoint that invokes GetChains on the service.
+func MakeGetChainsEndpoint(s service.WalletManagementService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		chains, err := s.GetChains(ctx)
+		if err != nil {
+			return GetChainsResponse{Err: err}, err
+		}
+		return GetChainsResponse{Chains: chains}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r GetChainsResponse) Failed() error {
+	return r.Err
+}
+
+// GetChains implements Service. Primarily useful in a client.
+func (e Endpoints) GetChains(ctx context.Context) (chains []*repository.SimpleChain, err error) {
+	request := GetChainsRequest{}
+	response, err := e.GetChainsEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(GetChainsResponse).Chains, nil
 }
