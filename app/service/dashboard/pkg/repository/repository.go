@@ -14,16 +14,20 @@ type repo struct {
   // redisPool *redis.Pool
   iCasbinRepo
   iGroupRepo
+  iChainAssetRepo
 }
 
 // New new repo
 func New(db *gorm.DB) IBiz {
   db.AutoMigrate(
-    model.Group{})
+    model.Group{},
+    model.Chain{},
+    model.Token{})
   repo := repo{
     db,
     &casbinRepo{casbin.NewCasbinRepo(db)},
-    &groupRepo{}}
+    &groupRepo{},
+    &chainAssetRepo{}}
   repo.iCasbinRepo.AddResoucreCreatePolicyForRole(account_const.MerchantAdmin, "", []string{groupResource}...)
   var biz IBiz = &repo
   return biz

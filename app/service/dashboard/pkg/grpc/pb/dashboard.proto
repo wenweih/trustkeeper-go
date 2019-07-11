@@ -6,9 +6,10 @@ package pb;
 
 //The Dashboard service definition.
 service Dashboard {
- rpc GetGroups   (GetGroupsRequest  ) returns (GetGroupsReply  );
- rpc CreateGroup (CreateGroupRequest) returns (CreateGroupReply);
- rpc UpdateGroup (UpdateGroupRequest) returns (UpdateGroupReply);
+ rpc GetGroups     (GetGroupsRequest    ) returns (GetGroupsReply    );
+ rpc CreateGroup   (CreateGroupRequest  ) returns (CreateGroupReply  );
+ rpc UpdateGroup   (UpdateGroupRequest  ) returns (UpdateGroupReply  );
+ rpc GetGroupAsset (GetGroupAssetRequest) returns (GetGroupAssetReply);
 }
 
 message GetGroupsRequest {
@@ -37,9 +38,31 @@ message CreateGroupReply {
 }
 
 message UpdateGroupRequest {
-  string groupid = 1;
-  string name = 2;
-  string desc = 3;
+ string groupid = 1;
+ string name    = 2;
+ string desc    = 3;
 }
 
 message UpdateGroupReply {}
+
+message GetGroupAssetRequest {
+  string groupid = 1;
+}
+
+message SimpleToken {
+  string tokenid = 1;
+  string symbol = 2;
+  bool status = 3;
+}
+
+message ChainAsset {
+  string chainid = 1;
+  string name = 2;
+  string coin = 3;
+  bool status = 4;
+  repeated SimpleToken simpletokens = 5;
+}
+
+message GetGroupAssetReply {
+  repeated ChainAsset chainassets = 1;
+}

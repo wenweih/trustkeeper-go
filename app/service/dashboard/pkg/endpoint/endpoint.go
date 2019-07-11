@@ -144,10 +144,52 @@ func (r UpdateGroupResponse) Failed() error {
 
 // UpdateGroup implements Service. Primarily useful in a client.
 func (e Endpoints) UpdateGroup(ctx context.Context, groupID string, name string, desc string) (err error) {
-	request := UpdateGroupRequest{Desc:  desc, GroupID:  groupID, Name:  name}
+	request := UpdateGroupRequest{Desc: desc, GroupID: groupID, Name: name}
 	_, err = e.UpdateGroupEndpoint(ctx, request)
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+// GetGroupAssetRequest collects the request parameters for the GetGroupAsset method.
+type GetGroupAssetRequest struct {
+	GroupID string `json:"groupid"`
+}
+
+// GetGroupAssetResponse collects the response parameters for the GetGroupAsset method.
+type GetGroupAssetResponse struct {
+	ChainAssets []*repository.ChainAssetResp `json:"chainassets"`
+	Err         error                       `json:"err"`
+}
+
+// MakeGetGroupAssetsEndpoint returns an endpoint that invokes GetGroupAsset on the service.
+func MakeGetGroupAssetsEndpoint(s service.DashboardService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(GetGroupAssetRequest)
+		chainAssets, err := s.GetGroupAssets(ctx, req.GroupID)
+		if err != nil {
+			return GetGroupAssetResponse{
+				Err:         err,
+			}, err
+		}
+		return GetGroupAssetResponse{
+			ChainAssets: chainAssets,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r GetGroupAssetResponse) Failed() error {
+	return r.Err
+}
+
+// GetGroupAssets implements Service. Primarily useful in a client.
+func (e Endpoints) GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAssetResp, err error) {
+	request := GetGroupAssetRequest{GroupID: groupID}
+	response, err := e.GetGroupAssetsEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(GetGroupAssetResponse).ChainAssets, nil
 }

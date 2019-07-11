@@ -50,3 +50,10 @@ func (l loggingMiddleware) UpdateGroup(ctx context.Context, groupID string, name
 	}()
 	return l.next.UpdateGroup(ctx, groupID, name, desc)
 }
+
+func (l loggingMiddleware) GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAssetResp, err error) {
+	defer func() {
+		l.logger.Log("method", "GetGroupAsset", "groupID", groupID, "chainAssets", chainAssets, "err", err)
+	}()
+	return l.next.GetGroupAssets(ctx, groupID)
+}

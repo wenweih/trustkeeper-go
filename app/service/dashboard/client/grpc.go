@@ -33,10 +33,16 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		updateGroupEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "UpdateGroup", encodeUpdateGroupRequest, decodeUpdateGroupResponse, pb.UpdateGroupReply{}, options...).Endpoint()
 	}
 
+  var getGroupAssetEndpoint endpoint.Endpoint
+	{
+		getGroupAssetEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "GetGroupAsset", encodeGetGroupAssetRequest, decodeGetGroupAssetResponse, pb.GetGroupAssetReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		CreateGroupEndpoint: createGroupEndpoint,
 		GetGroupsEndpoint:   getGroupsEndpoint,
     UpdateGroupEndpoint: updateGroupEndpoint,
+    GetGroupAssetsEndpoint: getGroupAssetEndpoint,
 	}, nil
 }
 
@@ -104,4 +110,42 @@ func decodeUpdateGroupResponse(_ context.Context, reply interface{}) (interface{
     return nil, fmt.Errorf("pb UpdateGroupReply type assertion error")
   }
 	return endpoint1.UpdateGroupResponse{}, nil
+}
+
+// encodeGetGroupAssetRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain GetGroupAsset request to a gRPC request.
+func encodeGetGroupAssetRequest(_ context.Context, request interface{}) (interface{}, error) {
+  r, ok := request.(endpoint1.GetGroupAssetRequest)
+  if !ok {
+    return nil, fmt.Errorf("request interface to endpoint GetGroupAssetRequest type assertion error")
+  }
+  return &pb.GetGroupAssetRequest{Groupid: r.GroupID}, nil
+}
+
+// decodeGetGroupAssetResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeGetGroupAssetResponse(_ context.Context, reply interface{}) (interface{}, error) {
+  resp, ok := reply.(*pb.GetGroupAssetReply)
+  if !ok{
+    return nil, fmt.Errorf("pb GetGroupAssetReply type assertion error")
+  }
+
+  chainAssetsResp := make([]*repository.ChainAssetResp, len(resp.Chainassets))
+  for i, ca := range resp.Chainassets {
+    simpleTokens := make([]*repository.SimpleToken, len(ca.Simpletokens))
+    for si, token := range ca.Simpletokens {
+      simpleTokens[si] = &repository.SimpleToken{
+        TokenID: token.Tokenid,
+        Symbol: token.Symbol,
+        Status: token.Status}
+    }
+    chainAssetsResp[i] = &repository.ChainAssetResp{
+      ChainID: ca.Chainid,
+      Name: ca.Name,
+      Coin: ca.Coin,
+      Status: ca.Status,
+      SimpleTokens: simpleTokens}
+  }
+
+  return endpoint1.GetGroupAssetResponse{ChainAssets: chainAssetsResp}, nil
 }

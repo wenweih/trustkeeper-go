@@ -46,17 +46,29 @@ func main()  {
     logger.Log("change group err: ", err.Error())
   }
 
-  // for _, namespaceID := range []string{namespaceID} {
-  //   groups, err := s.GetGroups(ctxWithAuthInfo, namespaceID)
-  //   if err != nil {
-  //     logger.Log("GetGroups error: ", err.Error())
-  //   }
-  //   for _, g := range groups {
-  //     logger.Log("Get Group:", g.Name)
-  //     if err := s.UpdateGroup(ctxWithAuthInfo, g.ID, "changename", "changedesc"); err != nil {
-  //       logger.Log("change group err: ", err.Error())
-  //     }
-  //   }
-  // }
+  chainAssets, err := s.GetGroupAssets(ctxWithAuthInfo, group.ID)
+  if err != nil {
+    logger.Log("GetGroupAsset")
+  }
+
+  for _, namespaceID := range []string{namespaceID} {
+    groups, err := s.GetGroups(ctxWithAuthInfo, namespaceID)
+    if err != nil {
+      logger.Log("GetGroups error: ", err.Error())
+    }
+    for _, g := range groups {
+      logger.Log("Get Group:", g.Name)
+      if err := s.UpdateGroup(ctxWithAuthInfo, g.ID, "changename", "changedesc"); err != nil {
+        logger.Log("change group err: ", err.Error())
+      }
+    }
+  }
+
+  for _, ca := range chainAssets {
+    logger.Log("chainid: ", ca.ChainID, "coin: ", ca.Coin, "Name", ca.Name, "Status", ca.Status)
+    for _, token := range ca.SimpleTokens {
+      logger.Log("status", token.Status, "Symbol", token.Symbol, "TokenID", token.TokenID)
+    }
+  }
 
 }

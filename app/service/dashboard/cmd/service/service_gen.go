@@ -20,9 +20,10 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
 	options := map[string][]grpc.ServerOption{
-		"CreateGroup": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateGroup", logger))},
-		"GetGroups":   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetGroups", logger))},
-		"UpdateGroup": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "UpdateGroup", logger))},
+		"CreateGroup":   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateGroup", logger))},
+		"GetGroupAsset": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetGroupAsset", logger))},
+		"GetGroups":     {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetGroups", logger))},
+		"UpdateGroup":   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "UpdateGroup", logger))},
 	}
 	return options
 }
@@ -30,12 +31,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["CreateGroup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateGroup")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateGroup"))}
 	mw["GetGroups"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetGroups")), endpoint.InstrumentingMiddleware(duration.With("method", "GetGroups"))}
 	mw["UpdateGroup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "UpdateGroup")), endpoint.InstrumentingMiddleware(duration.With("method", "UpdateGroup"))}
+	mw["GetGroupAsset"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetGroupAsset")), endpoint.InstrumentingMiddleware(duration.With("method", "GetGroupAsset"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"CreateGroup", "GetGroups", "UpdateGroup"}
+	methods := []string{"CreateGroup", "GetGroups", "UpdateGroup", "GetGroupAsset"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

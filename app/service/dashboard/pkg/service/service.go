@@ -16,6 +16,7 @@ type DashboardService interface {
 	CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID string) (group *repository.GetGroupsResp, err error)
 	GetGroups(ctx context.Context, namespaceID string) (groups []*repository.GetGroupsResp, err error)
 	UpdateGroup(ctx context.Context, groupID, name, desc string) (err error)
+	GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAssetResp, err error)
 	Close() error
 }
 
@@ -38,6 +39,16 @@ func (b *basicDashboardService) CreateGroup(ctx context.Context, usrID, name, de
 		return nil, err
 	}
 	g, err = &repository.GetGroupsResp{Name: group.Name, Desc: group.Desc, ID: strconv.FormatUint(uint64(group.ID), 10)}, nil
+	return
+}
+
+func (b *basicDashboardService) UpdateGroup(ctx context.Context, groupID string, name string, desc string) (err error) {
+	err = b.biz.UpdateGroup(ctx, groupID, name, desc)
+	return
+}
+
+func (b *basicDashboardService) GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAssetResp, err error) {
+	chainAssets, err = b.biz.QueryChainAsset(ctx, map[string]interface{}{"group_id": groupID})
 	return
 }
 
@@ -68,6 +79,7 @@ func New(conf configure.Conf, logger log.Logger, middleware []Middleware) (Dashb
 	return svc, nil
 }
 
+// NewJobsService job service
 func NewJobsService(conf configure.Conf, logger log.Logger) (JobService, error) {
 	bs, err := NewBasicDashboardService(conf, logger)
 	if err != nil {
@@ -75,9 +87,4 @@ func NewJobsService(conf configure.Conf, logger log.Logger) (JobService, error) 
 	}
 	var svc JobService = bs
 	return svc, nil
-}
-
-func (b *basicDashboardService) UpdateGroup(ctx context.Context, groupID string, name string, desc string) (err error) {
-	err = b.biz.UpdateGroup(ctx, groupID, name, desc)
-	return
 }

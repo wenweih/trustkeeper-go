@@ -12,4 +12,5 @@ type Group struct {
   Name        string    `gorm:"unique_index:idx_namespace_id_name;not null"`
   Desc        string    `sql:"type:text;"`
   CreatorID   string    `gorm:"index;not null"`
+  Chains      []Chain
 }

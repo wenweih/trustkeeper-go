@@ -98,3 +98,39 @@ func (g *grpcServer) UpdateGroup(ctx context1.Context, req *pb.UpdateGroupReques
 	}
 	return rep.(*pb.UpdateGroupReply), nil
 }
+
+func makeGetGroupAssetHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.GetGroupAssetsEndpoint, decodeGetGroupAssetRequest, encodeGetGroupAssetResponse, options...)
+}
+
+func decodeGetGroupAssetRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.GetGroupAssetRequest)
+	if !ok {
+		return nil, fmt.Errorf("interface{} to pb GetGroupAssetRequest type assertion error")
+	}
+	return endpoint.GetGroupAssetRequest{GroupID: req.Groupid}, nil
+}
+
+func encodeGetGroupAssetResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.GetGroupAssetResponse)
+	if !ok {
+		return nil, fmt.Errorf("interface{} to endpoint GetGroupAssetResponse type assertion error")
+	}
+
+	pbChainAssets := make([]*pb.ChainAsset, len(resp.ChainAssets))
+	for i, cs := range resp.ChainAssets {
+		simpleTokens := make([]*pb.SimpleToken, len(cs.SimpleTokens))
+		for si, token := range cs.SimpleTokens {
+			simpleTokens[si] = &pb.SimpleToken{Tokenid: token.TokenID, Symbol: token.Symbol, Status: token.Status}
+		}
+		pbChainAssets[i] = &pb.ChainAsset{Chainid: cs.ChainID, Coin: cs.Coin, Name: cs.Name, Status: cs.Status, Simpletokens: simpleTokens}
+	}
+	return &pb.GetGroupAssetReply{Chainassets: pbChainAssets}, nil
+}
+func (g *grpcServer) GetGroupAsset(ctx context1.Context, req *pb.GetGroupAssetRequest) (*pb.GetGroupAssetReply, error) {
+	_, rep, err := g.getGroupAsset.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.GetGroupAssetReply), nil
+}

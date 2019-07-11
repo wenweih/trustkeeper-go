@@ -14,6 +14,7 @@ type IBiz interface {
   Close() error
   GetGroups(ctx context.Context, query map[string]interface{}) (groups []*GetGroupsResp, err error)
   UpdateGroup(ctx context.Context, groupID, name, desc string) error
+  QueryChainAsset(ctx context.Context, query map[string]interface{}) (chainAssets []*ChainAssetResp, err error)
 }
 
 func (repo *repo) Signup(uuid, email, name, xpub string) error {
@@ -54,12 +55,6 @@ func (repo *repo) Close() error{
   return repo.close()
 }
 
-type GetGroupsResp struct {
-  ID    string  `json:"id"`
-	Name  string  `json:"name"`
-  Desc  string  `json:"desc"`
-}
-
 func (repo *repo) GetGroups(ctx context.Context, query map[string]interface{}) (groupsResp []*GetGroupsResp, err error) {
   uid, nid, _, err := extractAuthInfoFromContext(ctx)
   if err != nil {
@@ -83,7 +78,6 @@ func (repo *repo) UpdateGroup(ctx context.Context, groupID, name, desc string) e
   if err != nil {
     return err
   }
-  fmt.Println("uid: ", uid, "nid:", nid, "groupid:", groupID)
   allow := repo.iCasbinRepo.HasPolicy([]string{uid, nid, groupID, "write"})
   if !allow {
     return fmt.Errorf("not allow")
@@ -111,6 +105,36 @@ func (repo *repo) UpdateGroup(ctx context.Context, groupID, name, desc string) e
   return nil
 }
 
+func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interface{}) (chainAssets []*ChainAssetResp, err error) {
+  uid, nid, _, err := extractAuthInfoFromContext(ctx)
+  if err != nil {
+    return nil, err
+  }
+
+  ids := repo.iCasbinRepo.GetObjForUserInDomain(uid, nid, "read")
+  chains, err := repo.iChainAssetRepo.Query(repo.db, ids, query)
+  if err != nil {
+    return nil, err
+  }
+
+  chainAssets = make([]*ChainAssetResp, len(chains))
+  for i, c := range chains {
+    tokens := make([]*SimpleToken, len(c.Tokens))
+    for it, t := range c.Tokens {
+      tokens[it] = &SimpleToken{
+        TokenID: strconv.FormatUint(uint64(t.ID), 10),
+        Symbol: t.Symbol,
+        Status: t.Status}
+    }
+    chainAssets[i] = &ChainAssetResp{
+      ChainID: strconv.FormatUint(uint64(c.ID), 10),
+      Name: c.Name,
+      Coin: c.Coin,
+      Status: c.Status,
+      SimpleTokens: tokens}
+  }
+  return chainAssets, nil
+}
 func extractAuthInfoFromContext(ctx context.Context) (string, string, []string, error) {
   md, ok := metadata.FromIncomingContext(ctx)
   if !ok {

@@ -5,6 +5,7 @@ import (
   "github.com/jinzhu/gorm"
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
+
 const groupResource = "group"
 
 type groupRepo struct {}
@@ -13,6 +14,13 @@ type iGroupRepo interface {
   Create(tx *gorm.DB, m *model.Group) *gorm.DB
   Query(tx *gorm.DB, ids []interface{}, query map[string]interface{}) ([]*model.Group, error)
   Update(tx *gorm.DB, m *model.Group) *gorm.DB
+}
+
+
+type GetGroupsResp struct {
+  ID    string  `json:"id"`
+	Name  string  `json:"name"`
+  Desc  string  `json:"desc"`
 }
 
 // Create save repo
