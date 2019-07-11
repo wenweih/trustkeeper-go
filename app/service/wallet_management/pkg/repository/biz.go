@@ -7,6 +7,7 @@ import (
   "google.golang.org/grpc/metadata"
   "github.com/gomodule/redigo/redis"
   "trustkeeper-go/app/service/wallet_management/pkg/model"
+  libctx "trustkeeper-go/library/context"
 )
 
 type IBiz interface {
@@ -60,6 +61,10 @@ func (repo *repo) RedisInstance() *redis.Pool {
 }
 
 func (repo *repo)GetChains(ctx context.Context, query map[string]interface{}) ([]*SimpleChain, error) {
+  _, _, _, err := libctx.ExtractAuthInfoFromContext(ctx)
+  if err != nil {
+    return nil, err
+  }
   chains, err := repo.iChainRepo.Query(repo.db, query)
   if err != nil {
     return nil, err

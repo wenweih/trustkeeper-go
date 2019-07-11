@@ -1,8 +1,8 @@
 package service
 
 import (
-	"strings"
 	"context"
+	"strings"
 	"trustkeeper-go/app/gateway/webapi/pkg/repository"
 
 	log "github.com/go-kit/kit/log"
@@ -26,7 +26,7 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 func (l loggingMiddleware) Signup(ctx context.Context, user Credentials) (result bool, err error) {
 	defer func() {
-		l.logger.Log("method", "Signup", "user", user, "result", result, "err", err)
+		l.logger.Log("method", "Signup", "email", user.Email, "result", result, "err", err)
 	}()
 	return l.next.Signup(ctx, user)
 }
@@ -76,4 +76,11 @@ func (l loggingMiddleware) UserInfo(ctx context.Context) (roles []string, orgNam
 		l.logger.Log("method", "UserInfo", "roles", strings.Join(roles, " "), "orgName", orgName, "err", err)
 	}()
 	return l.next.UserInfo(ctx)
+}
+
+func (l loggingMiddleware) GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAssetResp, err error) {
+	defer func() {
+		l.logger.Log("method", "GetGroupAssets", "groupid", groupid, "err", err)
+	}()
+	return l.next.GetGroupAssets(ctx, groupid)
 }

@@ -320,3 +320,45 @@ func (e Endpoints) UserInfo(ctx context.Context) (roles []string, orgName string
 	}
 	return response.(UserInfoResponse).Roles, response.(UserInfoResponse).OrgName, response.(UserInfoResponse).Err
 }
+
+// GetGroupAssetsRequest collects the request parameters for the GetGroupAssets method.
+type GetGroupAssetsRequest struct {
+	Groupid string `json:"groupid"`
+}
+
+// GetGroupAssetsResponse collects the response parameters for the GetGroupAssets method.
+type GetGroupAssetsResponse struct {
+	GroupAssets []*repository.GroupAssetResp `json:"group_assets"`
+	Err         error                        `json:"err"`
+}
+
+// MakeGetGroupAssetsEndpoint returns an endpoint that invokes GetGroupAssets on the service.
+func MakeGetGroupAssetsEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(GetGroupAssetsRequest)
+		groupAssets, err := s.GetGroupAssets(ctx, req.Groupid)
+		if err != nil {
+			return GetGroupAssetsResponse{
+				Err:         err,
+			}, err
+		}
+		return GetGroupAssetsResponse{
+			GroupAssets: groupAssets,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r GetGroupAssetsResponse) Failed() error {
+	return r.Err
+}
+
+// GetGroupAssets implements Service. Primarily useful in a client.
+func (e Endpoints) GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAssetResp, err error) {
+	request := GetGroupAssetsRequest{Groupid: groupid}
+	response, err := e.GetGroupAssetsEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(GetGroupAssetsResponse).GroupAssets, nil
+}

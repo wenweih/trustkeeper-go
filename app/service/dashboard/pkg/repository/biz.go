@@ -135,6 +135,7 @@ func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interfac
   }
   return chainAssets, nil
 }
+
 func extractAuthInfoFromContext(ctx context.Context) (string, string, []string, error) {
   md, ok := metadata.FromIncomingContext(ctx)
   if !ok {

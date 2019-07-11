@@ -31,6 +31,7 @@ type WebapiService interface {
 	GetGroups(ctx context.Context) (groups []*repository.GetGroupsResp, err error)
 	CreateGroup(ctx context.Context, name, desc string) (group *repository.GetGroupsResp, err error)
 	UpdateGroup(ctx context.Context, groupid, name, desc string) (err error)
+	GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAssetResp, err error)
 }
 
 // Credentials Signup Signin params
@@ -196,6 +197,47 @@ func (b *basicWebapiService) UpdateGroup(ctx context.Context, groupid string, na
 	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, accountUID, namespaceid)
 	err = b.dashboardSrv.UpdateGroup(ctxWithAuthInfo, groupid, name, desc)
 	return err
+}
+
+func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string) ([]*repository.GroupAssetResp, error) {
+	accountUID, namespaceid, roles, err := b.auth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, accountUID, namespaceid)
+	groupAssets, err := b.dashboardSrv.GetGroupAssets(ctxWithAuthInfo, groupid)
+	if err != nil && !strings.Contains(err.Error(), "Empty records") {
+		return nil, err
+	}
+	defaultChains, err := b.WalletSrv.GetChains(ctxWithAuthInfo)
+	if err != nil {
+		return nil, err
+	}
+
+	groupAssetsResp := make([]*repository.GroupAssetResp, len(defaultChains))
+	for di, defaultChain := range defaultChains {
+		if defaultChain.Status {
+			groupAssetsResp[di] = &repository.GroupAssetResp{
+				Name: defaultChain.Name,
+				Coin: defaultChain.Coin,
+				Status: false}
+			for _, ga := range groupAssets {
+				if groupAssetsResp[di].Name != ga.Name && groupAssetsResp[di].Coin != ga.Coin{
+					continue
+				}
+				tokens := make([]*repository.SimpleToken, 0, len(ga.SimpleTokens))
+				for it, token := range ga.SimpleTokens {
+					tokens[it] = &repository.SimpleToken{TokenID: token.TokenID,
+						Symbol: token.Symbol,
+						Status: token.Status}
+				}
+				groupAssetsResp[di].ChainID = ga.ChainID
+				groupAssetsResp[di].Status = ga.Status
+				groupAssetsResp[di].SimpleTokens = tokens
+			}
+		}
+	}
+	return groupAssetsResp, nil
 }
 
 func constructAuthInfoContext(ctx context.Context, roles []string, uid, nid string) (ctxWithAuthInfo context.Context) {
