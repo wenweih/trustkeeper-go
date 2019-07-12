@@ -142,7 +142,7 @@ func initJobs(logger log.Logger, g *group.Group) {
 		logger.Log("init job service error: ", err.Error())
 		os.Exit(1)
 	}
-	workPool := jobs.New(conf.Redis, jobSvc)
+	workPool := jobs.New(logger, conf.Redis, jobSvc)
 	cancelInterrupt := make(chan struct{})
 	g.Add(func() error {
 		c := make(chan os.Signal, 1)
