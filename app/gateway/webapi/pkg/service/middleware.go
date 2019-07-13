@@ -78,7 +78,7 @@ func (l loggingMiddleware) UserInfo(ctx context.Context) (roles []string, orgNam
 	return l.next.UserInfo(ctx)
 }
 
-func (l loggingMiddleware) GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAssetResp, err error) {
+func (l loggingMiddleware) GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAsset, err error) {
 	defer func() {
 		l.logger.Log("method", "GetGroupAssets", "groupid", groupid, "err", err)
 	}()

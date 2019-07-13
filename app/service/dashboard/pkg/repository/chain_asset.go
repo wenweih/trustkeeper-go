@@ -20,8 +20,8 @@ type SimpleToken struct {
   Status   bool    `json:"status"`
 }
 
-// ChainAssetResp tokens correspond with chain resp
-type ChainAssetResp struct {
+// ChainAsset tokens correspond with chain resp
+type ChainAsset struct {
   ChainID  string  `json:"chainid"`
 	Name     string  `json:"name"`
   Coin     string  `json:"desc"`

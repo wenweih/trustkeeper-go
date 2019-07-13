@@ -16,7 +16,8 @@ type DashboardService interface {
 	CreateGroup(ctx context.Context, uuid, name, desc string, namespaceID string) (group *repository.GetGroupsResp, err error)
 	GetGroups(ctx context.Context, namespaceID string) (groups []*repository.GetGroupsResp, err error)
 	UpdateGroup(ctx context.Context, groupID, name, desc string) (err error)
-	GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAssetResp, err error)
+	GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAsset, err error)
+	// ChangeGroupAssets(ctx context.Context)
 	Close() error
 }
 
@@ -47,7 +48,7 @@ func (b *basicDashboardService) UpdateGroup(ctx context.Context, groupID string,
 	return
 }
 
-func (b *basicDashboardService) GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAssetResp, err error) {
+func (b *basicDashboardService) GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAsset, err error) {
 	chainAssets, err = b.biz.QueryChainAsset(ctx, map[string]interface{}{"group_id": groupID})
 	return
 }

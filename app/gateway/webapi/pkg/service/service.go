@@ -31,7 +31,7 @@ type WebapiService interface {
 	GetGroups(ctx context.Context) (groups []*repository.GetGroupsResp, err error)
 	CreateGroup(ctx context.Context, name, desc string) (group *repository.GetGroupsResp, err error)
 	UpdateGroup(ctx context.Context, groupid, name, desc string) (err error)
-	GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAssetResp, err error)
+	GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAsset, err error)
 }
 
 // Credentials Signup Signin params
@@ -199,7 +199,7 @@ func (b *basicWebapiService) UpdateGroup(ctx context.Context, groupid string, na
 	return err
 }
 
-func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string) ([]*repository.GroupAssetResp, error) {
+func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string) ([]*repository.GroupAsset, error) {
 	accountUID, namespaceid, roles, err := b.auth(ctx)
 	if err != nil {
 		return nil, err
@@ -214,10 +214,10 @@ func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string)
 		return nil, err
 	}
 
-	groupAssetsResp := make([]*repository.GroupAssetResp, len(defaultChains))
+	groupAssetsResp := make([]*repository.GroupAsset, len(defaultChains))
 	for di, defaultChain := range defaultChains {
 		if defaultChain.Status {
-			groupAssetsResp[di] = &repository.GroupAssetResp{
+			groupAssetsResp[di] = &repository.GroupAsset{
 				Name: defaultChain.Name,
 				Coin: defaultChain.Coin,
 				Status: false}

@@ -130,7 +130,7 @@ func decodeGetGroupAssetResponse(_ context.Context, reply interface{}) (interfac
     return nil, fmt.Errorf("pb GetGroupAssetReply type assertion error")
   }
 
-  chainAssetsResp := make([]*repository.ChainAssetResp, len(resp.Chainassets))
+  chainAssetsResp := make([]*repository.ChainAsset, len(resp.Chainassets))
   for i, ca := range resp.Chainassets {
     simpleTokens := make([]*repository.SimpleToken, len(ca.Simpletokens))
     for si, token := range ca.Simpletokens {
@@ -139,7 +139,7 @@ func decodeGetGroupAssetResponse(_ context.Context, reply interface{}) (interfac
         Symbol: token.Symbol,
         Status: token.Status}
     }
-    chainAssetsResp[i] = &repository.ChainAssetResp{
+    chainAssetsResp[i] = &repository.ChainAsset{
       ChainID: ca.Chainid,
       Name: ca.Name,
       Coin: ca.Coin,

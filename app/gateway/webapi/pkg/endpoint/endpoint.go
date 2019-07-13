@@ -328,7 +328,7 @@ type GetGroupAssetsRequest struct {
 
 // GetGroupAssetsResponse collects the response parameters for the GetGroupAssets method.
 type GetGroupAssetsResponse struct {
-	GroupAssets []*repository.GroupAssetResp `json:"group_assets"`
+	GroupAssets []*repository.GroupAsset `json:"group_assets"`
 	Err         error                        `json:"err"`
 }
 
@@ -354,7 +354,7 @@ func (r GetGroupAssetsResponse) Failed() error {
 }
 
 // GetGroupAssets implements Service. Primarily useful in a client.
-func (e Endpoints) GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAssetResp, err error) {
+func (e Endpoints) GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAsset, err error) {
 	request := GetGroupAssetsRequest{Groupid: groupid}
 	response, err := e.GetGroupAssetsEndpoint(ctx, request)
 	if err != nil {

@@ -14,7 +14,7 @@ type IBiz interface {
   Close() error
   GetGroups(ctx context.Context, query map[string]interface{}) (groups []*GetGroupsResp, err error)
   UpdateGroup(ctx context.Context, groupID, name, desc string) error
-  QueryChainAsset(ctx context.Context, query map[string]interface{}) (chainAssets []*ChainAssetResp, err error)
+  QueryChainAsset(ctx context.Context, query map[string]interface{}) (chainAssets []*ChainAsset, err error)
 }
 
 func (repo *repo) Signup(uuid, email, name, xpub string) error {
@@ -105,7 +105,7 @@ func (repo *repo) UpdateGroup(ctx context.Context, groupID, name, desc string) e
   return nil
 }
 
-func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interface{}) (chainAssets []*ChainAssetResp, err error) {
+func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interface{}) (chainAssets []*ChainAsset, err error) {
   uid, nid, _, err := extractAuthInfoFromContext(ctx)
   if err != nil {
     return nil, err
@@ -117,7 +117,7 @@ func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interfac
     return nil, err
   }
 
-  chainAssets = make([]*ChainAssetResp, len(chains))
+  chainAssets = make([]*ChainAsset, len(chains))
   for i, c := range chains {
     tokens := make([]*SimpleToken, len(c.Tokens))
     for it, t := range c.Tokens {
@@ -126,7 +126,7 @@ func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interfac
         Symbol: t.Symbol,
         Status: t.Status}
     }
-    chainAssets[i] = &ChainAssetResp{
+    chainAssets[i] = &ChainAsset{
       ChainID: strconv.FormatUint(uint64(c.ID), 10),
       Name: c.Name,
       Coin: c.Coin,

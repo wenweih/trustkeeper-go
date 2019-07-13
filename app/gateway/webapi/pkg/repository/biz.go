@@ -14,8 +14,8 @@ type SimpleToken struct {
   Status   bool    `json:"status"`
 }
 
-// GroupAssetResp tokens correspond with chain resp
-type GroupAssetResp struct {
+// GroupAsset tokens correspond with chain resp
+type GroupAsset struct {
   ChainID  string  `json:"chainid"`
 	Name     string  `json:"name"`
   Coin     string  `json:"desc"`
