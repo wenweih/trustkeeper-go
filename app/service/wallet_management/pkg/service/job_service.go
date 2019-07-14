@@ -27,7 +27,7 @@ func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, names
   for i, chain := range chains {
     bip44ids[i] = int32(chain.Bip44id)
   }
-  bip44ThirdXpubsForChains, version, err := b.KeySrv.GenerateMnemonic(ctx, namespaceID, bip44ids, 10)
+  bip44ThirdXpubsForChains, version, err := b.KeySrv.GenerateMnemonic(ctx, namespaceID, bip44ids, 50)
   if err != nil {
     return err
   }
