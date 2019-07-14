@@ -160,7 +160,7 @@ type GetGroupAssetRequest struct {
 // GetGroupAssetResponse collects the response parameters for the GetGroupAsset method.
 type GetGroupAssetResponse struct {
 	ChainAssets []*repository.ChainAsset `json:"chainassets"`
-	Err         error                       `json:"err"`
+	Err         error                    `json:"err"`
 }
 
 // MakeGetGroupAssetsEndpoint returns an endpoint that invokes GetGroupAsset on the service.
@@ -170,7 +170,7 @@ func MakeGetGroupAssetsEndpoint(s service.DashboardService) endpoint.Endpoint {
 		chainAssets, err := s.GetGroupAssets(ctx, req.GroupID)
 		if err != nil {
 			return GetGroupAssetResponse{
-				Err:         err,
+				Err: err,
 			}, err
 		}
 		return GetGroupAssetResponse{
@@ -192,4 +192,57 @@ func (e Endpoints) GetGroupAssets(ctx context.Context, groupID string) (chainAss
 		return nil, err
 	}
 	return response.(GetGroupAssetResponse).ChainAssets, nil
+}
+
+// GetGroupAssetsRequest collects the request parameters for the GetGroupAssets method.
+type GetGroupAssetsRequest struct {
+	GroupID string `json:"group_id"`
+}
+
+// GetGroupAssetsResponse collects the response parameters for the GetGroupAssets method.
+type GetGroupAssetsResponse struct {
+	ChainAssets []*repository.ChainAsset `json:"chain_assets"`
+	Err         error                    `json:"err"`
+}
+
+// Failed implements Failer.
+func (r GetGroupAssetsResponse) Failed() error {
+	return r.Err
+}
+
+// ChangeGroupAssetsRequest collects the request parameters for the ChangeGroupAssets method.
+type ChangeGroupAssetsRequest struct {
+	ChainAssets []*repository.ChainAsset `json:"chainassets"`
+	GroupID string `json:"groupid"`
+}
+
+// ChangeGroupAssetsResponse collects the response parameters for the ChangeGroupAssets method.
+type ChangeGroupAssetsResponse struct {
+	Err error `json:"err"`
+}
+
+// MakeChangeGroupAssetsEndpoint returns an endpoint that invokes ChangeGroupAssets on the service.
+func MakeChangeGroupAssetsEndpoint(s service.DashboardService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ChangeGroupAssetsRequest)
+		err := s.ChangeGroupAssets(ctx, req.ChainAssets, req.GroupID)
+		if err != nil {
+			return ChangeGroupAssetsResponse{Err: err}, err
+		}
+		return ChangeGroupAssetsResponse{Err: nil}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r ChangeGroupAssetsResponse) Failed() error {
+	return r.Err
+}
+
+// ChangeGroupAssets implements Service. Primarily useful in a client.
+func (e Endpoints) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (err error) {
+	request := ChangeGroupAssetsRequest{ChainAssets: chainAssets, GroupID: groupid}
+	if _, err = e.ChangeGroupAssetsEndpoint(ctx, request); err != nil {
+		return err
+	}
+	return nil
 }

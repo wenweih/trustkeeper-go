@@ -3,11 +3,13 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/jinzhu/copier"
 	endpoint "trustkeeper-go/app/service/dashboard/pkg/endpoint"
 	pb "trustkeeper-go/app/service/dashboard/pkg/grpc/pb"
 
 	grpc "github.com/go-kit/kit/transport/grpc"
 	context1 "golang.org/x/net/context"
+	"trustkeeper-go/app/service/dashboard/pkg/repository"
 )
 
 func makeGetGroupsHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
@@ -99,7 +101,7 @@ func (g *grpcServer) UpdateGroup(ctx context1.Context, req *pb.UpdateGroupReques
 	return rep.(*pb.UpdateGroupReply), nil
 }
 
-func makeGetGroupAssetHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+func makeGetGroupAssetsHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
 	return grpc.NewServer(endpoints.GetGroupAssetsEndpoint, decodeGetGroupAssetRequest, encodeGetGroupAssetResponse, options...)
 }
 
@@ -128,9 +130,40 @@ func encodeGetGroupAssetResponse(_ context.Context, r interface{}) (interface{},
 	return &pb.GetGroupAssetReply{Chainassets: pbChainAssets}, nil
 }
 func (g *grpcServer) GetGroupAsset(ctx context1.Context, req *pb.GetGroupAssetRequest) (*pb.GetGroupAssetReply, error) {
-	_, rep, err := g.getGroupAsset.ServeGRPC(ctx, req)
+	_, rep, err := g.getGroupAssets.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 	return rep.(*pb.GetGroupAssetReply), nil
+}
+
+func makeChangeGroupAssetsHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.ChangeGroupAssetsEndpoint, decodeChangeGroupAssetsRequest, encodeChangeGroupAssetsResponse, options...)
+}
+
+func decodeChangeGroupAssetsRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.ChangeGroupAssetsRequest)
+	if !ok {
+		return nil, fmt.Errorf("interface{} to pb ChangeGroupAssetsRequest type assertion error")
+	}
+	endpointChainAssets := []*repository.ChainAsset{}
+	if err := copier.Copy(&endpointChainAssets, req.Chainassets); err != nil {
+		return nil, err
+	}
+	return endpoint.ChangeGroupAssetsRequest{ChainAssets: endpointChainAssets, GroupID: req.Groupid}, nil
+}
+
+func encodeChangeGroupAssetsResponse(_ context.Context, r interface{}) (interface{}, error) {
+	_, ok := r.(endpoint.ChangeGroupAssetsResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint ChangeGroupAssetsResponse type assertion error")
+	}
+	return &pb.ChangeGroupAssetsReply{}, nil
+}
+func (g *grpcServer) ChangeGroupAssets(ctx context1.Context, req *pb.ChangeGroupAssetsRequest) (*pb.ChangeGroupAssetsReply, error) {
+	_, rep, err := g.changeGroupAssets.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.ChangeGroupAssetsReply), nil
 }

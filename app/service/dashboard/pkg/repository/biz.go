@@ -4,6 +4,7 @@ import (
   "fmt"
   "context"
   "strconv"
+  "github.com/jinzhu/copier"
   "google.golang.org/grpc/metadata"
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
@@ -15,6 +16,7 @@ type IBiz interface {
   GetGroups(ctx context.Context, query map[string]interface{}) (groups []*GetGroupsResp, err error)
   UpdateGroup(ctx context.Context, groupID, name, desc string) error
   QueryChainAsset(ctx context.Context, query map[string]interface{}) (chainAssets []*ChainAsset, err error)
+  ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAsset, groupid string) (err error)
 }
 
 func (repo *repo) Signup(uuid, email, name, xpub string) error {
@@ -29,7 +31,7 @@ func (repo *repo) CreateGroup(ctx context.Context, m *model.Group) error {
 
   allowRoles := make([]string, 0, len(roles))
   for _, role := range roles {
-   allow := repo.iCasbinRepo.HasPolicy([]string{role, "group", "create"})
+   allow := repo.iCasbinRepo.HasPolicy([]string{role, groupResource, "create"})
    if allow {
      allowRoles = append(allowRoles, role)
    }
@@ -134,6 +136,50 @@ func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interfac
       SimpleTokens: tokens}
   }
   return chainAssets, nil
+}
+
+func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAsset, groupid string) (err error) {
+  uid, nid, roles, err := extractAuthInfoFromContext(ctx)
+  if err != nil {
+    return err
+  }
+  if err := repo.createAuth(roles, chainAssetResource); err != nil{
+    return err
+  }
+
+  tx := repo.db.Begin()
+  for _, ca := range chainAssets {
+    tokens := []*model.Token{}
+    if err := copier.Copy(&tokens, &ca.SimpleTokens); err != nil {
+      return err
+    }
+    chain := model.Chain{
+      Name: ca.Name,
+      Coin: ca.Coin,
+      Status: ca.Status,
+      GroupID: groupid,
+      Tokens: tokens}
+    if ca.ChainID != "" {
+      repo.iChainAssetRepo.Update(tx, &chain)
+    }
+    repo.iChainAssetRepo.Create(tx, &chain)
+    repo.iCasbinRepo.AddReadWriteForRoleInDomain(uid, nid, strconv.FormatUint(uint64(chain.ID), 10))
+  }
+  return tx.Commit().Error
+}
+
+func (repo *repo) createAuth(roles []string, resource string) error {
+  allowRoles := make([]string, 0, len(roles))
+  for _, role := range roles {
+   allow := repo.iCasbinRepo.HasPolicy([]string{role, resource, "create"})
+   if allow {
+     allowRoles = append(allowRoles, role)
+   }
+  }
+  if len(allowRoles) <= 0 {
+    return fmt.Errorf("not allow")
+  }
+  return nil
 }
 
 func extractAuthInfoFromContext(ctx context.Context) (string, string, []string, error) {

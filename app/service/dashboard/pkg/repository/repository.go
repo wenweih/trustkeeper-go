@@ -28,7 +28,8 @@ func New(db *gorm.DB) IBiz {
     &casbinRepo{casbin.NewCasbinRepo(db)},
     &groupRepo{},
     &chainAssetRepo{}}
-  repo.iCasbinRepo.AddResoucreCreatePolicyForRole(account_const.MerchantAdmin, "", []string{groupResource}...)
+  repo.iCasbinRepo.AddResoucreCreatePolicyForRole(account_const.MerchantAdmin,
+    "", []string{groupResource, chainAssetResource}...)
   var biz IBiz = &repo
   return biz
 }

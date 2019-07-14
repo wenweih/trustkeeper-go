@@ -6,10 +6,13 @@ import (
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
 
+const chainAssetResource = "chain_asset"
+
 type chainAssetRepo struct {}
 
 type iChainAssetRepo interface {
-  // Create(tx *gorm.DB, m *model.Group) *gorm.DB
+  Create(tx *gorm.DB, m *model.Chain) *gorm.DB
+  Update(tx *gorm.DB, m *model.Chain) *gorm.DB
   Query(tx *gorm.DB, ids []interface{}, query map[string]interface{}) (chains []*model.Chain, err error)
 }
 
@@ -38,4 +41,12 @@ func (repo *chainAssetRepo) Query(tx *gorm.DB, ids []interface{}, query map[stri
     return nil, fmt.Errorf("Empty records")
   }
   return chains, nil
+}
+
+func (repo *chainAssetRepo) Create(tx *gorm.DB, m *model.Chain) *gorm.DB {
+  return tx.Save(m)
+}
+
+func (repo *chainAssetRepo) Update(tx *gorm.DB, m *model.Chain) *gorm.DB {
+  return tx.Create(m)
 }

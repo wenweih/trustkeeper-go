@@ -17,7 +17,7 @@ type DashboardService interface {
 	GetGroups(ctx context.Context, namespaceID string) (groups []*repository.GetGroupsResp, err error)
 	UpdateGroup(ctx context.Context, groupID, name, desc string) (err error)
 	GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAsset, err error)
-	// ChangeGroupAssets(ctx context.Context)
+	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (err error)
 	Close() error
 }
 
@@ -53,8 +53,13 @@ func (b *basicDashboardService) GetGroupAssets(ctx context.Context, groupID stri
 	return
 }
 
-// NewBasicDashboardService returns a naive, stateless implementation of DashboardService.
-func NewBasicDashboardService(conf configure.Conf, logger log.Logger) (*basicDashboardService, error) {
+func (b *basicDashboardService) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (err error) {
+	err = b.biz.ChangeGroupAssets(ctx,chainAssets, groupid)
+	return
+}
+
+// returns a naive, stateless implementation of DashboardService.
+func newBasicDashboardService(conf configure.Conf, logger log.Logger) (*basicDashboardService, error) {
 	db, err := orm.DB(conf.DBInfo)
 	if err != nil {
 		return nil, err
@@ -68,7 +73,7 @@ func NewBasicDashboardService(conf configure.Conf, logger log.Logger) (*basicDas
 
 // New returns a DashboardService with all of the expected middleware wired in.
 func New(conf configure.Conf, logger log.Logger, middleware []Middleware) (DashboardService, error) {
-	bs, err := NewBasicDashboardService(conf, logger)
+	bs, err := newBasicDashboardService(conf, logger)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +87,7 @@ func New(conf configure.Conf, logger log.Logger, middleware []Middleware) (Dashb
 
 // NewJobsService job service
 func NewJobsService(conf configure.Conf, logger log.Logger) (JobService, error) {
-	bs, err := NewBasicDashboardService(conf, logger)
+	bs, err := newBasicDashboardService(conf, logger)
 	if err != nil {
 		return nil, err
 	}

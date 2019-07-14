@@ -32,7 +32,6 @@ func main()  {
   if err != nil {
     logger.Log("service client error: ", err.Error())
   }
-
   ctxWithAuthInfo := context.WithValue(context.Background(), "auth",
 		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "466361632363970561", "466361632420134913"})
 
@@ -42,28 +41,14 @@ func main()  {
     logger.Log("CreateGroup error: ", err.Error())
   }
 
-  if err := s.UpdateGroup(ctxWithAuthInfo, group.ID, "changename", "changedesc"); err != nil {
+  if err := s.UpdateGroup(ctxWithAuthInfo, group.ID, randomdata.SillyName(), "changedesc"); err != nil {
     logger.Log("change group err: ", err.Error())
   }
 
   chainAssets, err := s.GetGroupAssets(ctxWithAuthInfo, group.ID)
   if err != nil {
-    logger.Log("GetGroupAsset")
+    logger.Log("fail to GetGroupAsset", err.Error())
   }
-
-  for _, namespaceID := range []string{namespaceID} {
-    groups, err := s.GetGroups(ctxWithAuthInfo, namespaceID)
-    if err != nil {
-      logger.Log("GetGroups error: ", err.Error())
-    }
-    for _, g := range groups {
-      logger.Log("Get Group:", g.Name)
-      if err := s.UpdateGroup(ctxWithAuthInfo, g.ID, "changename", "changedesc"); err != nil {
-        logger.Log("change group err: ", err.Error())
-      }
-    }
-  }
-
   for _, ca := range chainAssets {
     logger.Log("chainid: ", ca.ChainID, "coin: ", ca.Coin, "Name", ca.Name, "Status", ca.Status)
     for _, token := range ca.SimpleTokens {
@@ -71,4 +56,7 @@ func main()  {
     }
   }
 
+  if err := s.ChangeGroupAssets(ctxWithAuthInfo, chainAssets, group.ID); err != nil {
+    logger.Log("fail to ChangeGroupAssets", err.Error())
+  }
 }

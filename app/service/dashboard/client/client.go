@@ -70,6 +70,13 @@ func New(consulAddr string, logger log.Logger) (service.DashboardService, error)
     retry := lb.Retry(retryMax, retryTimeout, balancer)
     endpoints.GetGroupAssetsEndpoint = retry
   }
+  {
+    factory := factoryFor(dashboardEndpoint.MakeChangeGroupAssetsEndpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.ChangeGroupAssetsEndpoint = retry
+  }
   return endpoints, nil
 }
 

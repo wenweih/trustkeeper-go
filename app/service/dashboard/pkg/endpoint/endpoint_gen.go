@@ -10,20 +10,22 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	CreateGroupEndpoint   endpoint.Endpoint
-	GetGroupsEndpoint     endpoint.Endpoint
-	UpdateGroupEndpoint   endpoint.Endpoint
-	GetGroupAssetsEndpoint endpoint.Endpoint
+	CreateGroupEndpoint       endpoint.Endpoint
+	GetGroupsEndpoint         endpoint.Endpoint
+	UpdateGroupEndpoint       endpoint.Endpoint
+	GetGroupAssetsEndpoint    endpoint.Endpoint
+	ChangeGroupAssetsEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.DashboardService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
-		CreateGroupEndpoint:   MakeCreateGroupEndpoint(s),
-		GetGroupAssetsEndpoint: MakeGetGroupAssetsEndpoint(s),
-		GetGroupsEndpoint:     MakeGetGroupsEndpoint(s),
-		UpdateGroupEndpoint:   MakeUpdateGroupEndpoint(s),
+		ChangeGroupAssetsEndpoint: MakeChangeGroupAssetsEndpoint(s),
+		CreateGroupEndpoint:       MakeCreateGroupEndpoint(s),
+		GetGroupAssetsEndpoint:    MakeGetGroupAssetsEndpoint(s),
+		GetGroupsEndpoint:         MakeGetGroupsEndpoint(s),
+		UpdateGroupEndpoint:       MakeUpdateGroupEndpoint(s),
 	}
 	for _, m := range mdw["CreateGroup"] {
 		eps.CreateGroupEndpoint = m(eps.CreateGroupEndpoint)
@@ -34,8 +36,11 @@ func New(s service.DashboardService, mdw map[string][]endpoint.Middleware) Endpo
 	for _, m := range mdw["UpdateGroup"] {
 		eps.UpdateGroupEndpoint = m(eps.UpdateGroupEndpoint)
 	}
-	for _, m := range mdw["GetGroupAsset"] {
+	for _, m := range mdw["GetGroupAssets"] {
 		eps.GetGroupAssetsEndpoint = m(eps.GetGroupAssetsEndpoint)
+	}
+	for _, m := range mdw["ChangeGroupAssets"] {
+		eps.ChangeGroupAssetsEndpoint = m(eps.ChangeGroupAssetsEndpoint)
 	}
 	return eps
 }

@@ -12,5 +12,5 @@ type Chain struct {
   Name    string  `gorm:"unique_index:idx_group_id_name;not null"`
   Coin    string
   Status  bool
-  Tokens  []Token
+  Tokens  []*Token
 }
