@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	// "github.com/jinzhu/gorm"
 	accountService "trustkeeper-go/app/service/account/pkg/service"
 	dashboardService "trustkeeper-go/app/service/dashboard/pkg/service"
 
 	"trustkeeper-go/app/gateway/webapi/pkg/repository"
 	accountGrpcClient "trustkeeper-go/app/service/account/client"
 	dashboardGrpcClient "trustkeeper-go/app/service/dashboard/client"
+	dashboardRepository "trustkeeper-go/app/service/dashboard/pkg/repository"
 
 	walletManagementGrpcClient "trustkeeper-go/app/service/wallet_management/client"
 	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
@@ -32,6 +34,7 @@ type WebapiService interface {
 	CreateGroup(ctx context.Context, name, desc string) (group *repository.GetGroupsResp, err error)
 	UpdateGroup(ctx context.Context, groupid, name, desc string) (err error)
 	GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAsset, err error)
+	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (err error)
 }
 
 // Credentials Signup Signin params
@@ -218,11 +221,11 @@ func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string)
 	for di, defaultChain := range defaultChains {
 		if defaultChain.Status {
 			groupAssetsResp[di] = &repository.GroupAsset{
-				Name: defaultChain.Name,
-				Coin: defaultChain.Coin,
+				Name:   defaultChain.Name,
+				Coin:   defaultChain.Coin,
 				Status: false}
 			for _, ga := range groupAssets {
-				if groupAssetsResp[di].Name != ga.Name && groupAssetsResp[di].Coin != ga.Coin{
+				if groupAssetsResp[di].Name != ga.Name && groupAssetsResp[di].Coin != ga.Coin {
 					continue
 				}
 				tokens := make([]*repository.SimpleToken, 0, len(ga.SimpleTokens))
@@ -248,4 +251,18 @@ func constructAuthInfoContext(ctx context.Context, roles []string, uid, nid stri
 			NID   string
 		}{roles, uid, nid})
 	return
+}
+
+func (b *basicWebapiService) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (err error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	//
+	dashboardRepo := []*dashboardRepository.ChainAsset{}
+	if err := copier.Copy(&dashboardRepo, &chainAssets); err != nil {
+		return err
+	}
+	return b.dashboardSrv.ChangeGroupAssets(ctxWithAuthInfo, dashboardRepo, groupid)
 }

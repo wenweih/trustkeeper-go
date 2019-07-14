@@ -54,7 +54,7 @@ func (b *basicDashboardService) GetGroupAssets(ctx context.Context, groupID stri
 }
 
 func (b *basicDashboardService) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (err error) {
-	err = b.biz.ChangeGroupAssets(ctx,chainAssets, groupid)
+	err = b.biz.ChangeGroupAssets(ctx, chainAssets, groupid)
 	return
 }
 

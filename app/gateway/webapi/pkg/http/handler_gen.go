@@ -20,5 +20,6 @@ func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]http.Serv
 	makeCreateGroupHandler(m, endpoints, options["CreateGroup"])
 	makeUpdateGroupHandler(m, endpoints, options["UpdateGroup"])
 	makeGetGroupAssetsHandler(m, endpoints, options["GetGroupAssets"])
+	makeChangeGroupAssetsHandler(m, endpoints, options["ChangeGroupAssets"])
 	return m
 }

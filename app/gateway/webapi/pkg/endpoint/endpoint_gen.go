@@ -10,30 +10,32 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	SignupEndpoint         endpoint.Endpoint
-	SigninEndpoint         endpoint.Endpoint
-	SignoutEndpoint        endpoint.Endpoint
-	GetRolesEndpoint       endpoint.Endpoint
-	UserInfoEndpoint       endpoint.Endpoint
-	GetGroupsEndpoint      endpoint.Endpoint
-	CreateGroupEndpoint    endpoint.Endpoint
-	UpdateGroupEndpoint    endpoint.Endpoint
-	GetGroupAssetsEndpoint endpoint.Endpoint
+	SignupEndpoint            endpoint.Endpoint
+	SigninEndpoint            endpoint.Endpoint
+	SignoutEndpoint           endpoint.Endpoint
+	GetRolesEndpoint          endpoint.Endpoint
+	UserInfoEndpoint          endpoint.Endpoint
+	GetGroupsEndpoint         endpoint.Endpoint
+	CreateGroupEndpoint       endpoint.Endpoint
+	UpdateGroupEndpoint       endpoint.Endpoint
+	GetGroupAssetsEndpoint    endpoint.Endpoint
+	ChangeGroupAssetsEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
-		CreateGroupEndpoint:    MakeCreateGroupEndpoint(s),
-		GetGroupAssetsEndpoint: MakeGetGroupAssetsEndpoint(s),
-		GetGroupsEndpoint:      MakeGetGroupsEndpoint(s),
-		GetRolesEndpoint:       MakeGetRolesEndpoint(s),
-		SigninEndpoint:         MakeSigninEndpoint(s),
-		SignoutEndpoint:        MakeSignoutEndpoint(s),
-		SignupEndpoint:         MakeSignupEndpoint(s),
-		UpdateGroupEndpoint:    MakeUpdateGroupEndpoint(s),
-		UserInfoEndpoint:       MakeUserInfoEndpoint(s),
+		ChangeGroupAssetsEndpoint: MakeChangeGroupAssetsEndpoint(s),
+		CreateGroupEndpoint:       MakeCreateGroupEndpoint(s),
+		GetGroupAssetsEndpoint:    MakeGetGroupAssetsEndpoint(s),
+		GetGroupsEndpoint:         MakeGetGroupsEndpoint(s),
+		GetRolesEndpoint:          MakeGetRolesEndpoint(s),
+		SigninEndpoint:            MakeSigninEndpoint(s),
+		SignoutEndpoint:           MakeSignoutEndpoint(s),
+		SignupEndpoint:            MakeSignupEndpoint(s),
+		UpdateGroupEndpoint:       MakeUpdateGroupEndpoint(s),
+		UserInfoEndpoint:          MakeUserInfoEndpoint(s),
 	}
 	for _, m := range mdw["Signup"] {
 		eps.SignupEndpoint = m(eps.SignupEndpoint)
@@ -61,6 +63,9 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 	}
 	for _, m := range mdw["GetGroupAssets"] {
 		eps.GetGroupAssetsEndpoint = m(eps.GetGroupAssetsEndpoint)
+	}
+	for _, m := range mdw["ChangeGroupAssets"] {
+		eps.ChangeGroupAssetsEndpoint = m(eps.ChangeGroupAssetsEndpoint)
 	}
 	return eps
 }

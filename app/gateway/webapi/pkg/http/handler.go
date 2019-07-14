@@ -277,3 +277,28 @@ func encodeGetGroupAssetsResponse(ctx context.Context, w http.ResponseWriter, re
 	err = json.NewEncoder(w).Encode(response)
 	return
 }
+
+// makeChangeGroupAssetsHandler creates the handler logic
+func makeChangeGroupAssetsHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/change-group-assets", http1.NewServer(endpoints.ChangeGroupAssetsEndpoint, decodeChangeGroupAssetsRequest, encodeChangeGroupAssetsResponse, options...))
+}
+
+// decodeChangeGroupAssetsRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeChangeGroupAssetsRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	req := endpoint.ChangeGroupAssetsRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeChangeGroupAssetsResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeChangeGroupAssetsResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}

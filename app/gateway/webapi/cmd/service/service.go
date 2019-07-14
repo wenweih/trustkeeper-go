@@ -108,6 +108,7 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options["CreateGroup"] = append(options["CreateGroup"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["UpdateGroup"] = append(options["UpdateGroup"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["GetGroupAssets"] = append(options["GetGroupAssets"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
+	options["ChangeGroupAssets"] = append(options["ChangeGroupAssets"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	httpHandler := http.NewHTTPHandler(endpoints, options)
 	httpListener, err := net.Listen("tcp", *httpAddr)
 	if err != nil {

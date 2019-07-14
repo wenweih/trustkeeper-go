@@ -329,7 +329,7 @@ type GetGroupAssetsRequest struct {
 // GetGroupAssetsResponse collects the response parameters for the GetGroupAssets method.
 type GetGroupAssetsResponse struct {
 	GroupAssets []*repository.GroupAsset `json:"group_assets"`
-	Err         error                        `json:"err"`
+	Err         error                    `json:"err"`
 }
 
 // MakeGetGroupAssetsEndpoint returns an endpoint that invokes GetGroupAssets on the service.
@@ -339,7 +339,7 @@ func MakeGetGroupAssetsEndpoint(s service.WebapiService) endpoint.Endpoint {
 		groupAssets, err := s.GetGroupAssets(ctx, req.Groupid)
 		if err != nil {
 			return GetGroupAssetsResponse{
-				Err:         err,
+				Err: err,
 			}, err
 		}
 		return GetGroupAssetsResponse{
@@ -361,4 +361,44 @@ func (e Endpoints) GetGroupAssets(ctx context.Context, groupid string) (groupAss
 		return nil, err
 	}
 	return response.(GetGroupAssetsResponse).GroupAssets, nil
+}
+
+// ChangeGroupAssetsRequest collects the request parameters for the ChangeGroupAssets method.
+type ChangeGroupAssetsRequest struct {
+	ChainAssets []*repository.GroupAsset `json:"chain_assets"`
+	Groupid     string                   `json:"groupid"`
+}
+
+// ChangeGroupAssetsResponse collects the response parameters for the ChangeGroupAssets method.
+type ChangeGroupAssetsResponse struct {
+	Err error `json:"err"`
+}
+
+// MakeChangeGroupAssetsEndpoint returns an endpoint that invokes ChangeGroupAssets on the service.
+func MakeChangeGroupAssetsEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ChangeGroupAssetsRequest)
+		err := s.ChangeGroupAssets(ctx, req.ChainAssets, req.Groupid)
+		if err != nil {
+			return ChangeGroupAssetsResponse{Err: err}, err
+		}
+		return ChangeGroupAssetsResponse{Err: nil}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r ChangeGroupAssetsResponse) Failed() error {
+	return r.Err
+}
+
+// ChangeGroupAssets implements Service. Primarily useful in a client.
+func (e Endpoints) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (err error) {
+	request := ChangeGroupAssetsRequest{
+		ChainAssets: chainAssets,
+		Groupid:     groupid,
+	}
+	if _, err := e.ChangeGroupAssetsEndpoint(ctx, request); err != nil {
+		return err
+	}
+	return nil
 }

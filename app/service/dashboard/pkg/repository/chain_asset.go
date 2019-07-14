@@ -1,7 +1,7 @@
 package repository
 
 import (
-  "fmt"
+  "errors"
   "github.com/jinzhu/gorm"
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
@@ -33,14 +33,14 @@ type ChainAsset struct {
 }
 
 func (repo *chainAssetRepo) Query(tx *gorm.DB, ids []interface{}, query map[string]interface{}) (chains []*model.Chain, err error) {
-  result := tx.Set("gorm:auto_preload", true).Find(&chains, query)
-  if result.Error != nil {
-    return nil, fmt.Errorf("Chains Query error: %s", err.Error())
+  err = tx.Preload("Tokens").Where(query).Where("id in (?)", ids).Find(&chains).Error
+  if err != nil {
+    return nil, err
   }
   if len(chains) < 1 {
-    return nil, fmt.Errorf("Empty records")
+    return nil, errors.New("Empty records")
   }
-  return chains, nil
+  return
 }
 
 func (repo *chainAssetRepo) Create(tx *gorm.DB, m *model.Chain) *gorm.DB {

@@ -5,7 +5,7 @@ import (
   "context"
   log "github.com/go-kit/kit/log"
   "github.com/caarlos0/env"
-  "github.com/Pallinder/go-randomdata"
+  // "github.com/Pallinder/go-randomdata"
   "trustkeeper-go/app/service/dashboard/client"
 )
 
@@ -33,19 +33,20 @@ func main()  {
     logger.Log("service client error: ", err.Error())
   }
   ctxWithAuthInfo := context.WithValue(context.Background(), "auth",
-		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "466361632363970561", "466361632420134913"})
+		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "ebcd33a8-bf8c-4e21-a39a-eaab1e6d83c3", "468348110207778817"})
+  //
+  // var namespaceID = "466361632420134913"
+  // group, err := s.CreateGroup(ctxWithAuthInfo, "55ee782d-4404-435c-b587-e5cf5ecc7da1", randomdata.SillyName(), "deeeeee", namespaceID)
+  // if err != nil {
+  //   logger.Log("CreateGroup error: ", err.Error())
+  // }
+  //
+  // if err := s.UpdateGroup(ctxWithAuthInfo, group.ID, randomdata.SillyName(), "changedesc"); err != nil {
+  //   logger.Log("change group err: ", err.Error())
+  // }
 
-  var namespaceID = "466361632420134913"
-  group, err := s.CreateGroup(ctxWithAuthInfo, "55ee782d-4404-435c-b587-e5cf5ecc7da1", randomdata.SillyName(), "deeeeee", namespaceID)
-  if err != nil {
-    logger.Log("CreateGroup error: ", err.Error())
-  }
-
-  if err := s.UpdateGroup(ctxWithAuthInfo, group.ID, randomdata.SillyName(), "changedesc"); err != nil {
-    logger.Log("change group err: ", err.Error())
-  }
-
-  chainAssets, err := s.GetGroupAssets(ctxWithAuthInfo, group.ID)
+  // 468348259016146945  468348353832910849
+  chainAssets, err := s.GetGroupAssets(ctxWithAuthInfo, "468348259016146945")
   if err != nil {
     logger.Log("fail to GetGroupAsset", err.Error())
   }
@@ -56,7 +57,7 @@ func main()  {
     }
   }
 
-  if err := s.ChangeGroupAssets(ctxWithAuthInfo, chainAssets, group.ID); err != nil {
-    logger.Log("fail to ChangeGroupAssets", err.Error())
-  }
+  // if err := s.ChangeGroupAssets(ctxWithAuthInfo, chainAssets, group.ID); err != nil {
+  //   logger.Log("fail to ChangeGroupAssets", err.Error())
+  // }
 }
