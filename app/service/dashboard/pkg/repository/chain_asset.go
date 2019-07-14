@@ -25,7 +25,7 @@ type SimpleToken struct {
 
 // ChainAsset tokens correspond with chain resp
 type ChainAsset struct {
-  ChainID  string  `json:"chainid"`
+  Chainid  string  `json:"chainid"`
 	Name     string  `json:"name"`
   Coin     string  `json:"desc"`
   Status   bool    `json:"status"`
@@ -44,9 +44,9 @@ func (repo *chainAssetRepo) Query(tx *gorm.DB, ids []interface{}, query map[stri
 }
 
 func (repo *chainAssetRepo) Create(tx *gorm.DB, m *model.Chain) *gorm.DB {
-  return tx.Save(m)
+  return tx.Create(m)
 }
 
 func (repo *chainAssetRepo) Update(tx *gorm.DB, m *model.Chain) *gorm.DB {
-  return tx.Create(m)
+  return tx.Save(m)
 }

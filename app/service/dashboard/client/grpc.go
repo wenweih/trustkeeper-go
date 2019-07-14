@@ -147,7 +147,7 @@ func decodeGetGroupAssetResponse(_ context.Context, reply interface{}) (interfac
         Status: token.Status}
     }
     chainAssetsResp[i] = &repository.ChainAsset{
-      ChainID: ca.Chainid,
+      Chainid: ca.Chainid,
       Name: ca.Name,
       Coin: ca.Coin,
       Status: ca.Status,
@@ -174,10 +174,14 @@ func encodeChangeGroupAssetsRequest(_ context.Context, request interface{}) (int
 // decodeChangeGroupAssetsResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeChangeGroupAssetsResponse(_ context.Context, reply interface{}) (interface{}, error) {
-  _, ok := reply.(*pb.ChangeGroupAssetsReply)
+  resp, ok := reply.(*pb.ChangeGroupAssetsReply)
   if !ok {
     e := fmt.Errorf("pb ChangeGroupAssetsReply type assertion error")
     return endpoint1.ChangeGroupAssetsResponse{Err: e}, e
   }
-  return endpoint1.ChangeGroupAssetsResponse{}, nil
+  endpointChainAssets := make([]*repository.ChainAsset, 0)
+  if err := copier.Copy(&endpointChainAssets, &resp.Chainassets); err != nil {
+    return endpoint1.ChangeGroupAssetsResponse{Err: err}, err
+  }
+  return endpoint1.ChangeGroupAssetsResponse{ChainAssets: endpointChainAssets}, nil
 }

@@ -34,7 +34,7 @@ type WebapiService interface {
 	CreateGroup(ctx context.Context, name, desc string) (group *repository.GetGroupsResp, err error)
 	UpdateGroup(ctx context.Context, groupid, name, desc string) (err error)
 	GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAsset, err error)
-	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (err error)
+	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (result []*repository.GroupAsset, err error)
 }
 
 // Credentials Signup Signin params
@@ -234,7 +234,7 @@ func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string)
 						Symbol: token.Symbol,
 						Status: token.Status}
 				}
-				groupAssetsResp[di].ChainID = ga.ChainID
+				groupAssetsResp[di].Chainid = ga.Chainid
 				groupAssetsResp[di].Status = ga.Status
 				groupAssetsResp[di].SimpleTokens = tokens
 			}
@@ -253,16 +253,24 @@ func constructAuthInfoContext(ctx context.Context, roles []string, uid, nid stri
 	return
 }
 
-func (b *basicWebapiService) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (err error) {
+func (b *basicWebapiService) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (result []*repository.GroupAsset, err error) {
 	uid, nid, roles, err := b.auth(ctx)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
-	//
 	dashboardRepo := []*dashboardRepository.ChainAsset{}
 	if err := copier.Copy(&dashboardRepo, &chainAssets); err != nil {
-		return err
+		return nil, err
 	}
-	return b.dashboardSrv.ChangeGroupAssets(ctxWithAuthInfo, dashboardRepo, groupid)
+
+	groupChainAssets, err := b.dashboardSrv.ChangeGroupAssets(ctxWithAuthInfo, dashboardRepo, groupid)
+	if err != nil {
+		return nil, err
+	}
+	result = []*repository.GroupAsset{}
+	if err := copier.Copy(&result, &groupChainAssets); err != nil {
+		return nil, err
+	}
+	return result, nil
 }

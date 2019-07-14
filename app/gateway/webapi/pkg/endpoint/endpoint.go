@@ -371,6 +371,7 @@ type ChangeGroupAssetsRequest struct {
 
 // ChangeGroupAssetsResponse collects the response parameters for the ChangeGroupAssets method.
 type ChangeGroupAssetsResponse struct {
+	GroupAssets []*repository.GroupAsset `json:"groupassets"`
 	Err error `json:"err"`
 }
 
@@ -378,11 +379,11 @@ type ChangeGroupAssetsResponse struct {
 func MakeChangeGroupAssetsEndpoint(s service.WebapiService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ChangeGroupAssetsRequest)
-		err := s.ChangeGroupAssets(ctx, req.ChainAssets, req.Groupid)
+		result, err := s.ChangeGroupAssets(ctx, req.ChainAssets, req.Groupid)
 		if err != nil {
 			return ChangeGroupAssetsResponse{Err: err}, err
 		}
-		return ChangeGroupAssetsResponse{Err: nil}, nil
+		return ChangeGroupAssetsResponse{GroupAssets: result}, nil
 	}
 }
 
@@ -392,13 +393,14 @@ func (r ChangeGroupAssetsResponse) Failed() error {
 }
 
 // ChangeGroupAssets implements Service. Primarily useful in a client.
-func (e Endpoints) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (err error) {
+func (e Endpoints) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (result []*repository.GroupAsset, err error) {
 	request := ChangeGroupAssetsRequest{
 		ChainAssets: chainAssets,
 		Groupid:     groupid,
 	}
-	if _, err := e.ChangeGroupAssetsEndpoint(ctx, request); err != nil {
-		return err
+	resp, err := e.ChangeGroupAssetsEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+	return resp.(ChangeGroupAssetsResponse).GroupAssets, nil
 }

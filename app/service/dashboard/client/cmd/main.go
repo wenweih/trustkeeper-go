@@ -57,7 +57,7 @@ func main()  {
     }
   }
 
-  // if err := s.ChangeGroupAssets(ctxWithAuthInfo, chainAssets, group.ID); err != nil {
-  //   logger.Log("fail to ChangeGroupAssets", err.Error())
-  // }
+  if _, err := s.ChangeGroupAssets(ctxWithAuthInfo, chainAssets, "468348259016146945"); err != nil {
+    logger.Log("fail to ChangeGroupAssets", err.Error())
+  }
 }

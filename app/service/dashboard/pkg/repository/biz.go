@@ -16,7 +16,7 @@ type IBiz interface {
   GetGroups(ctx context.Context, query map[string]interface{}) (groups []*GetGroupsResp, err error)
   UpdateGroup(ctx context.Context, groupID, name, desc string) error
   QueryChainAsset(ctx context.Context, query map[string]interface{}) (chainAssets []*ChainAsset, err error)
-  ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAsset, groupid string) (err error)
+  ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAsset, groupid string) (result []*ChainAsset, err error)
 }
 
 func (repo *repo) Signup(uuid, email, name, xpub string) error {
@@ -129,7 +129,7 @@ func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interfac
         Status: t.Status}
     }
     chainAssets[i] = &ChainAsset{
-      ChainID: strconv.FormatUint(uint64(c.ID), 10),
+      Chainid: strconv.FormatUint(uint64(c.ID), 10),
       Name: c.Name,
       Coin: c.Coin,
       Status: c.Status,
@@ -138,34 +138,41 @@ func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interfac
   return chainAssets, nil
 }
 
-func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAsset, groupid string) (err error) {
+func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAsset, groupid string) (result []*ChainAsset, err error) {
   uid, nid, roles, err := extractAuthInfoFromContext(ctx)
   if err != nil {
-    return err
+    return nil, err
   }
   if err := repo.createAuth(roles, chainAssetResource); err != nil{
-    return err
+    return nil, err
   }
 
+  // groupChainAssets := make([]*model.Chain, len(chainAssets))
   tx := repo.db.Begin()
   for _, ca := range chainAssets {
     tokens := []*model.Token{}
     if err := copier.Copy(&tokens, &ca.SimpleTokens); err != nil {
-      return err
+      return nil, err
     }
-    chain := model.Chain{
+    chain := &model.Chain{
       Name: ca.Name,
       Coin: ca.Coin,
       Status: ca.Status,
       GroupID: groupid,
       Tokens: tokens}
-    if ca.ChainID != "" {
-      repo.iChainAssetRepo.Update(tx, &chain)
+    if ca.Chainid != "" {
+      repo.iChainAssetRepo.Update(tx, chain)
     }
-    repo.iChainAssetRepo.Create(tx, &chain)
-    repo.iCasbinRepo.AddReadWriteForRoleInDomain(uid, nid, strconv.FormatUint(uint64(chain.ID), 10))
+    repo.iChainAssetRepo.Create(tx, chain)
+    chainID := strconv.FormatUint(uint64(chain.ID), 10)
+    repo.iCasbinRepo.AddReadWriteForRoleInDomain(uid, nid, chainID)
+    ca.Chainid = chainID
   }
-  return tx.Commit().Error
+  err = tx.Commit().Error
+  if err != nil {
+    return nil, err
+  }
+  return chainAssets, nil
 }
 
 func (repo *repo) createAuth(roles []string, resource string) error {

@@ -125,7 +125,7 @@ func encodeGetGroupAssetResponse(_ context.Context, r interface{}) (interface{},
 		for si, token := range cs.SimpleTokens {
 			simpleTokens[si] = &pb.SimpleToken{Tokenid: token.TokenID, Symbol: token.Symbol, Status: token.Status}
 		}
-		pbChainAssets[i] = &pb.ChainAsset{Chainid: cs.ChainID, Coin: cs.Coin, Name: cs.Name, Status: cs.Status, Simpletokens: simpleTokens}
+		pbChainAssets[i] = &pb.ChainAsset{Chainid: cs.Chainid, Coin: cs.Coin, Name: cs.Name, Status: cs.Status, Simpletokens: simpleTokens}
 	}
 	return &pb.GetGroupAssetReply{Chainassets: pbChainAssets}, nil
 }
@@ -154,11 +154,15 @@ func decodeChangeGroupAssetsRequest(_ context.Context, r interface{}) (interface
 }
 
 func encodeChangeGroupAssetsResponse(_ context.Context, r interface{}) (interface{}, error) {
-	_, ok := r.(endpoint.ChangeGroupAssetsResponse)
+	response, ok := r.(endpoint.ChangeGroupAssetsResponse)
 	if !ok {
 		return nil, fmt.Errorf("endpoint ChangeGroupAssetsResponse type assertion error")
 	}
-	return &pb.ChangeGroupAssetsReply{}, nil
+	pbChainAssets := []*pb.ChainAsset{}
+	if err := copier.Copy(&pbChainAssets, &response.ChainAssets); err != nil {
+		return nil, err
+	}
+	return &pb.ChangeGroupAssetsReply{Chainassets: pbChainAssets}, nil
 }
 func (g *grpcServer) ChangeGroupAssets(ctx context1.Context, req *pb.ChangeGroupAssetsRequest) (*pb.ChangeGroupAssetsReply, error) {
 	_, rep, err := g.changeGroupAssets.ServeGRPC(ctx, req)

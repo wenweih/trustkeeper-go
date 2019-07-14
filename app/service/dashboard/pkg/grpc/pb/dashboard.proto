@@ -73,4 +73,6 @@ message ChangeGroupAssetsRequest {
   string groupid = 2;
 }
 
-message ChangeGroupAssetsReply {}
+message ChangeGroupAssetsReply {
+  repeated ChainAsset chainassets = 1;
+}

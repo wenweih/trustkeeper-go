@@ -17,7 +17,7 @@ type DashboardService interface {
 	GetGroups(ctx context.Context, namespaceID string) (groups []*repository.GetGroupsResp, err error)
 	UpdateGroup(ctx context.Context, groupID, name, desc string) (err error)
 	GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAsset, err error)
-	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (err error)
+	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (result []*repository.ChainAsset, err error)
 	Close() error
 }
 
@@ -53,8 +53,8 @@ func (b *basicDashboardService) GetGroupAssets(ctx context.Context, groupID stri
 	return
 }
 
-func (b *basicDashboardService) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (err error) {
-	err = b.biz.ChangeGroupAssets(ctx, chainAssets, groupid)
+func (b *basicDashboardService) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (result []*repository.ChainAsset, err error) {
+	result, err = b.biz.ChangeGroupAssets(ctx, chainAssets, groupid)
 	return
 }
 

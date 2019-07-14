@@ -58,7 +58,7 @@ func (l loggingMiddleware) GetGroupAssets(ctx context.Context, groupID string) (
 	return l.next.GetGroupAssets(ctx, groupID)
 }
 
-func (l loggingMiddleware) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (err error) {
+func (l loggingMiddleware) ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (result []*repository.ChainAsset, err error) {
 	defer func() {
 		l.logger.Log("method", "ChangeGroupAssets", "groupid", groupid, "chainAssets", chainAssets, "err", err)
 	}()
