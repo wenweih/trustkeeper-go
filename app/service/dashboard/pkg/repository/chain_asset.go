@@ -48,5 +48,8 @@ func (repo *chainAssetRepo) Create(tx *gorm.DB, m *model.Chain) *gorm.DB {
 }
 
 func (repo *chainAssetRepo) Update(tx *gorm.DB, m *model.Chain) *gorm.DB {
+  record := model.Chain{}
+  tx.Where(model.Chain{Name: m.Name, GroupID: m.GroupID, Coin: m.Coin}).Assign(model.Chain{Status: m.Status}).First(&record)
+  m.ID = record.ID
   return tx.Save(m)
 }

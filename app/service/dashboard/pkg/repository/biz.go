@@ -160,10 +160,11 @@ func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAss
       Status: ca.Status,
       GroupID: groupid,
       Tokens: tokens}
-    if ca.Chainid != "" {
+    if len(ca.Chainid) > 1 {
       repo.iChainAssetRepo.Update(tx, chain)
+    }else {
+      repo.iChainAssetRepo.Create(tx, chain)
     }
-    repo.iChainAssetRepo.Create(tx, chain)
     chainID := strconv.FormatUint(uint64(chain.ID), 10)
     repo.iCasbinRepo.AddReadWriteForRoleInDomain(uid, nid, chainID)
     ca.Chainid = chainID

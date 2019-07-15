@@ -168,7 +168,7 @@ func encodeChangeGroupAssetsRequest(_ context.Context, request interface{}) (int
   if err := copier.Copy(&pbChainAssets, &r.ChainAssets); err != nil {
     return nil, err
   }
-  return &pb.ChangeGroupAssetsRequest{Chainassets: pbChainAssets, Groupid: r.GroupID}, nil
+  return &pb.ChangeGroupAssetsRequest{Chainassets: pbChainAssets, Groupid: r.Groupid}, nil
 }
 
 // decodeChangeGroupAssetsResponse is a transport/grpc.DecodeResponseFunc that converts

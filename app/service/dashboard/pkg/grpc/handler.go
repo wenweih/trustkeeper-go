@@ -150,7 +150,7 @@ func decodeChangeGroupAssetsRequest(_ context.Context, r interface{}) (interface
 	if err := copier.Copy(&endpointChainAssets, req.Chainassets); err != nil {
 		return nil, err
 	}
-	return endpoint.ChangeGroupAssetsRequest{ChainAssets: endpointChainAssets, GroupID: req.Groupid}, nil
+	return endpoint.ChangeGroupAssetsRequest{ChainAssets: endpointChainAssets, Groupid: req.Groupid}, nil
 }
 
 func encodeChangeGroupAssetsResponse(_ context.Context, r interface{}) (interface{}, error) {
