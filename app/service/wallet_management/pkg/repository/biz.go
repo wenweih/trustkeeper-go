@@ -4,10 +4,9 @@ import (
   "fmt"
   "strconv"
   "context"
-  "google.golang.org/grpc/metadata"
   "github.com/gomodule/redigo/redis"
   "trustkeeper-go/app/service/wallet_management/pkg/model"
-  // libctx "trustkeeper-go/library/context"
+  libctx "trustkeeper-go/library/context"
 )
 
 type IBiz interface {
@@ -82,12 +81,10 @@ func (repo *repo) GetChains(ctx context.Context, query map[string]interface{}) (
 }
 
 func (repo *repo) UpdateXpubState(ctx context.Context, from, to, groupid string) error {
-  md, ok := metadata.FromIncomingContext(ctx)
-  if !ok {
-    return fmt.Errorf("fail to extract auth info from ctx")
+  _, nid, _, err := libctx.ExtractAuthInfoFromContext(ctx)
+  if err != nil {
+    return err
   }
-  // uid := md["uid"][0]
-  nid := md["nid"][0]
 
   mnemonicVs, err := repo.imnemonicVersionRepo.VersionLikeQuery(repo.db, nid)
   if err != nil {
@@ -97,22 +94,31 @@ func (repo *repo) UpdateXpubState(ctx context.Context, from, to, groupid string)
   if len(mnemonicVs) != 1 {
     return fmt.Errorf("records error")
   }
-  xpub := model.Xpub{}
-  switch from {
-  case Idle:
-    repo.db.Where("state = ? AND mnemonic_version_id = ?", Idle, uint(mnemonicVs[0].ID)).First(&xpub)
-  case Assigned:
-    repo.db.Where("state = ? AND mnemonic_version_id = ?", Assigned, uint(mnemonicVs[0].ID)).First(&xpub)
-  case Abandon:
-    repo.db.Where("state = ? AND mnemonic_version_id = ?", Abandon, uint(mnemonicVs[0].ID)).First(&xpub)
-  default:
-    return fmt.Errorf("invalid state:" + from)
-  }
-  if err := repo.iXpubRepo.UpdateState(repo.db, &xpub, to); err != nil {
+
+  chains, err := repo.iChainRepo.Query(repo.db, map[string]interface{}{})
+  if err != nil {
     return err
   }
-  if err := repo.db.Model(&xpub).Updates(map[string]interface{}{"state": to, "group_id": groupid}).Error; err != nil {
-    return err
+
+  tx := repo.db.Begin()
+  for _, chain := range chains {
+    xpub := model.Xpub{}
+    switch from {
+    case Idle:
+      tx.Where("state = ? AND mnemonic_version_id = ? AND bip44_chain_id = ?", Idle, uint(mnemonicVs[0].ID), chain.Bip44id).First(&xpub)
+    case Assigned:
+      tx.Where("state = ? AND mnemonic_version_id = ?", Assigned, uint(mnemonicVs[0].ID)).First(&xpub)
+    case Abandon:
+      tx.Where("state = ? AND mnemonic_version_id = ?", Abandon, uint(mnemonicVs[0].ID)).First(&xpub)
+    default:
+      return fmt.Errorf("invalid state:" + from)
+    }
+    if err := repo.iXpubRepo.UpdateState(tx, &xpub, to); err != nil {
+      return err
+    }
+    if err := tx.Model(&xpub).Updates(map[string]interface{}{"state": to, "group_id": groupid}).Error; err != nil {
+      return err
+    }
   }
-  return nil
+  return tx.Commit().Error
 }
