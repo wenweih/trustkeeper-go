@@ -5,6 +5,8 @@ import (
   "trustkeeper-go/app/service/wallet_management/pkg/model"
 )
 
+const walletResource = "wallet"
+
 type walletRepo struct {
   db *gorm.DB
 }

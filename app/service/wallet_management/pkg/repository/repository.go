@@ -3,6 +3,7 @@ package repository
 import(
   "github.com/jinzhu/gorm"
   "github.com/qor/transition"
+  "trustkeeper-go/library/casbin"
   "github.com/gomodule/redigo/redis"
   "trustkeeper-go/app/service/wallet_management/pkg/model"
 )
@@ -11,6 +12,7 @@ import(
 type repo struct {
   db *gorm.DB
   redisPool *redis.Pool
+  iCasbinRepo casbin.ICasbinRepo
   iChainRepo
   iWalletRepo
   iXpubRepo
@@ -27,6 +29,7 @@ func New(redisPool *redis.Pool, db *gorm.DB) IBiz {
   repo := repo{
     db,
     redisPool,
+    casbin.NewCasbinRepo(db),
     &chainRepo{},
     &walletRepo{db},
     &xpubRepo{},

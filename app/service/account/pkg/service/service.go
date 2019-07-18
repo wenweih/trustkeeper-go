@@ -45,13 +45,13 @@ func (b *basicAccountService) Close() error {
 
 // https://www.sohamkamani.com/blog/2018/02/25/golang-password-authentication-and-storage/
 func (b *basicAccountService) Create(ctx context.Context, email, password, orgName string) (string, error) {
-	uuid, namespaceid, err := b.biz.Signup(email, password, orgName)
+	uuid, namespaceid, role, err := b.biz.Signup(email, password, orgName)
 	if err != nil {
 		return "", err
 	}
 
 	if _, err := b.jobEnqueuer.Enqueue(common.WalletMnemonicJob,
-		work.Q{"namespaceid": namespaceid}); err != nil {
+		work.Q{"namespaceid": namespaceid, "uid": uuid, "role": role}); err != nil {
 		return "", err
 	}
 	return uuid, nil

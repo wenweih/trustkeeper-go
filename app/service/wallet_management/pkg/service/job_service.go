@@ -9,14 +9,14 @@ import (
 
 type JobService interface {
   RedisInstance() *redis.Pool
-  CreateMnemonic(ctx context.Context, namespaceID string) error
+  CreateMnemonic(ctx context.Context, uid, nid string) error
 }
 
 func (b *basicWalletManagementService) RedisInstance() *redis.Pool {
   return b.biz.RedisInstance()
 }
 
-func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, namespaceID string) error {
+func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, uid, nid string) error {
   chains, err := b.biz.GetChains(ctx, map[string]interface{}{})
   if err != nil {
     return err
@@ -27,7 +27,7 @@ func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, names
   for i, chain := range chains {
     bip44ids[i] = int32(chain.Bip44id)
   }
-  bip44ThirdXpubsForChains, version, err := b.KeySrv.GenerateMnemonic(ctx, namespaceID, bip44ids, 50)
+  bip44ThirdXpubsForChains, version, err := b.KeySrv.GenerateMnemonic(ctx, nid, bip44ids, 50)
   if err != nil {
     return err
   }
@@ -36,5 +36,5 @@ func (b *basicWalletManagementService) CreateMnemonic(ctx context.Context, names
     return err
   }
 
-  return b.biz.Signup(version, localBip44ThirdXpubsForChains)
+  return b.biz.Signup(uid, nid, version, localBip44ThirdXpubsForChains)
 }

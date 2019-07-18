@@ -12,7 +12,7 @@ import (
 type IBiz interface {
   // bip44ThirdXpubsForChains 参数是 slice 的引用传递 [] 里面有具体数字是数组的值传递
   // https://leileiluoluo.com/posts/golang-method-calling-value-copy-or-reference-copy.html
-  Signup(version string, bip44ThirdXpubsForChains []*Bip44ThirdXpubsForChain) error
+  Signup(uid, nid, version string, bip44ThirdXpubsForChains []*Bip44ThirdXpubsForChain) error
   Close() error
   RedisInstance() *redis.Pool
   GetChains(ctx context.Context, query map[string]interface{}) (chains []*SimpleChain, err error)
@@ -29,7 +29,7 @@ type Bip44ThirdXpubsForChain struct {
 	Xpubs   []*Bip44AccountKey	`json:"xpubs"`
 }
 
-func (repo *repo) Signup(version string, bip44ThirdXpubsForChains []*Bip44ThirdXpubsForChain) error {
+func (repo *repo) Signup(uid, nid, version string, bip44ThirdXpubsForChains []*Bip44ThirdXpubsForChain) error {
   tx := repo.db.Begin()
   mnemonicVersion := model.MnemonicVersion{Version: version}
   if err := repo.imnemonicVersionRepo.Create(tx, &mnemonicVersion).Error; err != nil {
@@ -38,17 +38,26 @@ func (repo *repo) Signup(version string, bip44ThirdXpubsForChains []*Bip44ThirdX
   }
   for _, bip44ThirdXpubsForChain := range bip44ThirdXpubsForChains {
     for _, xpub := range bip44ThirdXpubsForChain.Xpubs {
-      if err := repo.iXpubRepo.Create(tx, &model.Xpub{
+      mXpub := model.Xpub{
         Key: xpub.Key,
         Bip44ChainID: bip44ThirdXpubsForChain.Chain,
         BIP44Account: xpub.Account,
-        MnemonicVersionID: mnemonicVersion.ID}).Error; err != nil {
-          tx.Rollback()
-          return err
-        }
+        MnemonicVersionID: mnemonicVersion.ID}
+      if err := repo.iXpubRepo.Create(tx, &mXpub).Error; err != nil {
+        tx.Rollback()
+        return err
+      }
+      repo.iCasbinRepo.AddActionForRoleInDomain(uid, nid, strconv.FormatUint(uint64(mXpub.ID), 10), "read")
+      repo.iCasbinRepo.AddActionForRoleInDomain(uid, nid, strconv.FormatUint(uint64(mXpub.ID), 10), "write")
     }
   }
-  return tx.Commit().Error
+  if err := tx.Commit().Error; err != nil {
+    return err
+  }
+  repo.iCasbinRepo.AddActionForRoleInDomain(uid, nid, walletResource, "create")
+  repo.iCasbinRepo.AddActionForRoleInDomain(uid, nid, strconv.FormatUint(uint64(mnemonicVersion.ID), 10), "read")
+  repo.iCasbinRepo.AddActionForRoleInDomain(uid, nid, strconv.FormatUint(uint64(mnemonicVersion.ID), 10), "write")
+  return nil
 }
 
 func (repo *repo)Close() error{
