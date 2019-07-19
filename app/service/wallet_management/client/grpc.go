@@ -133,9 +133,13 @@ func encodeCreateWalletRequest(_ context.Context, request interface{}) (interfac
 // decodeCreateWalletResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeCreateWalletResponse(_ context.Context, reply interface{}) (interface{}, error) {
-	_, ok := reply.(*pb.CreateWalletReply)
+	resp, ok := reply.(*pb.CreateWalletReply)
 	if !ok {
 		return nil, fmt.Errorf("pb CreateWalletReply type assertion error")
 	}
-	return &endpoint1.CreateWalletResponse{}, nil
+	return endpoint1.CreateWalletResponse{
+		Wallet: &repository.Wallet{
+			ID: resp.Wallet.Id,
+			Address: resp.Wallet.Address,
+			Status: resp.Wallet.Status}}, nil
 }

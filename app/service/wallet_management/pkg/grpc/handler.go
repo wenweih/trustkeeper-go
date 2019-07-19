@@ -119,8 +119,13 @@ func encodeCreateWalletResponse(_ context.Context, r interface{}) (interface{}, 
 	if resp.Err != nil {
 		return nil, resp.Err
 	}
-	return &pb.CreateWalletReply{}, nil
+	return &pb.CreateWalletReply{
+		Wallet: &pb.Wallet{
+			Id: resp.Wallet.ID,
+			Address: resp.Wallet.Address,
+			Status: resp.Wallet.Status}}, nil
 }
+
 func (g *grpcServer) CreateWallet(ctx context1.Context, req *pb.CreateWalletRequest) (*pb.CreateWalletReply, error) {
 	_, rep, err := g.createWallet.ServeGRPC(ctx, req)
 	if err != nil {

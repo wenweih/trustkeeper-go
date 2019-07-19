@@ -48,4 +48,12 @@ message CreateWalletRequest {
   int32 bip44change = 3;
 }
 
-message CreateWalletReply {}
+message Wallet {
+  string id = 1;
+  string address = 2;
+  bool status = 3;
+}
+
+message CreateWalletReply {
+  Wallet wallet = 1;
+}

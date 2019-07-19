@@ -51,7 +51,9 @@ func main()  {
   for _, c := range chains {
    logger.Log("chain: id", c.ID, "Name", c.Name, "Coin", c.Coin, "Bip44id", c.Bip44id, "status", c.Status)
   }
-  if err := s.CreateWallet(ctxWithAuthInfo, "469764006120751105", "Ethereum", int(1)); err != nil {
+  wallet, err := s.CreateWallet(ctxWithAuthInfo, "469764006120751105", "Bitcoincore", int(1))
+  if err != nil {
     logger.Log("CreateWallet error: ", err.Error())
   }
+  logger.Log("wallet: address", wallet.Address, "id: ", wallet.ID, " status: ", wallet.Status)
 }

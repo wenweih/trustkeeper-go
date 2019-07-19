@@ -18,3 +18,9 @@ type iWalletRepo interface {
 func (repo *walletRepo) Create(m *model.Wallet) error {
   return repo.db.Create(&m).Error
 }
+
+type Wallet struct {
+  ID       string  `json:"id"`
+  Address  string  `json:"address"`
+  Status   bool    `json:"status"`
+}

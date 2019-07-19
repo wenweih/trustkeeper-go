@@ -143,6 +143,7 @@ type CreateWalletRequest struct {
 
 // CreateWalletResponse collects the response parameters for the CreateWallet method.
 type CreateWalletResponse struct {
+	Wallet *repository.Wallet `json:"wallet"`
 	Err error `json:"err"`
 }
 
@@ -153,10 +154,11 @@ func MakeCreateWalletEndpoint(s service.WalletManagementService) endpoint.Endpoi
 		if !ok {
 			return nil, errors.New("endpoint CreateWalletRequest type assertion error")
 		}
-		if err := s.CreateWallet(ctx, req.Groupid, req.Chainname, req.Bip44change); err != nil {
-			return nil, err
+		wallet, err := s.CreateWallet(ctx, req.Groupid, req.Chainname, req.Bip44change)
+		if err != nil {
+			return CreateWalletResponse{Err: err}, err
 		}
-		return CreateWalletResponse{}, nil
+		return CreateWalletResponse{Wallet: wallet}, nil
 	}
 }
 
@@ -166,14 +168,15 @@ func (r CreateWalletResponse) Failed() error {
 }
 
 // CreateWallet implements Service. Primarily useful in a client.
-func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (err error) {
+func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (wallet *repository.Wallet, err error) {
 	request := CreateWalletRequest{
 		Bip44change: bip44change,
 		Chainname:   chainname,
 		Groupid:     groupid,
 	}
-	if _, err = e.CreateWalletEndpoint(ctx, request); err != nil {
-		return err
+	resp, err := e.CreateWalletEndpoint(ctx, request)
+	if err != nil {
+		return  nil, err
 	}
-	return nil
+	return resp.(CreateWalletResponse).Wallet, nil
 }
