@@ -4,11 +4,13 @@ import (
   "github.com/jinzhu/gorm"
 )
 
+// UNIQUE constraint across multiple keys?
+// https://github.com/jinzhu/gorm/issues/961
 type Wallet struct {
   gorm.Model
-  BIP44Change int
-  Address     string
-  BIP44Index  string
-  XpubUID     string
+  Bip44Change int     `gorm:"unique_index:idx_bip44_change_bip44_index_xpub_uid;not null"`
+  Address     string  `gorm:"unique_index;not null"`
+  Bip44Index  string  `gorm:"unique_index:idx_bip44_change_bip44_index_xpub_uid;not null"`
+  XpubUID     string  `gorm:"unique_index:idx_bip44_change_bip44_index_xpub_uid;not null"`
   Status      bool
 }

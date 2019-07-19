@@ -18,6 +18,7 @@ type WalletManagementService interface {
 	GetChains(ctx context.Context) (chains []*repository.SimpleChain, err error)
 	CreateChain(ctx context.Context, symbol, bit44ID string, status bool) (err error)
 	AssignedXpubToGroup(ctx context.Context, groupid string) (err error)
+	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (err error)
 	Close() error
 }
 
@@ -89,5 +90,10 @@ func NewBasicWalletManagementService() WalletManagementService {
 
 func (b *basicWalletManagementService) GetChains(ctx context.Context) (chains []*repository.SimpleChain, err error) {
 	chains, err = b.biz.GetChains(ctx, map[string]interface{}{})
+	return
+}
+
+func (b *basicWalletManagementService) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (err error) {
+	err = b.biz.CreateWallet(ctx, groupid, chainname, bip44change)
 	return
 }

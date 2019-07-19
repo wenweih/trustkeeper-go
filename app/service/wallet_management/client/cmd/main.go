@@ -32,17 +32,17 @@ func main()  {
     logger.Log("service client error: ", err.Error())
   }
   ctxWithAuthInfo := context.WithValue(context.Background(), "auth",
-		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "466054237439852545", "466054237547266049"})
+		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "d7fd20c1-cfb8-461f-9a95-a3d028f20e35", "469763787409293313"})
 
-  for _, str := range []string{"aa", "bb", "ccc", "ee", "dd", "ff", "gg", "hh"} {
-    if err := s.CreateChain(ctxWithAuthInfo, str, "bit44ID", true); err != nil {
-      logger.Log("CreateChain BTC error: ", err.Error())
-    }
-  }
-
-  if err := s.AssignedXpubToGroup(ctxWithAuthInfo, "466126082655944705"); err != nil {
-    logger.Log("err:", err.Error())
-  }
+  // for _, str := range []string{"aa", "bb", "ccc", "ee", "dd", "ff", "gg", "hh"} {
+  //   if err := s.CreateChain(ctxWithAuthInfo, str, "bit44ID", true); err != nil {
+  //     logger.Log("CreateChain BTC error: ", err.Error())
+  //   }
+  // }
+  //
+  // if err := s.AssignedXpubToGroup(ctxWithAuthInfo, "466126082655944705"); err != nil {
+  //   logger.Log("err:", err.Error())
+  // }
 
   chains, err := s.GetChains(ctxWithAuthInfo)
   if err != nil {
@@ -50,5 +50,8 @@ func main()  {
   }
   for _, c := range chains {
    logger.Log("chain: id", c.ID, "Name", c.Name, "Coin", c.Coin, "Bip44id", c.Bip44id, "status", c.Status)
+  }
+  if err := s.CreateWallet(ctxWithAuthInfo, "469764006120751105", "Ethereum", int(1)); err != nil {
+    logger.Log("CreateWallet error: ", err.Error())
   }
 }

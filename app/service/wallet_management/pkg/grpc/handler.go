@@ -83,11 +83,11 @@ func encodeGetChainsResponse(_ context.Context, r interface{}) (interface{}, err
 	pbChains := make([]*pb.SimpleChain, len(resp.Chains))
 	for i, c := range resp.Chains {
 		pbChains[i] = &pb.SimpleChain{
-			Id: c.ID,
-			Name: c.Name,
-			Coin: c.Coin,
+			Id:      c.ID,
+			Name:    c.Name,
+			Coin:    c.Coin,
 			Bip44Id: int32(c.Bip44id),
-			Status: c.Status}
+			Status:  c.Status}
 	}
 	return &pb.GetChainsReply{Chains: pbChains}, nil
 }
@@ -97,4 +97,34 @@ func (g *grpcServer) GetChains(ctx context1.Context, req *pb.GetChainsRequest) (
 		return nil, err
 	}
 	return rep.(*pb.GetChainsReply), nil
+}
+
+func makeCreateWalletHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.CreateWalletEndpoint, decodeCreateWalletRequest, encodeCreateWalletResponse, options...)
+}
+
+func decodeCreateWalletRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.CreateWalletRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb CreateWalletRequest type assersion error")
+	}
+	return endpoint.CreateWalletRequest{Groupid: req.Groupid, Chainname: req.Chainname, Bip44change: int(req.Bip44Change)}, nil
+}
+
+func encodeCreateWalletResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.CreateWalletResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint CreateWalletResponse type assersion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.CreateWalletReply{}, nil
+}
+func (g *grpcServer) CreateWallet(ctx context1.Context, req *pb.CreateWalletRequest) (*pb.CreateWalletReply, error) {
+	_, rep, err := g.createWallet.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.CreateWalletReply), nil
 }

@@ -36,7 +36,7 @@ func (m *CreateChainRequest) Reset()         { *m = CreateChainRequest{} }
 func (m *CreateChainRequest) String() string { return proto.CompactTextString(m) }
 func (*CreateChainRequest) ProtoMessage()    {}
 func (*CreateChainRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_management_9b4f569bc88d9007, []int{0}
+	return fileDescriptor_wallet_management_fd356634132b74ef, []int{0}
 }
 func (m *CreateChainRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateChainRequest.Unmarshal(m, b)
@@ -88,7 +88,7 @@ func (m *CreateChainReply) Reset()         { *m = CreateChainReply{} }
 func (m *CreateChainReply) String() string { return proto.CompactTextString(m) }
 func (*CreateChainReply) ProtoMessage()    {}
 func (*CreateChainReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_management_9b4f569bc88d9007, []int{1}
+	return fileDescriptor_wallet_management_fd356634132b74ef, []int{1}
 }
 func (m *CreateChainReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_CreateChainReply.Unmarshal(m, b)
@@ -126,7 +126,7 @@ func (m *AssignedXpubToGroupRequest) Reset()         { *m = AssignedXpubToGroupR
 func (m *AssignedXpubToGroupRequest) String() string { return proto.CompactTextString(m) }
 func (*AssignedXpubToGroupRequest) ProtoMessage()    {}
 func (*AssignedXpubToGroupRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_management_9b4f569bc88d9007, []int{2}
+	return fileDescriptor_wallet_management_fd356634132b74ef, []int{2}
 }
 func (m *AssignedXpubToGroupRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AssignedXpubToGroupRequest.Unmarshal(m, b)
@@ -163,7 +163,7 @@ func (m *AssignedXpubToGroupReply) Reset()         { *m = AssignedXpubToGroupRep
 func (m *AssignedXpubToGroupReply) String() string { return proto.CompactTextString(m) }
 func (*AssignedXpubToGroupReply) ProtoMessage()    {}
 func (*AssignedXpubToGroupReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_management_9b4f569bc88d9007, []int{3}
+	return fileDescriptor_wallet_management_fd356634132b74ef, []int{3}
 }
 func (m *AssignedXpubToGroupReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_AssignedXpubToGroupReply.Unmarshal(m, b)
@@ -193,7 +193,7 @@ func (m *GetChainsRequest) Reset()         { *m = GetChainsRequest{} }
 func (m *GetChainsRequest) String() string { return proto.CompactTextString(m) }
 func (*GetChainsRequest) ProtoMessage()    {}
 func (*GetChainsRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_management_9b4f569bc88d9007, []int{4}
+	return fileDescriptor_wallet_management_fd356634132b74ef, []int{4}
 }
 func (m *GetChainsRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetChainsRequest.Unmarshal(m, b)
@@ -228,7 +228,7 @@ func (m *SimpleChain) Reset()         { *m = SimpleChain{} }
 func (m *SimpleChain) String() string { return proto.CompactTextString(m) }
 func (*SimpleChain) ProtoMessage()    {}
 func (*SimpleChain) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_management_9b4f569bc88d9007, []int{5}
+	return fileDescriptor_wallet_management_fd356634132b74ef, []int{5}
 }
 func (m *SimpleChain) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_SimpleChain.Unmarshal(m, b)
@@ -294,7 +294,7 @@ func (m *GetChainsReply) Reset()         { *m = GetChainsReply{} }
 func (m *GetChainsReply) String() string { return proto.CompactTextString(m) }
 func (*GetChainsReply) ProtoMessage()    {}
 func (*GetChainsReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_management_9b4f569bc88d9007, []int{6}
+	return fileDescriptor_wallet_management_fd356634132b74ef, []int{6}
 }
 func (m *GetChainsReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GetChainsReply.Unmarshal(m, b)
@@ -321,6 +321,90 @@ func (m *GetChainsReply) GetChains() []*SimpleChain {
 	return nil
 }
 
+type CreateWalletRequest struct {
+	Groupid              string   `protobuf:"bytes,1,opt,name=groupid" json:"groupid,omitempty"`
+	Chainname            string   `protobuf:"bytes,2,opt,name=chainname" json:"chainname,omitempty"`
+	Bip44Change          int32    `protobuf:"varint,3,opt,name=bip44change" json:"bip44change,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CreateWalletRequest) Reset()         { *m = CreateWalletRequest{} }
+func (m *CreateWalletRequest) String() string { return proto.CompactTextString(m) }
+func (*CreateWalletRequest) ProtoMessage()    {}
+func (*CreateWalletRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_wallet_management_fd356634132b74ef, []int{7}
+}
+func (m *CreateWalletRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateWalletRequest.Unmarshal(m, b)
+}
+func (m *CreateWalletRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateWalletRequest.Marshal(b, m, deterministic)
+}
+func (dst *CreateWalletRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateWalletRequest.Merge(dst, src)
+}
+func (m *CreateWalletRequest) XXX_Size() int {
+	return xxx_messageInfo_CreateWalletRequest.Size(m)
+}
+func (m *CreateWalletRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateWalletRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateWalletRequest proto.InternalMessageInfo
+
+func (m *CreateWalletRequest) GetGroupid() string {
+	if m != nil {
+		return m.Groupid
+	}
+	return ""
+}
+
+func (m *CreateWalletRequest) GetChainname() string {
+	if m != nil {
+		return m.Chainname
+	}
+	return ""
+}
+
+func (m *CreateWalletRequest) GetBip44Change() int32 {
+	if m != nil {
+		return m.Bip44Change
+	}
+	return 0
+}
+
+type CreateWalletReply struct {
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *CreateWalletReply) Reset()         { *m = CreateWalletReply{} }
+func (m *CreateWalletReply) String() string { return proto.CompactTextString(m) }
+func (*CreateWalletReply) ProtoMessage()    {}
+func (*CreateWalletReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_wallet_management_fd356634132b74ef, []int{8}
+}
+func (m *CreateWalletReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_CreateWalletReply.Unmarshal(m, b)
+}
+func (m *CreateWalletReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_CreateWalletReply.Marshal(b, m, deterministic)
+}
+func (dst *CreateWalletReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_CreateWalletReply.Merge(dst, src)
+}
+func (m *CreateWalletReply) XXX_Size() int {
+	return xxx_messageInfo_CreateWalletReply.Size(m)
+}
+func (m *CreateWalletReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_CreateWalletReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_CreateWalletReply proto.InternalMessageInfo
+
 func init() {
 	proto.RegisterType((*CreateChainRequest)(nil), "pb.CreateChainRequest")
 	proto.RegisterType((*CreateChainReply)(nil), "pb.CreateChainReply")
@@ -329,6 +413,8 @@ func init() {
 	proto.RegisterType((*GetChainsRequest)(nil), "pb.GetChainsRequest")
 	proto.RegisterType((*SimpleChain)(nil), "pb.SimpleChain")
 	proto.RegisterType((*GetChainsReply)(nil), "pb.GetChainsReply")
+	proto.RegisterType((*CreateWalletRequest)(nil), "pb.CreateWalletRequest")
+	proto.RegisterType((*CreateWalletReply)(nil), "pb.CreateWalletReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -346,6 +432,7 @@ type WalletManagementClient interface {
 	CreateChain(ctx context.Context, in *CreateChainRequest, opts ...grpc.CallOption) (*CreateChainReply, error)
 	AssignedXpubToGroup(ctx context.Context, in *AssignedXpubToGroupRequest, opts ...grpc.CallOption) (*AssignedXpubToGroupReply, error)
 	GetChains(ctx context.Context, in *GetChainsRequest, opts ...grpc.CallOption) (*GetChainsReply, error)
+	CreateWallet(ctx context.Context, in *CreateWalletRequest, opts ...grpc.CallOption) (*CreateWalletReply, error)
 }
 
 type walletManagementClient struct {
@@ -383,11 +470,21 @@ func (c *walletManagementClient) GetChains(ctx context.Context, in *GetChainsReq
 	return out, nil
 }
 
+func (c *walletManagementClient) CreateWallet(ctx context.Context, in *CreateWalletRequest, opts ...grpc.CallOption) (*CreateWalletReply, error) {
+	out := new(CreateWalletReply)
+	err := c.cc.Invoke(ctx, "/pb.WalletManagement/CreateWallet", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WalletManagementServer is the server API for WalletManagement service.
 type WalletManagementServer interface {
 	CreateChain(context.Context, *CreateChainRequest) (*CreateChainReply, error)
 	AssignedXpubToGroup(context.Context, *AssignedXpubToGroupRequest) (*AssignedXpubToGroupReply, error)
 	GetChains(context.Context, *GetChainsRequest) (*GetChainsReply, error)
+	CreateWallet(context.Context, *CreateWalletRequest) (*CreateWalletReply, error)
 }
 
 func RegisterWalletManagementServer(s *grpc.Server, srv WalletManagementServer) {
@@ -448,6 +545,24 @@ func _WalletManagement_GetChains_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletManagement_CreateWallet_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateWalletRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletManagementServer).CreateWallet(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.WalletManagement/CreateWallet",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletManagementServer).CreateWallet(ctx, req.(*CreateWalletRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _WalletManagement_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.WalletManagement",
 	HandlerType: (*WalletManagementServer)(nil),
@@ -464,38 +579,45 @@ var _WalletManagement_serviceDesc = grpc.ServiceDesc{
 			MethodName: "GetChains",
 			Handler:    _WalletManagement_GetChains_Handler,
 		},
+		{
+			MethodName: "CreateWallet",
+			Handler:    _WalletManagement_CreateWallet_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "wallet_management.proto",
 }
 
 func init() {
-	proto.RegisterFile("wallet_management.proto", fileDescriptor_wallet_management_9b4f569bc88d9007)
+	proto.RegisterFile("wallet_management.proto", fileDescriptor_wallet_management_fd356634132b74ef)
 }
 
-var fileDescriptor_wallet_management_9b4f569bc88d9007 = []byte{
-	// 354 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x52, 0x4d, 0x4b, 0x03, 0x31,
-	0x10, 0x65, 0xb7, 0x1f, 0xb6, 0x53, 0xa8, 0x25, 0x96, 0x1a, 0x16, 0x91, 0xb2, 0x17, 0x8b, 0x87,
-	0x1e, 0x6a, 0x15, 0xc4, 0x93, 0xf4, 0xd0, 0x93, 0x97, 0xad, 0xa0, 0x78, 0x91, 0xa4, 0x1b, 0x6a,
-	0x20, 0xbb, 0x1b, 0x37, 0x59, 0xca, 0xfe, 0x56, 0xff, 0x8c, 0x24, 0x4d, 0xcb, 0xf6, 0xeb, 0x96,
-	0x37, 0x79, 0x79, 0xf3, 0xe6, 0x4d, 0xe0, 0x7a, 0x4d, 0x84, 0x60, 0xfa, 0x3b, 0x21, 0x29, 0x59,
-	0xb1, 0x84, 0xa5, 0x7a, 0x2c, 0xf3, 0x4c, 0x67, 0xc8, 0x97, 0x34, 0xfc, 0x02, 0x34, 0xcb, 0x19,
-	0xd1, 0x6c, 0xf6, 0x43, 0x78, 0x1a, 0xb1, 0xdf, 0x82, 0x29, 0x8d, 0x06, 0xd0, 0x54, 0x65, 0x42,
-	0x33, 0x81, 0xbd, 0xa1, 0x37, 0x6a, 0x47, 0x0e, 0xa1, 0x3e, 0x34, 0x28, 0xd7, 0x3c, 0xc6, 0xbe,
-	0x2d, 0x6f, 0x80, 0x65, 0x6b, 0xa2, 0x0b, 0x85, 0x6b, 0x43, 0x6f, 0xd4, 0x8a, 0x1c, 0x0a, 0xef,
-	0xa1, 0xb7, 0xa7, 0x2d, 0x45, 0x69, 0xb8, 0x39, 0x53, 0x85, 0xd0, 0x56, 0xb9, 0x15, 0x39, 0x14,
-	0x3e, 0x41, 0xf0, 0xaa, 0x14, 0x5f, 0xa5, 0x2c, 0xfe, 0x94, 0x05, 0x7d, 0xcf, 0xe6, 0x79, 0x56,
-	0xc8, 0xad, 0x1f, 0x0c, 0x17, 0x2b, 0x83, 0x79, 0xec, 0x0c, 0x6d, 0x61, 0x18, 0x00, 0x3e, 0xf9,
-	0x4e, 0x8a, 0x32, 0x44, 0xd0, 0x9b, 0x33, 0x6d, 0x9b, 0x2b, 0xa7, 0x14, 0xae, 0xa1, 0xb3, 0xe0,
-	0x89, 0x14, 0x1b, 0x4f, 0xa8, 0x0b, 0xfe, 0x4e, 0xd3, 0xe7, 0x31, 0x42, 0x50, 0x4f, 0x49, 0xc2,
-	0xdc, 0x7c, 0xf6, 0x6c, 0x9a, 0x53, 0x2e, 0xa7, 0x53, 0x1e, 0xdb, 0xf9, 0x1a, 0xd1, 0x16, 0x1a,
-	0xf6, 0x32, 0xe3, 0x29, 0xae, 0x6f, 0xd8, 0xe6, 0x5c, 0x09, 0xa3, 0xb1, 0x17, 0xc6, 0x33, 0x74,
-	0x2b, 0x66, 0x4c, 0x14, 0x77, 0xd0, 0x5c, 0x5a, 0x88, 0xbd, 0x61, 0x6d, 0xd4, 0x99, 0x5c, 0x8e,
-	0x25, 0x1d, 0x57, 0xcc, 0x45, 0xee, 0x7a, 0xf2, 0xe7, 0x41, 0xef, 0xc3, 0xee, 0xf0, 0x6d, 0xb7,
-	0x42, 0xf4, 0x02, 0x9d, 0x4a, 0xb8, 0x68, 0x60, 0x1e, 0x1f, 0x6f, 0x32, 0xe8, 0x1f, 0xd5, 0x4d,
-	0xeb, 0x05, 0x5c, 0x9d, 0x48, 0x0d, 0xdd, 0x1a, 0xf2, 0xf9, 0x35, 0x04, 0x37, 0x67, 0xef, 0x8d,
-	0xe8, 0x23, 0xb4, 0x77, 0x13, 0x22, 0xdb, 0xf7, 0x30, 0xfd, 0x00, 0x1d, 0x54, 0xa5, 0x28, 0x69,
-	0xd3, 0x7e, 0xc6, 0x87, 0xff, 0x00, 0x00, 0x00, 0xff, 0xff, 0x98, 0x1b, 0x25, 0x59, 0xa7, 0x02,
-	0x00, 0x00,
+var fileDescriptor_wallet_management_fd356634132b74ef = []byte{
+	// 415 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x84, 0x53, 0x4d, 0x8b, 0xdb, 0x30,
+	0x10, 0xc5, 0xde, 0x4d, 0xba, 0x19, 0x97, 0x6d, 0x3a, 0xd9, 0xee, 0x1a, 0xb3, 0x14, 0xa3, 0x4b,
+	0x43, 0x0f, 0x39, 0x6c, 0xd3, 0x42, 0x29, 0x14, 0x4a, 0x0e, 0x39, 0xf5, 0xe2, 0x14, 0x5a, 0x7a,
+	0x29, 0x72, 0x2c, 0x1c, 0x81, 0x6c, 0xab, 0xb6, 0x4c, 0xf0, 0x6f, 0xe9, 0x9f, 0x2d, 0x92, 0x95,
+	0xc4, 0xce, 0x07, 0x7b, 0xf3, 0x1b, 0xcd, 0xc7, 0x7b, 0x6f, 0xc6, 0xf0, 0xb0, 0xa5, 0x42, 0x30,
+	0xf5, 0x27, 0xa3, 0x39, 0x4d, 0x59, 0xc6, 0x72, 0x35, 0x93, 0x65, 0xa1, 0x0a, 0x74, 0x65, 0x4c,
+	0x7e, 0x03, 0x2e, 0x4a, 0x46, 0x15, 0x5b, 0x6c, 0x28, 0xcf, 0x23, 0xf6, 0xb7, 0x66, 0x95, 0xc2,
+	0x7b, 0x18, 0x56, 0x4d, 0x16, 0x17, 0xc2, 0x77, 0x42, 0x67, 0x3a, 0x8a, 0x2c, 0xc2, 0x3b, 0x18,
+	0xc4, 0x5c, 0xf1, 0xc4, 0x77, 0x4d, 0xb8, 0x05, 0x26, 0x5b, 0x51, 0x55, 0x57, 0xfe, 0x55, 0xe8,
+	0x4c, 0x6f, 0x22, 0x8b, 0xc8, 0x7b, 0x18, 0xf7, 0x7a, 0x4b, 0xd1, 0xe8, 0xdc, 0x92, 0x55, 0xb5,
+	0x50, 0xa6, 0xf3, 0x4d, 0x64, 0x11, 0xf9, 0x04, 0xc1, 0xb7, 0xaa, 0xe2, 0x69, 0xce, 0x92, 0x5f,
+	0xb2, 0x8e, 0x7f, 0x14, 0xcb, 0xb2, 0xa8, 0xe5, 0x8e, 0x8f, 0x0f, 0x2f, 0x52, 0x8d, 0x79, 0x62,
+	0x09, 0xed, 0x20, 0x09, 0xc0, 0x3f, 0x5b, 0x27, 0x45, 0x43, 0x10, 0xc6, 0x4b, 0xa6, 0xcc, 0xf0,
+	0xca, 0x76, 0x22, 0x5b, 0xf0, 0x56, 0x3c, 0x93, 0xa2, 0xe5, 0x84, 0xb7, 0xe0, 0xee, 0x7b, 0xba,
+	0x3c, 0x41, 0x84, 0xeb, 0x9c, 0x66, 0xcc, 0xea, 0x33, 0xdf, 0x7a, 0x78, 0xcc, 0xe5, 0x7c, 0xce,
+	0x13, 0xa3, 0x6f, 0x10, 0xed, 0xa0, 0xce, 0x5e, 0x17, 0x3c, 0xf7, 0xaf, 0xdb, 0x6c, 0xfd, 0xdd,
+	0x31, 0x63, 0xd0, 0x33, 0xe3, 0x33, 0xdc, 0x76, 0xc8, 0x68, 0x2b, 0xde, 0xc1, 0x70, 0x6d, 0xa0,
+	0xef, 0x84, 0x57, 0x53, 0xef, 0xe9, 0xd5, 0x4c, 0xc6, 0xb3, 0x0e, 0xb9, 0xc8, 0x3e, 0x93, 0x02,
+	0x26, 0xad, 0x8f, 0x3f, 0xcd, 0x22, 0x9f, 0x35, 0x05, 0x1f, 0x61, 0x64, 0x4a, 0x3b, 0x52, 0x0e,
+	0x01, 0x0c, 0xc1, 0x33, 0x02, 0xd6, 0x1b, 0x9a, 0xa7, 0xcc, 0x6a, 0xea, 0x86, 0xc8, 0x04, 0x5e,
+	0xf7, 0x07, 0x4a, 0xd1, 0x3c, 0xfd, 0x73, 0x61, 0xdc, 0xe2, 0xef, 0xfb, 0x43, 0xc2, 0x2f, 0xe0,
+	0x75, 0x56, 0x8c, 0xf7, 0x5a, 0xc2, 0xe9, 0x3d, 0x05, 0x77, 0x27, 0x71, 0x6d, 0xc0, 0x0a, 0x26,
+	0x67, 0x76, 0x87, 0x6f, 0x75, 0xf2, 0xe5, 0x63, 0x08, 0x1e, 0x2f, 0xbe, 0xeb, 0xa6, 0x1f, 0x61,
+	0xb4, 0xf7, 0x19, 0xcd, 0xdc, 0xe3, 0x1b, 0x08, 0xf0, 0x28, 0xaa, 0xcb, 0xbe, 0xc2, 0xcb, 0xae,
+	0x64, 0x7c, 0x38, 0x30, 0xee, 0xb9, 0x1e, 0xbc, 0x39, 0x7d, 0x90, 0xa2, 0x89, 0x87, 0xe6, 0x97,
+	0xfa, 0xf0, 0x3f, 0x00, 0x00, 0xff, 0xff, 0xf3, 0xe4, 0x07, 0xd4, 0x6d, 0x03, 0x00, 0x00,
 }

@@ -7,6 +7,10 @@ import (
   "github.com/gomodule/redigo/redis"
   "trustkeeper-go/app/service/wallet_management/pkg/model"
   libctx "trustkeeper-go/library/context"
+  "github.com/btcsuite/btcutil/hdkeychain"
+  "github.com/ethereum/go-ethereum/crypto"
+  "github.com/btcsuite/btcd/chaincfg"
+  "github.com/jinzhu/gorm"
 )
 
 type IBiz interface {
@@ -17,6 +21,7 @@ type IBiz interface {
   RedisInstance() *redis.Pool
   GetChains(ctx context.Context, query map[string]interface{}) (chains []*SimpleChain, err error)
   UpdateXpubState(ctx context.Context, from, to, groupid string) error
+  CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (err error)
 }
 
 type Bip44AccountKey struct {
@@ -130,4 +135,75 @@ func (repo *repo) UpdateXpubState(ctx context.Context, from, to, groupid string)
     }
   }
   return tx.Commit().Error
+}
+
+func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (err error) {
+  uid, nid, _, err := libctx.ExtractAuthInfoFromContext(ctx)
+  if err != nil {
+    return err
+  }
+  if allow := repo.iCasbinRepo.HasPolicy([]string{uid, nid, walletResource, "create"}); allow != true {
+    return fmt.Errorf("not allow")
+  }
+  chains, err := repo.iChainRepo.Query(repo.db, map[string]interface{}{"name": chainname})
+  if err != nil {
+    return err
+  }
+  if len(chains) != 1 {
+    return fmt.Errorf("fail to query chain record")
+  }
+  xpubs := []*model.Xpub{}
+  repo.db.Where("group_id = ? AND bip44_chain_id = ?", groupid, chains[0].Bip44id).Find(&xpubs)
+
+  if len(xpubs) != 1 {
+    return fmt.Errorf("fail to query xpub record")
+  }
+
+  extendedKey, err := hdkeychain.NewKeyFromString(xpubs[0].Key)
+  if err != nil {
+    return err
+  }
+  changeLevel, err := extendedKey.Child(uint32(bip44change))
+  if err != nil {
+    return err
+  }
+
+  maxIndexWallet := model.Wallet{}
+  if err := repo.db.Order("bip44_index asc").
+    Where("xpub_uid = ? AND bip44_change = ?", xpubs[0].ID, bip44change).
+    Find(&maxIndexWallet).Error; err != nil && err != gorm.ErrRecordNotFound {
+    return err
+  }
+  bip44index := uint32(1)
+  if maxIndexWallet.ID > 0 {
+    uintIndex, err := strconv.ParseUint(maxIndexWallet.Bip44Index, 10, 32)
+    if err != nil {
+      return err
+    }
+    bip44index = uint32(uintIndex + 1)
+  }
+
+  addressIndexLevel, err := changeLevel.Child(bip44index)
+  pubKey, err := addressIndexLevel.ECPubKey()
+  if err != nil {
+    return err
+  }
+  address := ""
+  switch chains[0].Bip44id {
+  case 0:
+    btcAddress, err := addressIndexLevel.Address(&chaincfg.MainNetParams)
+    if err != nil {
+      return err
+    }
+    address = btcAddress.String()
+  case 60:
+    address = crypto.PubkeyToAddress(*pubKey.ToECDSA()).String()
+  }
+  mWallet := model.Wallet{
+    Bip44Change: bip44change,
+    Address: address,
+    Bip44Index: strconv.FormatUint(uint64(bip44index), 10),
+    XpubUID: strconv.FormatUint(uint64(xpubs[0].ID), 10),
+    Status: true}
+  return repo.db.Create(&mWallet).Error
 }

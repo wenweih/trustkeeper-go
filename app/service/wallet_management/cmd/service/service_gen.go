@@ -22,6 +22,7 @@ func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 	options := map[string][]grpc.ServerOption{
 		"AssignedXpubToGroup": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "AssignedXpubToGroup", logger))},
 		"CreateChain":         {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateChain", logger))},
+		"CreateWallet":        {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateWallet", logger))},
 		"GetChains":           {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetChains", logger))},
 	}
 	return options
@@ -30,12 +31,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["GetChains"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetChains")), endpoint.InstrumentingMiddleware(duration.With("method", "GetChains"))}
 	mw["CreateChain"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateChain")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateChain"))}
 	mw["AssignedXpubToGroup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "AssignedXpubToGroup")), endpoint.InstrumentingMiddleware(duration.With("method", "AssignedXpubToGroup"))}
+	mw["CreateWallet"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateWallet")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateWallet"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"GetChains", "CreateChain", "AssignedXpubToGroup"}
+	methods := []string{"GetChains", "CreateChain", "AssignedXpubToGroup", "CreateWallet"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

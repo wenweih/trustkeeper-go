@@ -9,6 +9,7 @@ service WalletManagement {
  rpc CreateChain         (CreateChainRequest        ) returns (CreateChainReply        );
  rpc AssignedXpubToGroup (AssignedXpubToGroupRequest) returns (AssignedXpubToGroupReply);
  rpc GetChains           (GetChainsRequest          ) returns (GetChainsReply          );
+ rpc CreateWallet        (CreateWalletRequest       ) returns (CreateWalletReply       );
 }
 
 message CreateChainRequest {
@@ -30,13 +31,21 @@ message AssignedXpubToGroupReply {}
 message GetChainsRequest {}
 
 message SimpleChain {
-  string id = 1;
-  string name = 2;
-  int32 bip44id = 3;
-  string coin = 4;
-  bool status = 5;
+ string id      = 1;
+ string name    = 2;
+ int32  bip44id = 3;
+ string coin    = 4;
+ bool   status  = 5;
 }
 
 message GetChainsReply {
-  repeated SimpleChain chains = 1;
+ repeated SimpleChain chains = 1;
 }
+
+message CreateWalletRequest {
+  string groupid = 1;
+  string chainname = 2;
+  int32 bip44change = 3;
+}
+
+message CreateWalletReply {}

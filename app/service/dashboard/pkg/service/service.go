@@ -18,6 +18,7 @@ type DashboardService interface {
 	UpdateGroup(ctx context.Context, groupID, name, desc string) (err error)
 	GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAsset, err error)
 	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (result []*repository.ChainAsset, err error)
+	// CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (err error)
 	Close() error
 }
 

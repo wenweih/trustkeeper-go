@@ -32,9 +32,15 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		getChainsEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "GetChains", encodeGetChainsRequest, decodeGetChainsResponse, pb.GetChainsReply{}, options...).Endpoint()
 	}
 
+	var createWalletEndpoint endpoint.Endpoint
+	{
+		createWalletEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "CreateWallet", encodeCreateWalletRequest, decodeCreateWalletResponse, pb.CreateWalletReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		CreateChainEndpoint: createChainEndpoint,
 		AssignedXpubToGroupEndpoint: assignedXpubToGroupEndpoint,
+		CreateWalletEndpoint:        createWalletEndpoint,
 		GetChainsEndpoint:           getChainsEndpoint,
 	}, nil
 }
@@ -112,4 +118,24 @@ func decodeGetChainsResponse(_ context.Context, reply interface{}) (interface{},
   }
 
   return endpoint1.GetChainsResponse{Chains: chainsResp}, nil
+}
+
+// encodeCreateWalletRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain CreateWallet request to a gRPC request.
+func encodeCreateWalletRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.CreateWalletRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint CreateWalletRequest type assertion error")
+	}
+	return &pb.CreateWalletRequest{Groupid: r.Groupid, Bip44Change: int32(r.Bip44change), Chainname: r.Chainname}, nil
+}
+
+// decodeCreateWalletResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeCreateWalletResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	_, ok := reply.(*pb.CreateWalletReply)
+	if !ok {
+		return nil, fmt.Errorf("pb CreateWalletReply type assertion error")
+	}
+	return &endpoint1.CreateWalletResponse{}, nil
 }

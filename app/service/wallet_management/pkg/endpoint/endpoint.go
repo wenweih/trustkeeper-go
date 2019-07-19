@@ -105,7 +105,7 @@ type GetChainsRequest struct{}
 // GetChainsResponse collects the response parameters for the GetChains method.
 type GetChainsResponse struct {
 	Chains []*repository.SimpleChain `json:"chains"`
-	Err    error                    `json:"err"`
+	Err    error                     `json:"err"`
 }
 
 // MakeGetChainsEndpoint returns an endpoint that invokes GetChains on the service.
@@ -132,4 +132,48 @@ func (e Endpoints) GetChains(ctx context.Context) (chains []*repository.SimpleCh
 		return nil, err
 	}
 	return response.(GetChainsResponse).Chains, nil
+}
+
+// CreateWalletRequest collects the request parameters for the CreateWallet method.
+type CreateWalletRequest struct {
+	Groupid     string `json:"groupid"`
+	Chainname   string `json:"chainname"`
+	Bip44change int    `json:"bip44change"`
+}
+
+// CreateWalletResponse collects the response parameters for the CreateWallet method.
+type CreateWalletResponse struct {
+	Err error `json:"err"`
+}
+
+// MakeCreateWalletEndpoint returns an endpoint that invokes CreateWallet on the service.
+func MakeCreateWalletEndpoint(s service.WalletManagementService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req, ok := request.(CreateWalletRequest)
+		if !ok {
+			return nil, errors.New("endpoint CreateWalletRequest type assertion error")
+		}
+		if err := s.CreateWallet(ctx, req.Groupid, req.Chainname, req.Bip44change); err != nil {
+			return nil, err
+		}
+		return CreateWalletResponse{}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r CreateWalletResponse) Failed() error {
+	return r.Err
+}
+
+// CreateWallet implements Service. Primarily useful in a client.
+func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (err error) {
+	request := CreateWalletRequest{
+		Bip44change: bip44change,
+		Chainname:   chainname,
+		Groupid:     groupid,
+	}
+	if _, err = e.CreateWalletEndpoint(ctx, request); err != nil {
+		return err
+	}
+	return nil
 }
