@@ -91,3 +91,10 @@ func (l loggingMiddleware) ChangeGroupAssets(ctx context.Context, chainAssets []
 	}()
 	return l.next.ChangeGroupAssets(ctx, chainAssets, groupid)
 }
+
+func (l loggingMiddleware) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (id string, address string, status bool, err error) {
+	defer func() {
+		l.logger.Log("method", "CreateWallet", "groupid", groupid, "chainname", chainname, "bip44change", bip44change, "id", id, "address", address, "status", status, "err", err)
+	}()
+	return l.next.CreateWallet(ctx, groupid, chainname, bip44change)
+}

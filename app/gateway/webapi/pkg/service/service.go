@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
 	// "github.com/jinzhu/gorm"
 	accountService "trustkeeper-go/app/service/account/pkg/service"
 	dashboardService "trustkeeper-go/app/service/dashboard/pkg/service"
@@ -35,6 +36,7 @@ type WebapiService interface {
 	UpdateGroup(ctx context.Context, groupid, name, desc string) (err error)
 	GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAsset, err error)
 	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (result []*repository.GroupAsset, err error)
+	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (id, address string, status bool, err error)
 }
 
 // Credentials Signup Signin params
@@ -273,4 +275,17 @@ func (b *basicWebapiService) ChangeGroupAssets(ctx context.Context, chainAssets 
 		return nil, err
 	}
 	return result, nil
+}
+
+func (b *basicWebapiService) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (id string, address string, status bool, err error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return "", "", false, err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	wallet, err := b.WalletSrv.CreateWallet(ctxWithAuthInfo, groupid, chainname, bip44change)
+	if err != nil {
+		return "", "", false, err
+	}
+	return wallet.ID, wallet.Address, wallet.Status, nil
 }

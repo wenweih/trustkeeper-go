@@ -372,7 +372,7 @@ type ChangeGroupAssetsRequest struct {
 // ChangeGroupAssetsResponse collects the response parameters for the ChangeGroupAssets method.
 type ChangeGroupAssetsResponse struct {
 	GroupAssets []*repository.GroupAsset `json:"groupassets"`
-	Err error `json:"err"`
+	Err         error                    `json:"err"`
 }
 
 // MakeChangeGroupAssetsEndpoint returns an endpoint that invokes ChangeGroupAssets on the service.
@@ -403,4 +403,54 @@ func (e Endpoints) ChangeGroupAssets(ctx context.Context, chainAssets []*reposit
 		return nil, err
 	}
 	return resp.(ChangeGroupAssetsResponse).GroupAssets, nil
+}
+
+// CreateWalletRequest collects the request parameters for the CreateWallet method.
+type CreateWalletRequest struct {
+	Groupid     string `json:"groupid"`
+	Chainname   string `json:"chainname"`
+	Bip44change int    `json:"bip44change"`
+}
+
+// CreateWalletResponse collects the response parameters for the CreateWallet method.
+type CreateWalletResponse struct {
+	Id      string `json:"id"`
+	Address string `json:"address"`
+	Status  bool   `json:"status"`
+	Err     error  `json:"err"`
+}
+
+// MakeCreateWalletEndpoint returns an endpoint that invokes CreateWallet on the service.
+func MakeCreateWalletEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(CreateWalletRequest)
+		id, address, status, err := s.CreateWallet(ctx, req.Groupid, req.Chainname, req.Bip44change)
+		if err != nil {
+			return CreateGroupResponse{Err: err}, err
+		}
+		return CreateWalletResponse{
+			Address: address,
+			Id:      id,
+			Status:  status,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r CreateWalletResponse) Failed() error {
+	return r.Err
+}
+
+// CreateWallet implements Service. Primarily useful in a client.
+func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (id string, address string, status bool, err error) {
+	request := CreateWalletRequest{
+		Bip44change: bip44change,
+		Chainname:   chainname,
+		Groupid:     groupid,
+	}
+	response, err := e.CreateWalletEndpoint(ctx, request)
+	if err != nil {
+		return "", "", false, err
+	}
+	return response.(CreateWalletResponse).Id, response.(CreateWalletResponse).Address, response.(CreateWalletResponse).Status, nil
 }

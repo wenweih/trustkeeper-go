@@ -21,5 +21,6 @@ func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]http.Serv
 	makeUpdateGroupHandler(m, endpoints, options["UpdateGroup"])
 	makeGetGroupAssetsHandler(m, endpoints, options["GetGroupAssets"])
 	makeChangeGroupAssetsHandler(m, endpoints, options["ChangeGroupAssets"])
+	makeCreateWalletHandler(m, endpoints, options["CreateWallet"])
 	return m
 }
