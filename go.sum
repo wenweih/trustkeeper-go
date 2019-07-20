@@ -65,6 +65,8 @@ github.com/caarlos0/env v3.5.0+incompatible h1:Yy0UN8o9Wtr/jGHZDpCBLpNrzcFLLM2yi
 github.com/caarlos0/env v3.5.0+incompatible/go.mod h1:tdCsowwCzMLdkqRYDlHpZCp2UooDD3MspDBjZ2AD02Y=
 github.com/casbin/casbin v1.8.2 h1:hJrnZxIXnsxyxQ8zvrUWYrR+MJK+J1X7sBeA5DuLh+o=
 github.com/casbin/casbin v1.8.2/go.mod h1:z8uPsfBJGUsnkagrt3G8QvjgTKFMBJ32UP8HpZllfog=
+github.com/casbin/casbin v1.9.1 h1:ucjbS5zTrmSLtH4XogqOG920Poe6QatdXtz1FEbApeM=
+github.com/casbin/casbin v1.9.1/go.mod h1:z8uPsfBJGUsnkagrt3G8QvjgTKFMBJ32UP8HpZllfog=
 github.com/casbin/gorm-adapter v0.0.0-20190318080705-e74a050c51a4 h1:7k27RXBL/0c7vJhLbelMPk+yNN+ceYX1WUlzlKDaIME=
 github.com/casbin/gorm-adapter v0.0.0-20190318080705-e74a050c51a4/go.mod h1:1E0t3/djAo+vIvDfNPGigJjLMyoh2XNesXMW69R3ykA=
 github.com/cespare/xxhash v1.1.0/go.mod h1:XrSqR1VqqWfGrhpAt58auRo0WTKS1nRRg3ghfAqPWnc=

@@ -18,7 +18,7 @@ require (
 	github.com/btcsuite/btcutil v0.0.0-20190425235716-9e5f4b9a998d
 	github.com/btcsuite/goleveldb v1.0.0 // indirect
 	github.com/caarlos0/env v3.5.0+incompatible
-	github.com/casbin/casbin v1.8.2
+	github.com/casbin/casbin v1.9.1
 	github.com/casbin/gorm-adapter v0.0.0-20190318080705-e74a050c51a4
 	github.com/coreos/etcd v3.3.13+incompatible // indirect
 	github.com/denisenkom/go-mssqldb v0.0.0-20190515213511-eb9f6a1743f3 // indirect

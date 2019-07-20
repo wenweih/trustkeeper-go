@@ -23,10 +23,12 @@ func (repo *CasbinRepo) AddActionForRoleInDomain (uid, domain, resourceID, actio
 }
 
 func (repo *CasbinRepo) HasPolicy(policy []string) bool {
+  repo.Enforcer.LoadPolicy()
   return repo.Enforcer.HasPolicy(policy)
 }
 
 func (repo *CasbinRepo) GetObjForUserInDomain(uid, domain, action string) []interface{} {
+  repo.Enforcer.LoadPolicy()
   result := repo.Enforcer.GetFilteredPolicy(0, uid, domain)
   matchResult := make([][]string, 0)
   for _, record := range result {

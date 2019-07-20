@@ -8,11 +8,12 @@ import (
 )
 
 type CasbinRepo struct {
-  *stdcasbin.Enforcer  // authorization service
+  *stdcasbin.SyncedEnforcer  // authorization service
 }
 
 func NewCasbinRepo(db *gorm.DB) *CasbinRepo {
 	Adapter := gormadapter.NewAdapterByDB(db)
-	enforcer := stdcasbin.NewEnforcer(stdcasbin.NewModel(CasbinConf), Adapter)
+	enforcer := stdcasbin.NewSyncedEnforcer(stdcasbin.NewModel(CasbinConf), Adapter)
+	enforcer.EnableAutoSave(true)
 	return &CasbinRepo{enforcer}
 }
