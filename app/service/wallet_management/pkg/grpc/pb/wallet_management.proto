@@ -10,6 +10,7 @@ service WalletManagement {
  rpc AssignedXpubToGroup (AssignedXpubToGroupRequest) returns (AssignedXpubToGroupReply);
  rpc GetChains           (GetChainsRequest          ) returns (GetChainsReply          );
  rpc CreateWallet        (CreateWalletRequest       ) returns (CreateWalletReply       );
+ rpc GetWallets          (GetWalletsRequest         ) returns (GetWalletsReply         );
 }
 
 message CreateChainRequest {
@@ -43,18 +44,26 @@ message GetChainsReply {
 }
 
 message CreateWalletRequest {
-  string groupid = 1;
-  string chainname = 2;
-  int32 bip44change = 3;
+ string groupid     = 1;
+ string chainname   = 2;
+ int32  bip44change = 3;
 }
 
 message Wallet {
-  string ID = 1;
-  string Address = 2;
-  string ChainName = 3;
-  bool Status = 4;
+ string ID        = 1;
+ string Address   = 2;
+ string ChainName = 3;
+ bool   Status    = 4;
 }
 
 message CreateWalletReply {
-  Wallet wallet = 1;
+ Wallet wallet = 1;
+}
+
+message GetWalletsRequest {
+  string groupid = 1;
+}
+
+message GetWalletsReply {
+  repeated Wallet wallets = 1;
 }

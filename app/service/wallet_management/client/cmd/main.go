@@ -1,6 +1,8 @@
 package main
 
 import (
+  "time"
+  "fmt"
   "os"
   "context"
   log "github.com/go-kit/kit/log"
@@ -32,7 +34,9 @@ func main()  {
     logger.Log("service client error: ", err.Error())
   }
   ctxWithAuthInfo := context.WithValue(context.Background(), "auth",
-		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "d7fd20c1-cfb8-461f-9a95-a3d028f20e35", "469763787409293313"})
+		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "ffe7239c-d300-499d-b50b-616c0169cc33", "470474276755701761"})
+  ctx, cancel := context.WithTimeout(ctxWithAuthInfo, 5*time.Second)
+  defer cancel()
 
   // for _, str := range []string{"aa", "bb", "ccc", "ee", "dd", "ff", "gg", "hh"} {
   //   if err := s.CreateChain(ctxWithAuthInfo, str, "bit44ID", true); err != nil {
@@ -44,16 +48,32 @@ func main()  {
   //   logger.Log("err:", err.Error())
   // }
 
-  chains, err := s.GetChains(ctxWithAuthInfo)
-  if err != nil {
-    logger.Log("Fail to get chains", err.Error())
-  }
-  for _, c := range chains {
-   logger.Log("chain: id", c.ID, "Name", c.Name, "Coin", c.Coin, "Bip44id", c.Bip44id, "status", c.Status)
-  }
-  wallet, err := s.CreateWallet(ctxWithAuthInfo, "469764006120751105", "Bitcoincore", int(1))
+  // chains, err := s.GetChains(ctx)
+  // if err != nil {
+  //   logger.Log("Fail to get chains", err.Error())
+  // }
+  // for _, c := range chains {
+  //  logger.Log("chain: id", c.ID, "Name", c.Name, "Coin", c.Coin, "Bip44id", c.Bip44id, "status", c.Status)
+  // }
+  wallet, err := s.CreateWallet(ctxWithAuthInfo, "470474349270925313", "Bitcoincore", int(1))
   if err != nil {
     logger.Log("CreateWallet error: ", err.Error())
   }
   logger.Log("wallet: address", wallet.Address, "id: ", wallet.ID, " status: ", wallet.Status)
+
+  wallets, err := s.GetWallets(ctx, "")
+  if err != nil {
+    logger.Log("GetWallets without groupid error: ", err.Error())
+  }
+  for _, wallet := range wallets {
+    fmt.Println("wallet without groupid: ", *wallet)
+  }
+  //
+  // groupidwallets, err := s.GetWallets(ctx, "469764006120751105")
+  // if err != nil {
+  //   logger.Log("GetWallets with groupid error: ", err.Error())
+  // }
+  // for _, wallet := range groupidwallets {
+  //   fmt.Println("wallet with groupid: ", *wallet)
+  // }
 }

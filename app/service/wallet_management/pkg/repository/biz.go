@@ -22,6 +22,7 @@ type IBiz interface {
   GetChains(ctx context.Context, query map[string]interface{}) (chains []*SimpleChain, err error)
   UpdateXpubState(ctx context.Context, from, to, groupid string) error
   CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (wallet *Wallet, err error)
+  GetWallets(ctx context.Context, groupid string) (wallets []*Wallet, err error)
 }
 
 type Bip44AccountKey struct {
@@ -30,7 +31,7 @@ type Bip44AccountKey struct {
 }
 
 type Bip44ThirdXpubsForChain struct {
-	Chain  int           `json:"chain"`
+	Chain   uint           `json:"chain"`
 	Xpubs   []*Bip44AccountKey	`json:"xpubs"`
 }
 
@@ -46,7 +47,7 @@ func (repo *repo) Signup(uid, nid, version string, bip44ThirdXpubsForChains []*B
       mXpub := model.Xpub{
         Key: xpub.Key,
         Bip44ChainID: bip44ThirdXpubsForChain.Chain,
-        BIP44Account: xpub.Account,
+        Bip44Account: xpub.Account,
         MnemonicVersionID: mnemonicVersion.ID}
       if err := repo.iXpubRepo.Create(tx, &mXpub).Error; err != nil {
         tx.Rollback()
@@ -74,10 +75,6 @@ func (repo *repo) RedisInstance() *redis.Pool {
 }
 
 func (repo *repo) GetChains(ctx context.Context, query map[string]interface{}) ([]*SimpleChain, error) {
-  // _, _, _, err := libctx.ExtractAuthInfoFromContext(ctx)
-  // if err != nil {
-  //   return nil, err
-  // }
   chains, err := repo.iChainRepo.Query(repo.db, query)
   if err != nil {
     return nil, err
@@ -142,6 +139,7 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
   if err != nil {
     return nil, err
   }
+  fmt.Println("uid: ", uid, " nid: ", nid, " walletResource: ", walletResource)
   if allow := repo.iCasbinRepo.HasPolicy([]string{uid, nid, walletResource, "create"}); allow != true {
     return nil, fmt.Errorf("not allow")
   }
@@ -153,7 +151,7 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
     return nil, fmt.Errorf("fail to query chain record")
   }
   xpubs := []*model.Xpub{}
-  repo.db.Where("group_id = ? AND bip44_chain_id = ?", groupid, chains[0].Bip44id).Find(&xpubs)
+  repo.db.Where("group_id = ? AND bip44_chain_id = ?", groupid, uint(chains[0].Bip44id)).Find(&xpubs)
 
   if len(xpubs) != 1 {
     return nil, fmt.Errorf("fail to query xpub record")
@@ -199,7 +197,7 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
     Bip44Change: bip44change,
     Address: address,
     Bip44Index: bip44index,
-    XpubUID: strconv.FormatUint(uint64(xpubs[0].ID), 10),
+    XpubUID: xpubs[0].ID,
     Status: true}
   if err := repo.db.Create(&mWallet).Error; err != nil {
     return nil, err
@@ -209,4 +207,59 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
     Address: mWallet.Address,
     Status: mWallet.Status,
     ChainName: chains[0].Name}, nil
+}
+
+func (repo *repo) GetWallets(ctx context.Context, groupid string) ([]*Wallet, error) {
+  uid, nid, _, err := libctx.ExtractAuthInfoFromContext(ctx)
+  if err != nil {
+    return nil, err
+  }
+
+  xpubs := []*model.Xpub{}
+  mWallets := []*model.Wallet{}
+  if len(groupid) > 0 {
+    // if repo.iCasbinRepo.HasPolicy([]string{uid, nid, groupid, "read"}) {
+    //   return nil, fmt.Errorf("not allow")
+    // }
+    err := repo.db.Set("gorm:auto_preload", true).Where("group_id = ? AND state = ?", groupid, Assigned).Find(&xpubs).Error
+    if err != nil {
+      return nil, err
+    }
+  } else {
+    mnemonicVs, err := repo.imnemonicVersionRepo.VersionLikeQuery(repo.db, nid)
+    if err != nil {
+      return nil, err
+    }
+    if len(mnemonicVs) != 1 {
+      return nil, fmt.Errorf("fail to query mnemonicVersion")
+    }
+    // tx.Where("state = ? AND mnemonic_version_id = ?", Assigned, uint(mnemonicVs[0].ID)).First(&xpub)
+    if err := repo.db.Where("state = ? AND mnemonic_version_id = ?", Assigned, uint(mnemonicVs[0].ID)).
+      Find(&xpubs).Error; err != nil {
+        return nil, err
+      }
+  }
+  for _, xpub := range xpubs {
+    if !repo.iCasbinRepo.HasPolicy([]string{uid, nid, strconv.FormatUint(uint64(xpub.ID), 10), "read"}) {
+      continue
+    }
+    xpubTmp := *xpub
+    xpubWallets := []*model.Wallet{}
+    if err := repo.db.Preload("Xpub.Chain").Model(&xpubTmp).
+      Related(&xpubWallets, "Wallets").Error; err != nil {
+      return nil, err
+    }
+    mWallets = append(mWallets, xpubWallets...)
+  }
+
+  respWallets := make([]*Wallet, 0, len(mWallets))
+  for _, mWallet := range mWallets {
+    respWallet := Wallet{
+      ID: strconv.FormatUint(uint64(mWallet.ID), 10),
+      Address: mWallet.Address,
+      Status: mWallet.Status,
+      ChainName: mWallet.Xpub.Chain.Name}
+    respWallets = append(respWallets, &respWallet)
+  }
+  return respWallets, nil
 }

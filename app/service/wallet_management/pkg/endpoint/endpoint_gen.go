@@ -14,6 +14,7 @@ type Endpoints struct {
 	CreateChainEndpoint         endpoint.Endpoint
 	AssignedXpubToGroupEndpoint endpoint.Endpoint
 	CreateWalletEndpoint        endpoint.Endpoint
+	GetWalletsEndpoint          endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -24,6 +25,7 @@ func New(s service.WalletManagementService, mdw map[string][]endpoint.Middleware
 		CreateChainEndpoint:         MakeCreateChainEndpoint(s),
 		CreateWalletEndpoint:        MakeCreateWalletEndpoint(s),
 		GetChainsEndpoint:           MakeGetChainsEndpoint(s),
+		GetWalletsEndpoint:          MakeGetWalletsEndpoint(s),
 	}
 	for _, m := range mdw["GetChains"] {
 		eps.GetChainsEndpoint = m(eps.GetChainsEndpoint)
@@ -36,6 +38,9 @@ func New(s service.WalletManagementService, mdw map[string][]endpoint.Middleware
 	}
 	for _, m := range mdw["CreateWallet"] {
 		eps.CreateWalletEndpoint = m(eps.CreateWalletEndpoint)
+	}
+	for _, m := range mdw["GetWallets"] {
+		eps.GetWalletsEndpoint = m(eps.GetWalletsEndpoint)
 	}
 	return eps
 }

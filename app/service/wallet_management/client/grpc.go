@@ -38,11 +38,17 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		createWalletEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "CreateWallet", encodeCreateWalletRequest, decodeCreateWalletResponse, pb.CreateWalletReply{}, options...).Endpoint()
 	}
 
+	var getWalletsEndpoint endpoint.Endpoint
+	{
+		getWalletsEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "GetWallets", encodeGetWalletsRequest, decodeGetWalletsResponse, pb.GetWalletsReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		CreateChainEndpoint: createChainEndpoint,
 		AssignedXpubToGroupEndpoint: assignedXpubToGroupEndpoint,
 		CreateWalletEndpoint:        createWalletEndpoint,
 		GetChainsEndpoint:           getChainsEndpoint,
+		GetWalletsEndpoint:          getWalletsEndpoint,
 	}, nil
 }
 
@@ -143,4 +149,29 @@ func decodeCreateWalletResponse(_ context.Context, reply interface{}) (interface
 		return nil, err
 	}
 	return endpoint1.CreateWalletResponse{Wallet: &wallet}, nil
+}
+
+// encodeGetWalletsRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain GetWallets request to a gRPC request.
+func encodeGetWalletsRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.GetWalletsRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint GetWalletsRequest type assertion error")
+	}
+	return &pb.GetWalletsRequest{Groupid: r.Groupid}, nil
+}
+
+// decodeGetWalletsResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeGetWalletsResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.GetWalletsReply)
+	if !ok {
+		e := fmt.Errorf("pb GetWalletsReply type assertion error")
+		return endpoint1.GetWalletsResponse{Err: e}, e
+	}
+	wallets := []*repository.Wallet{}
+	if err := copier.Copy(&wallets, resp.Wallets); err != nil {
+		return endpoint1.GetWalletsResponse{Err: err}, err
+	}
+	return endpoint1.GetWalletsResponse{Wallets: wallets}, nil
 }

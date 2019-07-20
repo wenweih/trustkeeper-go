@@ -144,7 +144,7 @@ type CreateWalletRequest struct {
 // CreateWalletResponse collects the response parameters for the CreateWallet method.
 type CreateWalletResponse struct {
 	Wallet *repository.Wallet `json:"wallet"`
-	Err error `json:"err"`
+	Err    error              `json:"err"`
 }
 
 // MakeCreateWalletEndpoint returns an endpoint that invokes CreateWallet on the service.
@@ -176,7 +176,51 @@ func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname s
 	}
 	resp, err := e.CreateWalletEndpoint(ctx, request)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 	return resp.(CreateWalletResponse).Wallet, nil
+}
+
+// GetWalletsRequest collects the request parameters for the GetWallets method.
+type GetWalletsRequest struct {
+	Groupid string `json:"groupid"`
+}
+
+// GetWalletsResponse collects the response parameters for the GetWallets method.
+type GetWalletsResponse struct {
+	Wallets []*repository.Wallet `json:"wallets"`
+	Err     error                `json:"err"`
+}
+
+// MakeGetWalletsEndpoint returns an endpoint that invokes GetWallets on the service.
+func MakeGetWalletsEndpoint(s service.WalletManagementService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req, ok := request.(GetWalletsRequest)
+		if !ok {
+			e := errors.New("endpoint GetWalletsRequest type assertion error")
+			return GetWalletsResponse{Err: e}, e
+		}
+		wallets, err := s.GetWallets(ctx, req.Groupid)
+		if err != nil {
+			return GetWalletsResponse{Err: err}, err
+		}
+		return GetWalletsResponse{
+			Wallets: wallets,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r GetWalletsResponse) Failed() error {
+	return r.Err
+}
+
+// GetWallets implements Service. Primarily useful in a client.
+func (e Endpoints) GetWallets(ctx context.Context, groupid string) (wallets []*repository.Wallet, err error) {
+	request := GetWalletsRequest{Groupid: groupid}
+	response, err := e.GetWalletsEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(GetWalletsResponse).Wallets, nil
 }

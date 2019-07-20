@@ -13,6 +13,7 @@ type grpcServer struct {
 	createChain         grpc.Handler
 	assignedXpubToGroup grpc.Handler
 	createWallet        grpc.Handler
+	getWallets          grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.WalletManagementServer {
@@ -21,5 +22,6 @@ func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.Serve
 		createChain:         makeCreateChainHandler(endpoints, options["CreateChain"]),
 		createWallet:        makeCreateWalletHandler(endpoints, options["CreateWallet"]),
 		getChains:           makeGetChainsHandler(endpoints, options["GetChains"]),
+		getWallets:          makeGetWalletsHandler(endpoints, options["GetWallets"]),
 	}
 }

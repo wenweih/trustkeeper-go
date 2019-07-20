@@ -3,11 +3,11 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/jinzhu/copier"
 	endpoint "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
 	pb "trustkeeper-go/app/service/wallet_management/pkg/grpc/pb"
 
 	grpc "github.com/go-kit/kit/transport/grpc"
+	"github.com/jinzhu/copier"
 	context1 "golang.org/x/net/context"
 )
 
@@ -133,4 +133,39 @@ func (g *grpcServer) CreateWallet(ctx context1.Context, req *pb.CreateWalletRequ
 		return nil, err
 	}
 	return rep.(*pb.CreateWalletReply), nil
+}
+
+func makeGetWalletsHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.GetWalletsEndpoint, decodeGetWalletsRequest, encodeGetWalletsResponse, options...)
+}
+
+func decodeGetWalletsRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.GetWalletsRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb GetWalletsRequest type assersion error")
+	}
+	fmt.Println("grpc handle::::", *req)
+	return endpoint.GetWalletsRequest{Groupid: req.Groupid}, nil
+}
+
+func encodeGetWalletsResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.GetWalletsResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint GetWalletsResponse type assersion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	wallets :=[]* pb.Wallet{}
+	if err := copier.Copy(&wallets, resp.Wallets); err != nil {
+		return nil, err
+	}
+	return &pb.GetWalletsReply{Wallets: wallets}, nil
+}
+func (g *grpcServer) GetWallets(ctx context1.Context, req *pb.GetWalletsRequest) (*pb.GetWalletsReply, error) {
+	_, rep, err := g.getWallets.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.GetWalletsReply), nil
 }

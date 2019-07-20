@@ -9,10 +9,12 @@ import (
 type Xpub struct {
   gorm.Model
   Key           string    `gorm:"type:varchar(500);index"`
-  Bip44ChainID  int
-  BIP44Account  int
+  Bip44ChainID  uint
+  Chain         Chain  `gorm:"foreignkey:Bip44ChainID;association_foreignkey:Bip44id"`
+  Bip44Account  int
   GroupID       string    `gorm:"index"`
   MnemonicVersionID uint
   MnemonicVersion MnemonicVersion
   transition.Transition
+  Wallets []Wallet  `gorm:"foreignkey:XpubUID"`
 }
