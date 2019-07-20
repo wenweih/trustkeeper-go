@@ -20,7 +20,8 @@ func (repo *walletRepo) Create(m *model.Wallet) error {
 }
 
 type Wallet struct {
-  ID       string  `json:"id"`
-  Address  string  `json:"address"`
-  Status   bool    `json:"status"`
+  ID         string  `json:"ID"`
+  Address    string  `json:"Address"`
+  Status     bool    `json:"Status"`
+  ChainName  string  `json:"ChainName"`
 }

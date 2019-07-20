@@ -49,9 +49,10 @@ message CreateWalletRequest {
 }
 
 message Wallet {
-  string id = 1;
-  string address = 2;
-  bool status = 3;
+  string ID = 1;
+  string Address = 2;
+  string ChainName = 3;
+  bool Status = 4;
 }
 
 message CreateWalletReply {

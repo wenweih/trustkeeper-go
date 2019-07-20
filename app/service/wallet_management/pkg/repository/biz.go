@@ -207,5 +207,6 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
   return &Wallet{
     ID: strconv.FormatUint(uint64(mWallet.ID), 10),
     Address: mWallet.Address,
-    Status: mWallet.Status}, nil
+    Status: mWallet.Status,
+    ChainName: chains[0].Name}, nil
 }

@@ -1,6 +1,7 @@
 package endpoint
 
 import (
+	"fmt"
 	"context"
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
 
@@ -416,6 +417,7 @@ type CreateWalletRequest struct {
 type CreateWalletResponse struct {
 	Id      string `json:"id"`
 	Address string `json:"address"`
+	ChainName string `json:"ChainName"`
 	Status  bool   `json:"status"`
 	Err     error  `json:"err"`
 }
@@ -424,13 +426,14 @@ type CreateWalletResponse struct {
 func MakeCreateWalletEndpoint(s service.WebapiService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateWalletRequest)
-		id, address, status, err := s.CreateWallet(ctx, req.Groupid, req.Chainname, req.Bip44change)
+		id, address, chainname, status, err := s.CreateWallet(ctx, req.Groupid, req.Chainname, req.Bip44change)
 		if err != nil {
 			return CreateGroupResponse{Err: err}, err
 		}
 		return CreateWalletResponse{
 			Address: address,
 			Id:      id,
+			ChainName: chainname,
 			Status:  status,
 		}, nil
 	}
@@ -442,7 +445,7 @@ func (r CreateWalletResponse) Failed() error {
 }
 
 // CreateWallet implements Service. Primarily useful in a client.
-func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (id string, address string, status bool, err error) {
+func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (string, string, string, bool, error) {
 	request := CreateWalletRequest{
 		Bip44change: bip44change,
 		Chainname:   chainname,
@@ -450,7 +453,11 @@ func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname s
 	}
 	response, err := e.CreateWalletEndpoint(ctx, request)
 	if err != nil {
-		return "", "", false, err
+		return "", "", "", false, err
 	}
-	return response.(CreateWalletResponse).Id, response.(CreateWalletResponse).Address, response.(CreateWalletResponse).Status, nil
+	wallet, ok := response.(CreateWalletResponse)
+	if !ok {
+		return "", "", "", false, fmt.Errorf("CreateWalletResponse type assertion error")
+	}
+	return wallet.Id, wallet.Address, wallet.ChainName, wallet.Status, nil
 }

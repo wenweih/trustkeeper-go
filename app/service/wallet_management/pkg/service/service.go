@@ -19,6 +19,7 @@ type WalletManagementService interface {
 	CreateChain(ctx context.Context, symbol, bit44ID string, status bool) (err error)
 	AssignedXpubToGroup(ctx context.Context, groupid string) (err error)
 	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (wallet *repository.Wallet, err error)
+	// GetWallets(ctx context.Context, groupid string)
 	Close() error
 }
 

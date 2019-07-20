@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 	"context"
+	"github.com/jinzhu/copier"
 	endpoint "github.com/go-kit/kit/endpoint"
 	grpc1 "github.com/go-kit/kit/transport/grpc"
 	grpc "google.golang.org/grpc"
@@ -137,9 +138,9 @@ func decodeCreateWalletResponse(_ context.Context, reply interface{}) (interface
 	if !ok {
 		return nil, fmt.Errorf("pb CreateWalletReply type assertion error")
 	}
-	return endpoint1.CreateWalletResponse{
-		Wallet: &repository.Wallet{
-			ID: resp.Wallet.Id,
-			Address: resp.Wallet.Address,
-			Status: resp.Wallet.Status}}, nil
+	wallet := repository.Wallet{}
+	if err := copier.Copy(&wallet, resp.Wallet); err != nil {
+		return nil, err
+	}
+	return endpoint1.CreateWalletResponse{Wallet: &wallet}, nil
 }

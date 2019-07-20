@@ -3,6 +3,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"github.com/jinzhu/copier"
 	endpoint "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
 	pb "trustkeeper-go/app/service/wallet_management/pkg/grpc/pb"
 
@@ -119,11 +120,11 @@ func encodeCreateWalletResponse(_ context.Context, r interface{}) (interface{}, 
 	if resp.Err != nil {
 		return nil, resp.Err
 	}
-	return &pb.CreateWalletReply{
-		Wallet: &pb.Wallet{
-			Id: resp.Wallet.ID,
-			Address: resp.Wallet.Address,
-			Status: resp.Wallet.Status}}, nil
+	wallet := pb.Wallet{}
+	if err := copier.Copy(&wallet, resp.Wallet); err != nil {
+		return nil, err
+	}
+	return &pb.CreateWalletReply{Wallet: &wallet}, nil
 }
 
 func (g *grpcServer) CreateWallet(ctx context1.Context, req *pb.CreateWalletRequest) (*pb.CreateWalletReply, error) {
