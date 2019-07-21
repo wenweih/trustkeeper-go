@@ -253,7 +253,7 @@ func (repo *repo) GetWallets(ctx context.Context, groupid string, page, limit in
       Related(&xpubWallets, "Wallets").
       Limit(limit).
       Offset((page - 1) * limit).
-      Find(&filterData).
+      Related(&filterData, "Wallets").
       Error; err != nil {
         return nil, err
       }
