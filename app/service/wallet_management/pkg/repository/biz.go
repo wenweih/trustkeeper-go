@@ -46,7 +46,7 @@ func (repo *repo) Signup(uid, nid, version string, bip44ThirdXpubsForChains []*B
     for _, xpub := range bip44ThirdXpubsForChain.Xpubs {
       mXpub := model.Xpub{
         Key: xpub.Key,
-        Bip44ChainID: bip44ThirdXpubsForChain.Chain,
+        Bip44ChainID: &bip44ThirdXpubsForChain.Chain,
         Bip44Account: xpub.Account,
         MnemonicVersionID: mnemonicVersion.ID}
       if err := repo.iXpubRepo.Create(tx, &mXpub).Error; err != nil {
@@ -139,7 +139,6 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
   if err != nil {
     return nil, err
   }
-  fmt.Println("uid: ", uid, " nid: ", nid, " walletResource: ", walletResource)
   if allow := repo.iCasbinRepo.HasPolicy([]string{uid, nid, walletResource, "create"}); allow != true {
     return nil, fmt.Errorf("not allow")
   }
@@ -233,8 +232,7 @@ func (repo *repo) GetWallets(ctx context.Context, groupid string) ([]*Wallet, er
     if len(mnemonicVs) != 1 {
       return nil, fmt.Errorf("fail to query mnemonicVersion")
     }
-    // tx.Where("state = ? AND mnemonic_version_id = ?", Assigned, uint(mnemonicVs[0].ID)).First(&xpub)
-    if err := repo.db.Where("state = ? AND mnemonic_version_id = ?", Assigned, uint(mnemonicVs[0].ID)).
+    if err := repo.db.Preload("Chain").Where("state = ? AND mnemonic_version_id = ?", Assigned, uint(mnemonicVs[0].ID)).
       Find(&xpubs).Error; err != nil {
         return nil, err
       }

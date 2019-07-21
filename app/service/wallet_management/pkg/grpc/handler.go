@@ -144,7 +144,6 @@ func decodeGetWalletsRequest(_ context.Context, r interface{}) (interface{}, err
 	if !ok {
 		return nil, fmt.Errorf("pb GetWalletsRequest type assersion error")
 	}
-	fmt.Println("grpc handle::::", *req)
 	return endpoint.GetWalletsRequest{Groupid: req.Groupid}, nil
 }
 

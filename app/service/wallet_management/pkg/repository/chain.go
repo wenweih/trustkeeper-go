@@ -11,7 +11,7 @@ type SimpleChain struct {
   ID    string  `json:"id"`
   Name  string  `json:"name"`
   Coin  string  `json:"desc"`
-  Bip44id int   `json:"bip44id"`
+  Bip44id uint   `json:"bip44id"`
   Status  bool  `json:"status"`
 }
 

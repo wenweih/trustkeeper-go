@@ -14,7 +14,7 @@ type Bip44AccountKey struct {
 }
 
 type Bip44ThirdXpubsForChain struct {
-	Chain  int           `json:"chain"`
+	Chain  uint           `json:"chain"`
 	Xpubs   []*Bip44AccountKey	`json:"xpubs"`
 }
 
@@ -82,7 +82,7 @@ func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, namespaceI
 			}
 			xpubs[account] = &Bip44AccountKey{Account: account, Key: xpub.String()}
 		}
-		chainsWithXpubs[i] = &Bip44ThirdXpubsForChain{Chain: int(bip44id), Xpubs: xpubs}
+		chainsWithXpubs[i] = &Bip44ThirdXpubsForChain{Chain: uint(bip44id), Xpubs: xpubs}
 	}
 	version, err = b.biz.SaveMnemonic(namespaceID, []byte(mnemonic))
 	if err != nil {

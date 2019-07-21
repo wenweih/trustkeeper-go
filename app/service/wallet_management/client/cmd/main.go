@@ -34,7 +34,7 @@ func main()  {
     logger.Log("service client error: ", err.Error())
   }
   ctxWithAuthInfo := context.WithValue(context.Background(), "auth",
-		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "ffe7239c-d300-499d-b50b-616c0169cc33", "470474276755701761"})
+		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "1d30be4e-d61e-42da-9cb2-b0d794e12314", "470630148222189569"})
   ctx, cancel := context.WithTimeout(ctxWithAuthInfo, 5*time.Second)
   defer cancel()
 
@@ -55,7 +55,7 @@ func main()  {
   // for _, c := range chains {
   //  logger.Log("chain: id", c.ID, "Name", c.Name, "Coin", c.Coin, "Bip44id", c.Bip44id, "status", c.Status)
   // }
-  wallet, err := s.CreateWallet(ctxWithAuthInfo, "470474349270925313", "Bitcoincore", int(1))
+  wallet, err := s.CreateWallet(ctxWithAuthInfo, "470630307152953345", "Bitcoincore", int(1))
   if err != nil {
     logger.Log("CreateWallet error: ", err.Error())
   }

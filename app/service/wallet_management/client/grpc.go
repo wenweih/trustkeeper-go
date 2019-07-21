@@ -120,7 +120,7 @@ func decodeGetChainsResponse(_ context.Context, reply interface{}) (interface{},
 			ID: c.Id,
 			Name: c.Name,
 			Coin: c.Coin,
-			Bip44id: int(c.Bip44Id),
+			Bip44id: uint(c.Bip44Id),
 			Status: c.Status}
   }
 
