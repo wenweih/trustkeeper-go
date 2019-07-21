@@ -1,6 +1,7 @@
 package endpoint
 
 import (
+	"fmt"
 	"context"
 	"errors"
 	"trustkeeper-go/app/service/wallet_management/pkg/repository"
@@ -184,11 +185,13 @@ func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname s
 // GetWalletsRequest collects the request parameters for the GetWallets method.
 type GetWalletsRequest struct {
 	Groupid string `json:"groupid"`
+	Page    int32  `json:"page"`
+	Limit   int32  `json:"limit"`
 }
 
 // GetWalletsResponse collects the response parameters for the GetWallets method.
 type GetWalletsResponse struct {
-	Wallets []*repository.Wallet `json:"wallets"`
+	ChainWithWallets []*repository.ChainWithWallets `json:"ChainWithWallets"`
 	Err     error                `json:"err"`
 }
 
@@ -200,12 +203,12 @@ func MakeGetWalletsEndpoint(s service.WalletManagementService) endpoint.Endpoint
 			e := errors.New("endpoint GetWalletsRequest type assertion error")
 			return GetWalletsResponse{Err: e}, e
 		}
-		wallets, err := s.GetWallets(ctx, req.Groupid)
+		wallets, err := s.GetWallets(ctx, req.Groupid, req.Page, req.Limit)
 		if err != nil {
 			return GetWalletsResponse{Err: err}, err
 		}
 		return GetWalletsResponse{
-			Wallets: wallets,
+			ChainWithWallets: wallets,
 		}, nil
 	}
 }
@@ -216,11 +219,15 @@ func (r GetWalletsResponse) Failed() error {
 }
 
 // GetWallets implements Service. Primarily useful in a client.
-func (e Endpoints) GetWallets(ctx context.Context, groupid string) (wallets []*repository.Wallet, err error) {
-	request := GetWalletsRequest{Groupid: groupid}
+func (e Endpoints) GetWallets(ctx context.Context, groupid string, page, limit int32) (wallets []*repository.ChainWithWallets, err error) {
+	request := GetWalletsRequest{Groupid: groupid, Page: page, Limit: limit}
 	response, err := e.GetWalletsEndpoint(ctx, request)
 	if err != nil {
 		return nil, err
 	}
-	return response.(GetWalletsResponse).Wallets, nil
+	resp, ok := response.(GetWalletsResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint GetWalletsResponse error")
+	}
+	return resp.ChainWithWallets, nil
 }

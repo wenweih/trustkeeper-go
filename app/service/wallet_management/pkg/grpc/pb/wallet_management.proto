@@ -56,14 +56,22 @@ message Wallet {
  bool   Status    = 4;
 }
 
+message ChainWithWallets {
+  repeated Wallet Wallets = 1;
+  int32 TotalSize = 2;
+  string ChainName = 3;
+}
+
 message CreateWalletReply {
  Wallet wallet = 1;
 }
 
 message GetWalletsRequest {
   string groupid = 1;
+  int32 page = 2;
+  int32 limit = 3;
 }
 
 message GetWalletsReply {
-  repeated Wallet wallets = 1;
+  repeated ChainWithWallets ChainWithWallets = 1;
 }

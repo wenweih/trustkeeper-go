@@ -11,6 +11,8 @@ import (
   "github.com/ethereum/go-ethereum/crypto"
   "github.com/btcsuite/btcd/chaincfg"
   "github.com/jinzhu/gorm"
+  // "github.com/biezhi/gorm-paginator/pagination"
+  "github.com/jinzhu/copier"
 )
 
 type IBiz interface {
@@ -22,7 +24,7 @@ type IBiz interface {
   GetChains(ctx context.Context, query map[string]interface{}) (chains []*SimpleChain, err error)
   UpdateXpubState(ctx context.Context, from, to, groupid string) error
   CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (wallet *Wallet, err error)
-  GetWallets(ctx context.Context, groupid string) (wallets []*Wallet, err error)
+  GetWallets(ctx context.Context, groupid string, page, limit int32) (wallets []*ChainWithWallets, err error)
 }
 
 type Bip44AccountKey struct {
@@ -208,19 +210,18 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
     ChainName: chains[0].Name}, nil
 }
 
-func (repo *repo) GetWallets(ctx context.Context, groupid string) ([]*Wallet, error) {
+func (repo *repo) GetWallets(ctx context.Context, groupid string, page, limit int32) ([]*ChainWithWallets, error) {
   uid, nid, _, err := libctx.ExtractAuthInfoFromContext(ctx)
   if err != nil {
     return nil, err
   }
 
   xpubs := []*model.Xpub{}
-  mWallets := []*model.Wallet{}
   if len(groupid) > 0 {
     // if repo.iCasbinRepo.HasPolicy([]string{uid, nid, groupid, "read"}) {
     //   return nil, fmt.Errorf("not allow")
     // }
-    err := repo.db.Where("group_id = ? AND state = ?", groupid, Assigned).Find(&xpubs).Error
+    err := repo.db.Preload("Chain").Where("group_id = ? AND state = ?", groupid, Assigned).Find(&xpubs).Error
     if err != nil {
       return nil, err
     }
@@ -237,27 +238,35 @@ func (repo *repo) GetWallets(ctx context.Context, groupid string) ([]*Wallet, er
         return nil, err
       }
   }
-  for _, xpub := range xpubs {
+  chainWithWallets := make([]*ChainWithWallets, len(xpubs))
+  // chainWithWallets := []*ChainWithWallets{}
+  for i, xpub := range xpubs {
     if !repo.iCasbinRepo.HasPolicy([]string{uid, nid, strconv.FormatUint(uint64(xpub.ID), 10), "read"}) {
       continue
     }
-    xpubTmp := *xpub
+    filterData := []*model.Wallet{}
     xpubWallets := []*model.Wallet{}
-    if err := repo.db.Order("created_at desc").Preload("Xpub.Chain").Model(&xpubTmp).
-      Related(&xpubWallets, "Wallets").Error; err != nil {
-      return nil, err
-    }
-    mWallets = append(mWallets, xpubWallets...)
-  }
+    // limit offset usage https://github.com/jinzhu/gorm/issues/1752#issuecomment-454457879
+    if err := repo.db.
+      Order("created_at desc").
+      Model(xpub).
+      Related(&xpubWallets, "Wallets").
+      Limit(limit).
+      Offset((page - 1) * limit).
+      Find(&filterData).
+      Error; err != nil {
+        return nil, err
+      }
 
-  respWallets := make([]*Wallet, 0, len(mWallets))
-  for _, mWallet := range mWallets {
-    respWallet := Wallet{
-      ID: strconv.FormatUint(uint64(mWallet.ID), 10),
-      Address: mWallet.Address,
-      Status: mWallet.Status,
-      ChainName: mWallet.Xpub.Chain.Name}
-    respWallets = append(respWallets, &respWallet)
+    wallets :=[]*Wallet{}
+  	if err := copier.Copy(&wallets, &filterData); err != nil {
+  		return nil, err
+  	}
+
+    chainWithWallets[i] = &ChainWithWallets{
+            ChainName: xpub.Chain.Name,
+            TotalSize: int32(len(xpubWallets)),
+            Wallets: wallets}
   }
-  return respWallets, nil
+  return chainWithWallets, nil
 }

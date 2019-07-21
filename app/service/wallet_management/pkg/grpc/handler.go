@@ -144,7 +144,7 @@ func decodeGetWalletsRequest(_ context.Context, r interface{}) (interface{}, err
 	if !ok {
 		return nil, fmt.Errorf("pb GetWalletsRequest type assersion error")
 	}
-	return endpoint.GetWalletsRequest{Groupid: req.Groupid}, nil
+	return endpoint.GetWalletsRequest{Groupid: req.Groupid, Page: req.Page, Limit: req.Limit}, nil
 }
 
 func encodeGetWalletsResponse(_ context.Context, r interface{}) (interface{}, error) {
@@ -155,11 +155,11 @@ func encodeGetWalletsResponse(_ context.Context, r interface{}) (interface{}, er
 	if resp.Err != nil {
 		return nil, resp.Err
 	}
-	wallets :=[]* pb.Wallet{}
-	if err := copier.Copy(&wallets, resp.Wallets); err != nil {
+	wallets :=[]*pb.ChainWithWallets{}
+	if err := copier.Copy(&wallets, resp.ChainWithWallets); err != nil {
 		return nil, err
 	}
-	return &pb.GetWalletsReply{Wallets: wallets}, nil
+	return &pb.GetWalletsReply{ChainWithWallets: wallets}, nil
 }
 func (g *grpcServer) GetWallets(ctx context1.Context, req *pb.GetWalletsRequest) (*pb.GetWalletsReply, error) {
 	_, rep, err := g.getWallets.ServeGRPC(ctx, req)

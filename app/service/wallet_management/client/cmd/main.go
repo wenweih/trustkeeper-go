@@ -61,12 +61,14 @@ func main()  {
   }
   logger.Log("wallet: address", wallet.Address, "id: ", wallet.ID, " status: ", wallet.Status)
 
-  wallets, err := s.GetWallets(ctx, "470630307152953345")
+  wallets, err := s.GetWallets(ctx, "470630307152953345", 1, 2)
   if err != nil {
     logger.Log("GetWallets without groupid error: ", err.Error())
   }
   for _, wallet := range wallets {
-    fmt.Println("wallet without groupid: ", *wallet)
+    for _, w := range wallet.Wallets {
+      fmt.Println("ChainName: ", wallet.ChainName, " TotalSize: ", wallet.TotalSize, *w)
+    }
   }
   //
   // groupidwallets, err := s.GetWallets(ctx, "469764006120751105")
