@@ -220,7 +220,7 @@ func (repo *repo) GetWallets(ctx context.Context, groupid string) ([]*Wallet, er
     // if repo.iCasbinRepo.HasPolicy([]string{uid, nid, groupid, "read"}) {
     //   return nil, fmt.Errorf("not allow")
     // }
-    err := repo.db.Set("gorm:auto_preload", true).Where("group_id = ? AND state = ?", groupid, Assigned).Find(&xpubs).Error
+    err := repo.db.Where("group_id = ? AND state = ?", groupid, Assigned).Find(&xpubs).Error
     if err != nil {
       return nil, err
     }
@@ -243,7 +243,7 @@ func (repo *repo) GetWallets(ctx context.Context, groupid string) ([]*Wallet, er
     }
     xpubTmp := *xpub
     xpubWallets := []*model.Wallet{}
-    if err := repo.db.Preload("Xpub.Chain").Model(&xpubTmp).
+    if err := repo.db.Order("created_at desc").Preload("Xpub.Chain").Model(&xpubTmp).
       Related(&xpubWallets, "Wallets").Error; err != nil {
       return nil, err
     }

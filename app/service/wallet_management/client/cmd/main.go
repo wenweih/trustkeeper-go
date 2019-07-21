@@ -61,7 +61,7 @@ func main()  {
   }
   logger.Log("wallet: address", wallet.Address, "id: ", wallet.ID, " status: ", wallet.Status)
 
-  wallets, err := s.GetWallets(ctx, "")
+  wallets, err := s.GetWallets(ctx, "470630307152953345")
   if err != nil {
     logger.Log("GetWallets without groupid error: ", err.Error())
   }
