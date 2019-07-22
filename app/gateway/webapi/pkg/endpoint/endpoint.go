@@ -1,8 +1,8 @@
 package endpoint
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	service "trustkeeper-go/app/gateway/webapi/pkg/service"
 
 	"trustkeeper-go/app/gateway/webapi/pkg/repository"
@@ -415,11 +415,11 @@ type CreateWalletRequest struct {
 
 // CreateWalletResponse collects the response parameters for the CreateWallet method.
 type CreateWalletResponse struct {
-	Id      string `json:"id"`
-	Address string `json:"address"`
+	Id        string `json:"id"`
+	Address   string `json:"address"`
 	ChainName string `json:"ChainName"`
-	Status  bool   `json:"status"`
-	Err     error  `json:"err"`
+	Status    bool   `json:"status"`
+	Err       error  `json:"err"`
 }
 
 // MakeCreateWalletEndpoint returns an endpoint that invokes CreateWallet on the service.
@@ -431,10 +431,10 @@ func MakeCreateWalletEndpoint(s service.WebapiService) endpoint.Endpoint {
 			return CreateGroupResponse{Err: err}, err
 		}
 		return CreateWalletResponse{
-			Address: address,
-			Id:      id,
+			Address:   address,
+			Id:        id,
 			ChainName: chainname,
-			Status:  status,
+			Status:    status,
 		}, nil
 	}
 }
@@ -460,4 +460,56 @@ func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname s
 		return "", "", "", false, fmt.Errorf("CreateWalletResponse type assertion error")
 	}
 	return wallet.Id, wallet.Address, wallet.ChainName, wallet.Status, nil
+}
+
+// GetWalletsRequest collects the request parameters for the GetWallets method.
+type GetWalletsRequest struct {
+	Groupid string `json:"groupid"`
+	Page    int    `json:"page"`
+	Limit   int    `json:"limit"`
+}
+
+// GetWalletsResponse collects the response parameters for the GetWallets method.
+type GetWalletsResponse struct {
+	Wallets []*repository.ChainWithWallets `json:"wallets"`
+	Err     error                          `json:"err"`
+}
+
+// MakeGetWalletsEndpoint returns an endpoint that invokes GetWallets on the service.
+func MakeGetWalletsEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(GetWalletsRequest)
+		wallets, err := s.GetWallets(ctx, req.Groupid, req.Page, req.Limit)
+		if err != nil {
+			return GetWalletsResponse{
+				Err:     err,
+			}, nil
+		}
+		return GetWalletsResponse{
+			Wallets: wallets,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r GetWalletsResponse) Failed() error {
+	return r.Err
+}
+
+// GetWallets implements Service. Primarily useful in a client.
+func (e Endpoints) GetWallets(ctx context.Context, groupid string, page int, limit int) (wallets []*repository.ChainWithWallets, err error) {
+	request := GetWalletsRequest{
+		Groupid: groupid,
+		Limit:   limit,
+		Page:    page,
+	}
+	response, err := e.GetWalletsEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	resp, ok := response.(GetWalletsResponse)
+	if !ok {
+		return nil, fmt.Errorf("GetWalletsResponse type assertion error")
+	}
+	return resp.Wallets, nil
 }

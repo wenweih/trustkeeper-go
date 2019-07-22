@@ -55,13 +55,13 @@ func main()  {
   // for _, c := range chains {
   //  logger.Log("chain: id", c.ID, "Name", c.Name, "Coin", c.Coin, "Bip44id", c.Bip44id, "status", c.Status)
   // }
-  wallet, err := s.CreateWallet(ctxWithAuthInfo, "470630307152953345", "Bitcoincore", int(1))
-  if err != nil {
-    logger.Log("CreateWallet error: ", err.Error())
-  }
-  logger.Log("wallet: address", wallet.Address, "id: ", wallet.ID, " status: ", wallet.Status)
+  // wallet, err := s.CreateWallet(ctxWithAuthInfo, "470713253851332609", "Bitcoincore", int(1))
+  // if err != nil {
+  //   logger.Log("CreateWallet error: ", err.Error())
+  // }
+  // logger.Log("wallet: address", wallet.Address, "id: ", wallet.ID, " status: ", wallet.Status)
 
-  wallets, err := s.GetWallets(ctx, "470630307152953345", 1, 2)
+  wallets, err := s.GetWallets(ctx, "", 1, 5)
   if err != nil {
     logger.Log("GetWallets without groupid error: ", err.Error())
   }

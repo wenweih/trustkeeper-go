@@ -327,3 +327,28 @@ func encodeCreateWalletResponse(ctx context.Context, w http.ResponseWriter, resp
 	err = json.NewEncoder(w).Encode(response)
 	return
 }
+
+// makeGetWalletsHandler creates the handler logic
+func makeGetWalletsHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/get-wallets", http1.NewServer(endpoints.GetWalletsEndpoint, decodeGetWalletsRequest, encodeGetWalletsResponse, options...))
+}
+
+// decodeGetWalletsRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeGetWalletsRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	req := endpoint.GetWalletsRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeGetWalletsResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeGetWalletsResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
