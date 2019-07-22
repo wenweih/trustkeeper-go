@@ -144,7 +144,7 @@ func decodeGetWalletsRequest(_ context.Context, r interface{}) (interface{}, err
 	if !ok {
 		return nil, fmt.Errorf("pb GetWalletsRequest type assersion error")
 	}
-	return endpoint.GetWalletsRequest{Groupid: req.Groupid, Page: req.Page, Limit: req.Limit}, nil
+	return endpoint.GetWalletsRequest{Groupid: req.Groupid, Page: req.Page, Limit: req.Limit, Bip44Change: req.Bip44Change}, nil
 }
 
 func encodeGetWalletsResponse(_ context.Context, r interface{}) (interface{}, error) {

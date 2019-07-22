@@ -464,9 +464,10 @@ func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname s
 
 // GetWalletsRequest collects the request parameters for the GetWallets method.
 type GetWalletsRequest struct {
-	Groupid string `json:"groupid"`
-	Page    int    `json:"page"`
-	Limit   int    `json:"limit"`
+	Groupid string  `json:"groupid"`
+	Page    int     `json:"page"`
+	Limit   int     `json:"limit"`
+	Bip44Change int `json:"Bip44Change"`
 }
 
 // GetWalletsResponse collects the response parameters for the GetWallets method.
@@ -479,7 +480,7 @@ type GetWalletsResponse struct {
 func MakeGetWalletsEndpoint(s service.WebapiService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetWalletsRequest)
-		wallets, err := s.GetWallets(ctx, req.Groupid, req.Page, req.Limit)
+		wallets, err := s.GetWallets(ctx, req.Groupid, req.Page, req.Limit, req.Bip44Change)
 		if err != nil {
 			return GetWalletsResponse{
 				Err:     err,
@@ -497,11 +498,12 @@ func (r GetWalletsResponse) Failed() error {
 }
 
 // GetWallets implements Service. Primarily useful in a client.
-func (e Endpoints) GetWallets(ctx context.Context, groupid string, page int, limit int) (wallets []*repository.ChainWithWallets, err error) {
+func (e Endpoints) GetWallets(ctx context.Context, groupid string, page int, limit, bip44change int) (wallets []*repository.ChainWithWallets, err error) {
 	request := GetWalletsRequest{
 		Groupid: groupid,
 		Limit:   limit,
 		Page:    page,
+		Bip44Change: bip44change,
 	}
 	response, err := e.GetWalletsEndpoint(ctx, request)
 	if err != nil {

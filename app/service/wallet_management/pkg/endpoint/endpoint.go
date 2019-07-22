@@ -187,6 +187,7 @@ type GetWalletsRequest struct {
 	Groupid string `json:"groupid"`
 	Page    int32  `json:"page"`
 	Limit   int32  `json:"limit"`
+	Bip44Change int32 `json:"bip44Change"`
 }
 
 // GetWalletsResponse collects the response parameters for the GetWallets method.
@@ -203,7 +204,7 @@ func MakeGetWalletsEndpoint(s service.WalletManagementService) endpoint.Endpoint
 			e := errors.New("endpoint GetWalletsRequest type assertion error")
 			return GetWalletsResponse{Err: e}, e
 		}
-		wallets, err := s.GetWallets(ctx, req.Groupid, req.Page, req.Limit)
+		wallets, err := s.GetWallets(ctx, req.Groupid, req.Page, req.Limit, req.Bip44Change)
 		if err != nil {
 			return GetWalletsResponse{Err: err}, err
 		}
@@ -219,8 +220,8 @@ func (r GetWalletsResponse) Failed() error {
 }
 
 // GetWallets implements Service. Primarily useful in a client.
-func (e Endpoints) GetWallets(ctx context.Context, groupid string, page, limit int32) (wallets []*repository.ChainWithWallets, err error) {
-	request := GetWalletsRequest{Groupid: groupid, Page: page, Limit: limit}
+func (e Endpoints) GetWallets(ctx context.Context, groupid string, page, limit, bip44change int32) (wallets []*repository.ChainWithWallets, err error) {
+	request := GetWalletsRequest{Groupid: groupid, Page: page, Limit: limit, Bip44Change: bip44change}
 	response, err := e.GetWalletsEndpoint(ctx, request)
 	if err != nil {
 		return nil, err

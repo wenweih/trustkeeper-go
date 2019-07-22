@@ -99,9 +99,9 @@ func (l loggingMiddleware) CreateWallet(ctx context.Context, groupid string, cha
 	return l.next.CreateWallet(ctx, groupid, chainname, bip44change)
 }
 
-func (l loggingMiddleware) GetWallets(ctx context.Context, groupid string, page int, limit int) (wallets []*repository.ChainWithWallets, err error) {
+func (l loggingMiddleware) GetWallets(ctx context.Context, groupid string, page int, limit, bip44change int) (wallets []*repository.ChainWithWallets, err error) {
 	defer func() {
-		l.logger.Log("method", "GetWallets", "groupid", groupid, "page", page, "limit", limit, "wallets", wallets, "err", err)
+		l.logger.Log("method", "GetWallets", "groupid", groupid, "page", page, "limit", limit, "bip44change", bip44change, "wallets", wallets, "err", err)
 	}()
-	return l.next.GetWallets(ctx, groupid, page, limit)
+	return l.next.GetWallets(ctx, groupid, page, limit, bip44change)
 }

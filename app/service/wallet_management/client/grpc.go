@@ -158,7 +158,7 @@ func encodeGetWalletsRequest(_ context.Context, request interface{}) (interface{
 	if !ok {
 		return nil, fmt.Errorf("endpoint GetWalletsRequest type assertion error")
 	}
-	return &pb.GetWalletsRequest{Groupid: r.Groupid, Page: r.Page, Limit: r.Limit}, nil
+	return &pb.GetWalletsRequest{Groupid: r.Groupid, Page: r.Page, Limit: r.Limit, Bip44Change: r.Bip44Change}, nil
 }
 
 // decodeGetWalletsResponse is a transport/grpc.DecodeResponseFunc that converts

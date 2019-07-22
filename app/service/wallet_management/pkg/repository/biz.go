@@ -24,7 +24,7 @@ type IBiz interface {
   GetChains(ctx context.Context, query map[string]interface{}) (chains []*SimpleChain, err error)
   UpdateXpubState(ctx context.Context, from, to, groupid string) error
   CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (wallet *Wallet, err error)
-  GetWallets(ctx context.Context, groupid string, page, limit int32) (wallets []*ChainWithWallets, err error)
+  GetWallets(ctx context.Context, groupid string, page, limit, bip44change int32) (wallets []*ChainWithWallets, err error)
 }
 
 type Bip44AccountKey struct {
@@ -210,7 +210,7 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
     ChainName: chains[0].Name}, nil
 }
 
-func (repo *repo) GetWallets(ctx context.Context, groupid string, page, limit int32) ([]*ChainWithWallets, error) {
+func (repo *repo) GetWallets(ctx context.Context, groupid string, page, limit, bip44change int32) ([]*ChainWithWallets, error) {
   uid, nid, _, err := libctx.ExtractAuthInfoFromContext(ctx)
   if err != nil {
     return nil, err
@@ -250,6 +250,7 @@ func (repo *repo) GetWallets(ctx context.Context, groupid string, page, limit in
     if err := repo.db.
       Order("created_at desc").
       Model(xpub).
+      Where("bip44_change = ?", bip44change).
       Related(&xpubWallets, "Wallets").
       Limit(limit).
       Offset((page - 1) * limit).

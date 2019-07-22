@@ -37,7 +37,7 @@ type WebapiService interface {
 	GetGroupAssets(ctx context.Context, groupid string) (groupAssets []*repository.GroupAsset, err error)
 	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (result []*repository.GroupAsset, err error)
 	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (id, address, respchainname string, status bool, err error)
-	GetWallets(ctx context.Context, groupid string, page, limit int) (wallets []*repository.ChainWithWallets, err error)
+	GetWallets(ctx context.Context, groupid string, page, limit, bip44change int) (wallets []*repository.ChainWithWallets, err error)
 }
 
 // Credentials Signup Signin params
@@ -291,13 +291,13 @@ func (b *basicWebapiService) CreateWallet(ctx context.Context, groupid string, c
 	return wallet.ID, wallet.Address, wallet.ChainName, wallet.Status, nil
 }
 
-func (b *basicWebapiService) GetWallets(ctx context.Context, groupid string, page int, limit int) ([]*repository.ChainWithWallets, error) {
+func (b *basicWebapiService) GetWallets(ctx context.Context, groupid string, page int, limit, bip44change int) ([]*repository.ChainWithWallets, error) {
 	uid, nid, roles, err := b.auth(ctx)
 	if err != nil {
 		return nil, err
 	}
 	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
-	wallets, err := b.WalletSrv.GetWallets(ctxWithAuthInfo, groupid, int32(page), int32(limit))
+	wallets, err := b.WalletSrv.GetWallets(ctxWithAuthInfo, groupid, int32(page), int32(limit), int32(bip44change))
 	if err != nil {
 		return nil, err
 	}
