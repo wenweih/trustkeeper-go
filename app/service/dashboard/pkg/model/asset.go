@@ -5,7 +5,7 @@ import (
 )
 
 // Token token
-type Token struct {
+type Asset struct {
   gorm.Model
   GroupID    string  `gorm:"unique_index:idx_group_id_symbol;not null"`
   Group      Group

@@ -16,24 +16,24 @@ type iChainAssetRepo interface {
   Query(tx *gorm.DB, ids []interface{}, query map[string]interface{}) (chains []*model.Chain, err error)
 }
 
-// SimpleToken token resp
-type SimpleToken struct {
-  TokenID  string  `json:"tokenid"`
-  Symbol   string  `json:"symbol"`
-  Status   bool    `json:"status"`
+// SimpleAsset token resp
+type SimpleAsset struct {
+  AssetID  string  `json:"AssetID"`
+  Symbol   string  `json:"Symbol"`
+  Status   bool    `json:"Status"`
 }
 
 // ChainAsset tokens correspond with chain resp
 type ChainAsset struct {
-  Chainid  string  `json:"chainid"`
-	Name     string  `json:"name"`
-  Coin     string  `json:"desc"`
-  Status   bool    `json:"status"`
-  SimpleTokens []*SimpleToken `json:"simpletokens"`
+  ChainID  string  `json:"ChainID"`
+	Name     string  `json:"Name"`
+  Coin     string  `json:"Coin"`
+  Status   bool    `json:"Status"`
+  SimpleAssets []*SimpleAsset `json:"SimpleAsset"`
 }
 
 func (repo *chainAssetRepo) Query(tx *gorm.DB, ids []interface{}, query map[string]interface{}) (chains []*model.Chain, err error) {
-  err = tx.Preload("Tokens").Where(query).Where("id in (?)", ids).Find(&chains).Error
+  err = tx.Preload("Assets").Where(query).Where("id in (?)", ids).Find(&chains).Error
   if err != nil {
     return nil, err
   }

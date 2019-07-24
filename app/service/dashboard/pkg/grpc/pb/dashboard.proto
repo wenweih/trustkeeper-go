@@ -50,18 +50,18 @@ message GetGroupAssetRequest {
  string groupid = 1;
 }
 
-message SimpleToken {
- string tokenid = 1;
+message SimpleAsset {
+ string AssetID = 1;
  string symbol  = 2;
  bool   status  = 3;
 }
 
 message ChainAsset {
-          string      chainid      = 1;
+          string      chainID      = 1;
           string      name         = 2;
           string      coin         = 3;
           bool        status       = 4;
- repeated SimpleToken simpletokens = 5;
+ repeated SimpleAsset SimpleAssets = 5;
 }
 
 message GetGroupAssetReply {

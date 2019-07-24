@@ -139,19 +139,19 @@ func decodeGetGroupAssetResponse(_ context.Context, reply interface{}) (interfac
 
   chainAssetsResp := make([]*repository.ChainAsset, len(resp.Chainassets))
   for i, ca := range resp.Chainassets {
-    simpleTokens := make([]*repository.SimpleToken, len(ca.Simpletokens))
-    for si, token := range ca.Simpletokens {
-      simpleTokens[si] = &repository.SimpleToken{
-        TokenID: token.Tokenid,
-        Symbol: token.Symbol,
-        Status: token.Status}
+    simpleAssets := make([]*repository.SimpleAsset, len(ca.SimpleAssets))
+    for si, asset := range ca.SimpleAssets {
+      simpleAssets[si] = &repository.SimpleAsset {
+        AssetID: asset.AssetID,
+        Symbol: asset.Symbol,
+        Status: asset.Status}
     }
     chainAssetsResp[i] = &repository.ChainAsset{
-      Chainid: ca.Chainid,
+      ChainID: ca.ChainID,
       Name: ca.Name,
       Coin: ca.Coin,
       Status: ca.Status,
-      SimpleTokens: simpleTokens}
+      SimpleAssets: simpleAssets}
   }
 
   return endpoint1.GetGroupAssetResponse{ChainAssets: chainAssetsResp}, nil

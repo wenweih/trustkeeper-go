@@ -52,8 +52,8 @@ func main()  {
   }
   for _, ca := range chainAssets {
     logger.Log("chainid: ", ca.ChainID, "coin: ", ca.Coin, "Name", ca.Name, "Status", ca.Status)
-    for _, token := range ca.SimpleTokens {
-      logger.Log("status", token.Status, "Symbol", token.Symbol, "TokenID", token.TokenID)
+    for _, asset := range ca.SimpleAssets {
+      logger.Log("status", asset.Status, "Symbol", asset.Symbol, "TokenID", asset.AssetID)
     }
   }
 

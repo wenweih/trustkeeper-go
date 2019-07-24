@@ -22,7 +22,7 @@ func New(db *gorm.DB) IBiz {
   db.AutoMigrate(
     model.Group{},
     model.Chain{},
-    model.Token{})
+    model.Asset{})
   repo := repo{
     db,
     &casbinRepo{casbin.NewCasbinRepo(db)},

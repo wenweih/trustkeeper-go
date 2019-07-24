@@ -121,19 +121,19 @@ func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interfac
 
   chainAssets = make([]*ChainAsset, len(chains))
   for i, c := range chains {
-    tokens := make([]*SimpleToken, len(c.Tokens))
-    for it, t := range c.Tokens {
-      tokens[it] = &SimpleToken{
-        TokenID: strconv.FormatUint(uint64(t.ID), 10),
+    assets := make([]*SimpleAsset, len(c.Assets))
+    for it, t := range c.Assets {
+      assets[it] = &SimpleAsset{
+        AssetID: strconv.FormatUint(uint64(t.ID), 10),
         Symbol: t.Symbol,
         Status: t.Status}
     }
     chainAssets[i] = &ChainAsset{
-      Chainid: strconv.FormatUint(uint64(c.ID), 10),
+      ChainID: strconv.FormatUint(uint64(c.ID), 10),
       Name: c.Name,
       Coin: c.Coin,
       Status: c.Status,
-      SimpleTokens: tokens}
+      SimpleAssets: assets}
   }
   return chainAssets, nil
 }
@@ -150,8 +150,8 @@ func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAss
   // groupChainAssets := make([]*model.Chain, len(chainAssets))
   tx := repo.db.Begin()
   for _, ca := range chainAssets {
-    tokens := []*model.Token{}
-    if err := copier.Copy(&tokens, &ca.SimpleTokens); err != nil {
+    assets := []*model.Asset{}
+    if err := copier.Copy(&assets, &ca.SimpleAssets); err != nil {
       return nil, err
     }
     chain := &model.Chain{
@@ -159,15 +159,15 @@ func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAss
       Coin: ca.Coin,
       Status: ca.Status,
       GroupID: groupid,
-      Tokens: tokens}
-    if len(ca.Chainid) > 1 {
+      Assets: assets}
+    if len(ca.ChainID) > 1 {
       repo.iChainAssetRepo.Update(tx, chain)
     }else {
       repo.iChainAssetRepo.Create(tx, chain)
     }
     chainID := strconv.FormatUint(uint64(chain.ID), 10)
     repo.iCasbinRepo.AddReadWriteForRoleInDomain(uid, nid, chainID)
-    ca.Chainid = chainID
+    ca.ChainID = chainID
   }
   err = tx.Commit().Error
   if err != nil {
