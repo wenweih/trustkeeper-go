@@ -102,6 +102,10 @@ func err2code(err error) int {
 	switch {
 	case strings.HasPrefix(err.Error(), "Fields exist"):
 		return http.StatusBadRequest
+	case strings.Contains(err.Error(), "token is expired"):
+		return http.StatusUnauthorized
+	case strings.Contains(err.Error(), "context deadline exceeded"):
+		return http.StatusRequestTimeout
 	default:
 		return http.StatusInternalServerError
 	}
