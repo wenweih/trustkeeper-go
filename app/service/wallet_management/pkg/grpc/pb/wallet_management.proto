@@ -37,6 +37,7 @@ message SimpleChain {
  int32  bip44id = 3;
  string coin    = 4;
  bool   status  = 5;
+ uint64 Decimal = 6;
 }
 
 message GetChainsReply {

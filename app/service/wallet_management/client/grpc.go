@@ -121,7 +121,8 @@ func decodeGetChainsResponse(_ context.Context, reply interface{}) (interface{},
 			Name: c.Name,
 			Coin: c.Coin,
 			Bip44id: uint(c.Bip44Id),
-			Status: c.Status}
+			Status: c.Status,
+			Decimal: c.Decimal}
   }
 
   return endpoint1.GetChainsResponse{Chains: chainsResp}, nil

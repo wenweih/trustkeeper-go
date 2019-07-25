@@ -127,6 +127,7 @@ func encodeGetGroupAssetResponse(_ context.Context, r interface{}) (interface{},
 				AssetID: asset.AssetID,
 				Symbol: asset.Symbol,
 				Status: asset.Status,
+				Decimal: asset.Decimal,
 				Identify: asset.Identify}
 		}
 		pbChainAssets[i] = &pb.ChainAsset{
@@ -134,6 +135,7 @@ func encodeGetGroupAssetResponse(_ context.Context, r interface{}) (interface{},
 			Coin: cs.Coin,
 			Name: cs.Name,
 			Status: cs.Status,
+			Decimal: cs.Decimal,
 			SimpleAssets: simpleAssets}
 	}
 	return &pb.GetGroupAssetReply{Chainassets: pbChainAssets}, nil

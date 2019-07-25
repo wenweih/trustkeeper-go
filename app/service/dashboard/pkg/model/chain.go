@@ -13,4 +13,5 @@ type Chain struct {
   Coin    string
   Status  bool
   Assets  []Asset  `gorm:"foreignkey:ChainID"`
+  Decimal uint64
 }

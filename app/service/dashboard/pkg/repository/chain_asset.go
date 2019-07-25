@@ -22,6 +22,7 @@ type SimpleAsset struct {
   Symbol   string  `json:"Symbol"`
   Status   bool    `json:"Status"`
   Identify string  `json:"Identify"`
+  Decimal  uint64  `json:"Decimal"`
 }
 
 // ChainAsset tokens correspond with chain resp
@@ -30,6 +31,7 @@ type ChainAsset struct {
 	Name     string  `json:"Name"`
   Coin     string  `json:"Coin"`
   Status   bool    `json:"Status"`
+  Decimal  uint64  `json:"Decimal"`
   SimpleAssets []*SimpleAsset `json:"SimpleAsset"`
 }
 

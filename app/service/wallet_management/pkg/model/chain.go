@@ -10,4 +10,5 @@ type Chain struct {
   Coin  string `gorm:"unique;not null"`
   Bip44id uint  `gorm:"unique_index;not null"`  // BIP44 公链编号 https://github.com/satoshilabs/slips/blob/master/slip-0044.md
   Status  bool
+  Decimal uint64
 }

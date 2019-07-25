@@ -12,6 +12,7 @@ type Asset struct {
   Group      Group
   ChainID    string
   Chain      Chain
-  Status  bool
+  Status     bool
   Identify   string
+  Decimal    uint64
 }

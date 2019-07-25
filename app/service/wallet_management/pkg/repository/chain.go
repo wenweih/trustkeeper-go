@@ -13,6 +13,7 @@ type SimpleChain struct {
   Coin  string  `json:"desc"`
   Bip44id uint   `json:"bip44id"`
   Status  bool  `json:"status"`
+  Decimal uint64
 }
 
 type chainRepo struct {}

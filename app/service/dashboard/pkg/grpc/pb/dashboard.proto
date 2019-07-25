@@ -55,6 +55,7 @@ message SimpleAsset {
  string symbol  = 2;
  bool   status  = 3;
  string Identify = 4;
+ uint64 Decimal = 5;
 }
 
 message ChainAsset {
@@ -62,7 +63,8 @@ message ChainAsset {
           string      name         = 2;
           string      coin         = 3;
           bool        status       = 4;
- repeated SimpleAsset SimpleAssets = 5;
+          uint64      Decimal      = 5;
+ repeated SimpleAsset SimpleAssets = 6;
 }
 
 message GetGroupAssetReply {

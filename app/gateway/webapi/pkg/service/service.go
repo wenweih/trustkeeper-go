@@ -226,6 +226,7 @@ func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string)
 			groupAssetsResp[di] = &repository.GroupAsset{
 				Name:   defaultChain.Name,
 				Coin:   defaultChain.Coin,
+				Decimal: defaultChain.Decimal,
 				Status: false}
 			for _, ga := range groupAssets {
 				if groupAssetsResp[di].Name != ga.Name && groupAssetsResp[di].Coin != ga.Coin {
@@ -237,6 +238,7 @@ func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string)
 						AssetID: asset.AssetID,
 						Symbol: asset.Symbol,
 						Status: asset.Status,
+						Decimal: asset.Decimal,
 						Identify: asset.Identify}
 				}
 				groupAssetsResp[di].ChainID = ga.ChainID

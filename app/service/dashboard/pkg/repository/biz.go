@@ -128,13 +128,15 @@ func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interfac
         AssetID: strconv.FormatUint(uint64(t.ID), 10),
         Symbol: t.Symbol,
         Identify: t.Identify,
-        Status: t.Status}
+        Status: t.Status,
+        Decimal: t.Decimal}
     }
     chainAssets[i] = &ChainAsset{
       ChainID: strconv.FormatUint(uint64(c.ID), 10),
       Name: c.Name,
       Coin: c.Coin,
       Status: c.Status,
+      Decimal: c.Decimal,
       SimpleAssets: assets}
   }
   return chainAssets, nil
@@ -160,7 +162,8 @@ func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAss
       Name: ca.Name,
       Coin: ca.Coin,
       Status: ca.Status,
-      GroupID: groupid}
+      GroupID: groupid,
+      Decimal: ca.Decimal}
     if len(ca.ChainID) > 1 {
       repo.iChainAssetRepo.Update(tx, chain)
     }else {
@@ -173,12 +176,14 @@ func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAss
         GroupID: groupid,
         Symbol: ca.Coin,
         Status: true,
-        ChainID: chainID}
+        ChainID: chainID,
+        Decimal: ca.Decimal}
       tx.Create(&asset)
       ca.SimpleAssets = append(ca.SimpleAssets, &SimpleAsset{
         AssetID: strconv.FormatUint(uint64(asset.ID), 10),
         Symbol: asset.Symbol,
-        Status: asset.Status})
+        Status: asset.Status,
+        Decimal: asset.Decimal})
     }
 
     repo.iCasbinRepo.AddReadWriteForRoleInDomain(uid, nid, chainID)

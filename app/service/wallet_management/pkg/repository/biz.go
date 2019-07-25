@@ -88,7 +88,8 @@ func (repo *repo) GetChains(ctx context.Context, query map[string]interface{}) (
       Name: c.Name,
       Coin: c.Coin,
       Bip44id: c.Bip44id,
-      Status: c.Status}
+      Status: c.Status,
+      Decimal: c.Decimal}
   }
   return simpleChains, nil
 }

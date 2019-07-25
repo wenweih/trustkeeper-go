@@ -88,7 +88,8 @@ func encodeGetChainsResponse(_ context.Context, r interface{}) (interface{}, err
 			Name:    c.Name,
 			Coin:    c.Coin,
 			Bip44Id: int32(c.Bip44id),
-			Status:  c.Status}
+			Status:  c.Status,
+			Decimal: c.Decimal}
 	}
 	return &pb.GetChainsReply{Chains: pbChains}, nil
 }
