@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+
+
+//The Transaction service definition.
+service Transaction {
+ rpc AssignAssetsToWallet (AssignAssetsToWalletRequest) returns (AssignAssetsToWalletReply);
+}
+
+message AssignAssetsToWalletRequest {}
+
+message AssignAssetsToWalletReply {}
+
