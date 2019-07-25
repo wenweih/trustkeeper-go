@@ -12,5 +12,5 @@ type Chain struct {
   Name    string  `gorm:"unique_index:idx_group_id_name"`
   Coin    string
   Status  bool
-  Assets  []*Asset
+  Assets  []Asset  `gorm:"foreignkey:ChainID"`
 }

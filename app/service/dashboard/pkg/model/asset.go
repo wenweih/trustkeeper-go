@@ -4,12 +4,12 @@ import (
   "github.com/jinzhu/gorm"
 )
 
-// Token token
+// Asset token
 type Asset struct {
   gorm.Model
   GroupID    string  `gorm:"unique_index:idx_group_id_symbol;not null"`
-  Group      Group
   Symbol     string  `gorm:"unique_index:idx_group_id_symbol;not null"`
+  Group      Group
   ChainID    string
   Chain      Chain
   Status  bool

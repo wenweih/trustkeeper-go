@@ -231,7 +231,7 @@ func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string)
 				if groupAssetsResp[di].Name != ga.Name && groupAssetsResp[di].Coin != ga.Coin {
 					continue
 				}
-				tokens := make([]*repository.SimpleAsset, 0, len(ga.SimpleAssets))
+				tokens := make([]*repository.SimpleAsset, len(ga.SimpleAssets))
 				for it, asset := range ga.SimpleAssets {
 					tokens[it] = &repository.SimpleAsset{
 						AssetID: asset.AssetID,

@@ -9,6 +9,7 @@ import (
   "trustkeeper-go/app/service/dashboard/pkg/model"
 )
 
+// IBiz dashboard service business logic
 type IBiz interface {
   Signup(uuid, email, name, xpub string) error
   CreateGroup(ctx context.Context, m *model.Group) error
@@ -150,7 +151,7 @@ func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAss
   // groupChainAssets := make([]*model.Chain, len(chainAssets))
   tx := repo.db.Begin()
   for _, ca := range chainAssets {
-    assets := []*model.Asset{}
+    assets := []model.Asset{}
     if err := copier.Copy(&assets, &ca.SimpleAssets); err != nil {
       return nil, err
     }
@@ -158,14 +159,23 @@ func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAss
       Name: ca.Name,
       Coin: ca.Coin,
       Status: ca.Status,
-      GroupID: groupid,
-      Assets: assets}
+      GroupID: groupid}
     if len(ca.ChainID) > 1 {
       repo.iChainAssetRepo.Update(tx, chain)
     }else {
       repo.iChainAssetRepo.Create(tx, chain)
     }
+
     chainID := strconv.FormatUint(uint64(chain.ID), 10)
+    if len(assets) <= 0 {
+      asset := model.Asset{GroupID: groupid, Symbol: ca.Coin, Status: true, ChainID: chainID}
+      tx.Create(&asset)
+      ca.SimpleAssets = append(ca.SimpleAssets, &SimpleAsset{
+        AssetID: strconv.FormatUint(uint64(asset.ID), 10),
+        Symbol: asset.Symbol,
+        Status: asset.Status})
+    }
+
     repo.iCasbinRepo.AddReadWriteForRoleInDomain(uid, nid, chainID)
     ca.ChainID = chainID
   }
