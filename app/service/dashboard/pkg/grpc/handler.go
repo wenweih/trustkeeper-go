@@ -123,7 +123,11 @@ func encodeGetGroupAssetResponse(_ context.Context, r interface{}) (interface{},
 	for i, cs := range resp.ChainAssets {
 		simpleAssets := make([]*pb.SimpleAsset, len(cs.SimpleAssets))
 		for si, asset := range cs.SimpleAssets {
-			simpleAssets[si] = &pb.SimpleAsset{AssetID: asset.AssetID, Symbol: asset.Symbol, Status: asset.Status}
+			simpleAssets[si] = &pb.SimpleAsset{
+				AssetID: asset.AssetID,
+				Symbol: asset.Symbol,
+				Status: asset.Status,
+				Identify: asset.Identify}
 		}
 		pbChainAssets[i] = &pb.ChainAsset{
 			ChainID: cs.ChainID,

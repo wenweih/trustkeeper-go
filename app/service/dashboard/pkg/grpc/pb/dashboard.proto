@@ -54,6 +54,7 @@ message SimpleAsset {
  string AssetID = 1;
  string symbol  = 2;
  bool   status  = 3;
+ string Identify = 4;
 }
 
 message ChainAsset {

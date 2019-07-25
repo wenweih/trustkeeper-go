@@ -127,6 +127,7 @@ func (repo *repo) QueryChainAsset(ctx context.Context, query map[string]interfac
       assets[it] = &SimpleAsset{
         AssetID: strconv.FormatUint(uint64(t.ID), 10),
         Symbol: t.Symbol,
+        Identify: t.Identify,
         Status: t.Status}
     }
     chainAssets[i] = &ChainAsset{
@@ -168,7 +169,11 @@ func (repo *repo) ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAss
 
     chainID := strconv.FormatUint(uint64(chain.ID), 10)
     if len(assets) <= 0 {
-      asset := model.Asset{GroupID: groupid, Symbol: ca.Coin, Status: true, ChainID: chainID}
+      asset := model.Asset{
+        GroupID: groupid,
+        Symbol: ca.Coin,
+        Status: true,
+        ChainID: chainID}
       tx.Create(&asset)
       ca.SimpleAssets = append(ca.SimpleAssets, &SimpleAsset{
         AssetID: strconv.FormatUint(uint64(asset.ID), 10),

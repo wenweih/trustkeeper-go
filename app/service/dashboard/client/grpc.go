@@ -142,6 +142,7 @@ func decodeGetGroupAssetResponse(_ context.Context, reply interface{}) (interfac
     simpleAssets := make([]*repository.SimpleAsset, len(ca.SimpleAssets))
     for si, asset := range ca.SimpleAssets {
       simpleAssets[si] = &repository.SimpleAsset {
+        Identify: asset.Identify,
         AssetID: asset.AssetID,
         Symbol: asset.Symbol,
         Status: asset.Status}

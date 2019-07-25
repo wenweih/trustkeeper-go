@@ -13,4 +13,5 @@ type Asset struct {
   ChainID    string
   Chain      Chain
   Status  bool
+  Identify   string
 }

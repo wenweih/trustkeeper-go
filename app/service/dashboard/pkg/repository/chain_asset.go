@@ -21,6 +21,7 @@ type SimpleAsset struct {
   AssetID  string  `json:"AssetID"`
   Symbol   string  `json:"Symbol"`
   Status   bool    `json:"Status"`
+  Identify string  `json:"Identify"`
 }
 
 // ChainAsset tokens correspond with chain resp
