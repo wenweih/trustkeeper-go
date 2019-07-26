@@ -10,6 +10,8 @@ const (
   // DashboardSrv dashboard service register in etcd
   DashboardSrv = "/services/dashboard/"
 
+  TxSrv = "/services/tx/"
+
   // WalletKeySrv wallet_key register in etcd
   WalletKeySrv = "/services/walletkey/"
 

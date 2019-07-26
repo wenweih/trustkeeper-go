@@ -6,4 +6,5 @@ type SimpleAsset struct {
   Symbol   string  `json:"Symbol"`
   Status   bool    `json:"Status"`
   Identify string  `json:"Identify"`
+  Decimal  uint64  `json:"Decimal"`
 }

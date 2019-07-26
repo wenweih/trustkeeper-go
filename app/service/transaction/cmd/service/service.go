@@ -24,21 +24,22 @@ import (
 	grpc "trustkeeper-go/app/service/transaction/pkg/grpc"
 	pb "trustkeeper-go/app/service/transaction/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/transaction/pkg/service"
+
+	common "trustkeeper-go/library/util"
+	"trustkeeper-go/library/consul"
+	"trustkeeper-go/app/service/transaction/pkg/configure"
+	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
-var tracer opentracinggo.Tracer
-var logger log.Logger
+var (
+	conf   configure.Conf
+	logger log.Logger
+	tracer opentracinggo.Tracer
+)
 
 // Define our flags. Your service probably won't need to bind listeners for
 // all* supported transports, but we do it here for demonstration purposes.
 var fs = flag.NewFlagSet("transaction", flag.ExitOnError)
-var debugAddr = fs.String("debug.addr", ":8080", "Debug and metrics listen address")
-var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
-var grpcAddr = fs.String("grpc-addr", ":8082", "gRPC listen address")
-var thriftAddr = fs.String("thrift-addr", ":8083", "Thrift listen address")
-var thriftProtocol = fs.String("thrift-protocol", "binary", "binary, compact, json, simplejson")
-var thriftBuffer = fs.Int("thrift-buffer", 0, "0 for unbuffered")
-var thriftFramed = fs.Bool("thrift-framed", false, "true to enable framing")
 var zipkinURL = fs.String("zipkin-url", "", "Enable Zipkin tracing via a collector URL e.g. http://localhost:9411/api/v1/spans")
 var lightstepToken = fs.String("lightstep-token", "", "Enable LightStep tracing via a LightStep access token")
 var appdashAddr = fs.String("appdash-addr", "", "Enable Appdash tracing via an Appdash server host:port")
@@ -81,7 +82,18 @@ func Run() {
 		tracer = opentracinggo.GlobalTracer()
 	}
 
-	svc := service.New(getServiceMiddleware(logger))
+	c, err := configure.New()
+	if err != nil {
+		logger.Log("err: ", err.Error())
+		os.Exit(1)
+	}
+	conf = *c
+
+	svc, err := service.New(conf, getServiceMiddleware(logger))
+	if err != nil {
+		logger.Log("new service error: ", err.Error())
+		os.Exit(1)
+	}
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initMetricsEndpoint(g)
@@ -94,16 +106,32 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	// Add your GRPC options here
 
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
-	grpcListener, err := net.Listen("tcp", *grpcAddr)
+	grpcListener, err := net.Listen("tcp", common.LocalIP()+":0")
 	if err != nil {
 		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
+		os.Exit(1)
+	}
+	port := grpcListener.Addr().(*net.TCPAddr).Port
+	consulReg := consul.NewConsulRegister(
+		conf.ConsulAddress,
+		common.TxSrv,
+		common.LocalIP(),
+		port,
+		[]string{"transaction"})
+	register, err := consulReg.NewConsulGRPCRegister()
+	if err != nil {
+		logger.Log("Get consul grpc register error: ", err.Error())
+		os.Exit(1)
 	}
 	g.Add(func() error {
-		logger.Log("transport", "gRPC", "addr", *grpcAddr)
+		logger.Log("transport", "gRPC", "addr", grpcListener.Addr().String())
 		baseServer := grpc1.NewServer()
 		pb.RegisterTransactionServer(baseServer, grpcServer)
+		grpc_health_v1.RegisterHealthServer(baseServer, &consul.HealthImpl{})
+		register.Register()
 		return baseServer.Serve(grpcListener)
 	}, func(error) {
+		register.Deregister()
 		grpcListener.Close()
 	})
 
@@ -130,12 +158,12 @@ func getEndpointMiddleware(logger log.Logger) (mw map[string][]endpoint1.Middlew
 }
 func initMetricsEndpoint(g *group.Group) {
 	http.DefaultServeMux.Handle("/metrics", promhttp.Handler())
-	debugListener, err := net.Listen("tcp", *debugAddr)
+	debugListener, err := net.Listen("tcp", "[::1]:0")
 	if err != nil {
 		logger.Log("transport", "debug/HTTP", "during", "Listen", "err", err)
 	}
 	g.Add(func() error {
-		logger.Log("transport", "debug/HTTP", "addr", *debugAddr)
+		logger.Log("transport", "debug/HTTP", "addr", debugListener.Addr().String())
 		return http.Serve(debugListener, http.DefaultServeMux)
 	}, func(error) {
 		debugListener.Close()

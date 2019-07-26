@@ -9,6 +9,7 @@ SQL="/cockroach/cockroach.sh sql $HOSTPARAMS"
 $SQL -e "CREATE DATABASE account;"
 $SQL -e "CREATE DATABASE dashboard;"
 $SQL -e "CREATE DATABASE wallet;"
+$SQL -e "CREATE DATABASE wallet_tx;"
 
 # https://www.cockroachlabs.com/docs/stable/create-user.html
 $SQL -e "CREATE USER trustkeeper;"
