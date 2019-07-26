@@ -119,24 +119,9 @@ func encodeGetGroupAssetResponse(_ context.Context, r interface{}) (interface{},
 		return nil, fmt.Errorf("interface{} to endpoint GetGroupAssetResponse type assertion error")
 	}
 
-	pbChainAssets := make([]*pb.ChainAsset, len(resp.ChainAssets))
-	for i, cs := range resp.ChainAssets {
-		simpleAssets := make([]*pb.SimpleAsset, len(cs.SimpleAssets))
-		for si, asset := range cs.SimpleAssets {
-			simpleAssets[si] = &pb.SimpleAsset{
-				AssetID: asset.AssetID,
-				Symbol: asset.Symbol,
-				Status: asset.Status,
-				Decimal: asset.Decimal,
-				Identify: asset.Identify}
-		}
-		pbChainAssets[i] = &pb.ChainAsset{
-			ChainID: cs.ChainID,
-			Coin: cs.Coin,
-			Name: cs.Name,
-			Status: cs.Status,
-			Decimal: cs.Decimal,
-			SimpleAssets: simpleAssets}
+	pbChainAssets := make([]*pb.ChainAsset, 0)
+	if err := copier.Copy(&pbChainAssets, &resp.ChainAssets); err != nil {
+		return nil, err
 	}
 	return &pb.GetGroupAssetReply{Chainassets: pbChainAssets}, nil
 }
