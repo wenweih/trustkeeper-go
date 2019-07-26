@@ -19,6 +19,10 @@ import (
 	walletManagementGrpcClient "trustkeeper-go/app/service/wallet_management/client"
 	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
 
+	txGrpcClient "trustkeeper-go/app/service/transaction/client"
+	txService "trustkeeper-go/app/service/transaction/pkg/service"
+	txRepository "trustkeeper-go/app/service/transaction/pkg/repository"
+
 	"github.com/caarlos0/env"
 	log "github.com/go-kit/kit/log"
 	"github.com/jinzhu/copier"
@@ -51,6 +55,7 @@ type basicWebapiService struct {
 	accountSrv   accountService.AccountService
 	dashboardSrv dashboardService.DashboardService
 	WalletSrv    walletManagementService.WalletManagementService
+	txSrv        txService.TransactionService
 }
 
 func makeError(ctx context.Context, err error) error {
@@ -151,10 +156,16 @@ func NewBasicWebapiService(logger log.Logger) (WebapiService, error) {
 		return nil, fmt.Errorf("walletManagementGrpcClient: %s", err.Error())
 	}
 
+	txClient, err := txGrpcClient.New(cfg.ConsulAddr, logger)
+	if err != nil {
+		return nil, fmt.Errorf("txGrpcClient: %s", err.Error())
+	}
+
 	return &basicWebapiService{
 		accountSrv:   accountClient,
 		dashboardSrv: dashboardClient,
 		WalletSrv:    wmClient,
+		txSrv: txClient,
 	}, nil
 }
 
@@ -292,6 +303,25 @@ func (b *basicWebapiService) CreateWallet(ctx context.Context, groupid string, c
 	wallet, err := b.WalletSrv.CreateWallet(ctxWithAuthInfo, groupid, chainname, bip44change)
 	if err != nil {
 		return "", "", "", false, err
+	}
+	groupAssets, err := b.dashboardSrv.GetGroupAssets(ctxWithAuthInfo, groupid)
+	if err != nil {
+		return "", "", "", false, err
+	}
+	txRepoAssets := make([]*txRepository.SimpleAsset, 0)
+	for _, groupAsset := range groupAssets {
+		if groupAsset.Name == chainname {
+			if err := copier.Copy(&txRepoAssets, &groupAsset.SimpleAssets); err != nil {
+				return "", "", "", false, err
+			}
+			break
+		}
+	}
+	if len(txRepoAssets) >= 1 {
+		err := b.txSrv.AssignAssetsToWallet(ctxWithAuthInfo, wallet.Address, txRepoAssets)
+		if err != nil {
+			return "", "", "", false, err
+		}
 	}
 	return wallet.ID, wallet.Address, wallet.ChainName, wallet.Status, nil
 }

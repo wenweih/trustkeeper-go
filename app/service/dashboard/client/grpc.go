@@ -60,7 +60,12 @@ func encodeCreateGroupRequest(_ context.Context, request interface{}) (interface
   if !ok {
     return nil, fmt.Errorf("request interface to endpoint.CreateGroupRequest type assertion error")
   }
-  return &pb.CreateGroupRequest{Uuid: r.UUID, Name: r.Name, Desc: r.Desc, NamespaceID: r.NamespaceID}, nil
+  return &pb.CreateGroupRequest{
+    Uuid: r.UUID,
+    Name: r.Name,
+    Desc: r.Desc,
+    NamespaceID: r.NamespaceID,
+  }, nil
 }
 
 // decodeCreateGroupResponse is a transport/grpc.DecodeResponseFunc that converts
