@@ -18,12 +18,20 @@ type AssignAssetsToWalletResponse struct {
 	Err error `json:"err"`
 }
 
+// Close implements Service. Primarily useful in a client.
+func (e Endpoints) Close() error {
+	return nil
+}
+
 // MakeAssignAssetsToWalletEndpoint returns an endpoint that invokes AssignAssetsToWallet on the service.
 func MakeAssignAssetsToWalletEndpoint(s service.TransactionService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(AssignAssetsToWalletRequest)
 		err := s.AssignAssetsToWallet(ctx, req.Address, req.Assets)
-		return AssignAssetsToWalletResponse{Err: err}, nil
+		if err != nil {
+			return AssignAssetsToWalletResponse{Err: err}, err
+		}
+		return AssignAssetsToWalletResponse{}, nil
 	}
 }
 
@@ -45,9 +53,9 @@ func (e Endpoints) AssignAssetsToWallet(ctx context.Context, address string, ass
 		Address: address,
 		Assets:  assets,
 	}
-	response, err := e.AssignAssetsToWalletEndpoint(ctx, request)
+	_, err = e.AssignAssetsToWalletEndpoint(ctx, request)
 	if err != nil {
-		return
+		return err
 	}
-	return response.(AssignAssetsToWalletResponse).Err
+	return nil
 }

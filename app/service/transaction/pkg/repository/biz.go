@@ -4,10 +4,35 @@ import (
   "fmt"
   "context"
   "google.golang.org/grpc/metadata"
+  "trustkeeper-go/app/service/transaction/pkg/model"
 )
 
 // IBiz dashboard service business logic
-type IBiz interface {}
+type IBiz interface {
+  AssignAssetsToWallet(ctx context.Context, address string, assets []*SimpleAsset) (err error)
+  Close() error
+}
+
+func (repo *repo) AssignAssetsToWallet(ctx context.Context, address string, assets []*SimpleAsset) (err error) {
+  _, _, _, err = extractAuthInfoFromContext(ctx)
+  if err != nil {
+    return err
+  }
+  tx := repo.db.Begin()
+  for _, asset := range assets {
+    balance := model.Balance{
+      Address: address,
+      Symbol: asset.Symbol,
+      Identify: asset.Identify,
+      Decimal: asset.Decimal}
+    tx.Create(&balance)
+  }
+  return tx.Commit().Error
+}
+
+func (repo *repo) Close() error{
+  return repo.close()
+}
 
 func extractAuthInfoFromContext(ctx context.Context) (string, string, []string, error) {
   md, ok := metadata.FromIncomingContext(ctx)

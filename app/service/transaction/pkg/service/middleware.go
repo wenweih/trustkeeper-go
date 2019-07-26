@@ -23,6 +23,13 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 }
 
+func (l loggingMiddleware) Close() error {
+	defer func() {
+		l.logger.Log("method", "Close", "close resource", "(database, redis etc...)")
+	}()
+	return l.next.Close()
+}
+
 func (l loggingMiddleware) AssignAssetsToWallet(ctx context.Context, address string, assets []*repository.SimpleAsset) (err error) {
 	defer func() {
 		l.logger.Log("method", "AssignAssetsToWallet", "address", address, "assets", assets, "err", err)

@@ -97,7 +97,7 @@ func Run() {
 	eps := endpoint.New(svc, getEndpointMiddleware(logger))
 	g := createService(eps)
 	initMetricsEndpoint(g)
-	initCancelInterrupt(g)
+	initCancelInterrupt(svc, g)
 	logger.Log("exit", g.Run())
 
 }
@@ -169,7 +169,7 @@ func initMetricsEndpoint(g *group.Group) {
 		debugListener.Close()
 	})
 }
-func initCancelInterrupt(g *group.Group) {
+func initCancelInterrupt(s service.TransactionService, g *group.Group) {
 	cancelInterrupt := make(chan struct{})
 	g.Add(func() error {
 		c := make(chan os.Signal, 1)
@@ -181,6 +181,7 @@ func initCancelInterrupt(g *group.Group) {
 			return nil
 		}
 	}, func(error) {
+		s.Close()
 		close(cancelInterrupt)
 	})
 }

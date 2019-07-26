@@ -9,7 +9,17 @@ service Transaction {
  rpc AssignAssetsToWallet (AssignAssetsToWalletRequest) returns (AssignAssetsToWalletReply);
 }
 
-message AssignAssetsToWalletRequest {}
+message SimpleAsset {
+ string AssetID = 1;
+ string symbol  = 2;
+ bool   status  = 3;
+ string Identify = 4;
+ uint64 Decimal = 5;
+}
+
+message AssignAssetsToWalletRequest {
+           string address = 1;
+  repeated SimpleAsset SimpleAssets = 2;
+}
 
 message AssignAssetsToWalletReply {}
-

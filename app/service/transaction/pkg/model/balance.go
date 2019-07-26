@@ -7,7 +7,8 @@ import (
 // Balance balance related with assets for address
 type Balance struct {
   gorm.Model
-  Address   string  `gorm:"index;not null"`
-  Symbol    string  `gorm:"not null"`
+  Address   string  `gorm:"unique_index:idx_address_symbol;not null"`
+  Symbol    string  `gorm:"unique_index:idx_address_symbol;not null"`
   Identify  string
+  Decimal   uint64
 }

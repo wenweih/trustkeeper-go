@@ -9,6 +9,7 @@ import (
 
 // TransactionService describes the service.
 type TransactionService interface {
+	Close() error
 	AssignAssetsToWallet(ctx context.Context, address string, assets []*repository.SimpleAsset) (err error)
 }
 
@@ -16,9 +17,13 @@ type basicTransactionService struct{
 	biz repository.IBiz
 }
 
+func (b *basicTransactionService) Close() error {
+	return b.biz.Close()
+}
+
 func (b *basicTransactionService) AssignAssetsToWallet(ctx context.Context, address string, assets []*repository.SimpleAsset) (err error) {
-	// TODO implement the business logic of AssignAssetsToWallet
-	return err
+	err = b.biz.AssignAssetsToWallet(ctx, address, assets)
+	return
 }
 
 // NewBasicTransactionService returns a naive, stateless implementation of TransactionService.
