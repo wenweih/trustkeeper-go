@@ -1,0 +1,4 @@
+- [command line options](https://github.com/ethereum/go-ethereum/wiki/Command-Line-Options)
+- [Running ethereum in Docker](https://github.com/ethereum/go-ethereum/wiki/Running-in-Docker)
+- [Ethereum 私有链和 web3.js 使用](https://huangwenwei.com/blogs/ethereum-private-chain-and-web3js)
+- [Ethereum private chain resets back to block 0 when restarted](https://ethereum.stackexchange.com/questions/39922/ethereum-private-chain-resets-back-to-block-0-when-restarted)「Every time you terminate geth, up to 128 blocks can be lost, with default settings.」
