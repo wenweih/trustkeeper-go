@@ -1,0 +1,53 @@
+version: '2'
+
+services:
+  bitcoincore:
+    container_name: 'bitcoincore_0.15.2'
+    build:
+      context: ./bitcoincore
+      dockerfile: Dockerfile-0-15-2
+    ports:
+      - "8331:8331"
+      - "8431:8431"
+    command:
+      -server
+      -listen
+      -printtoconsole
+      -regtest=1
+      -port=8331
+      -rpcport=8431
+      -rpcuser=btcrpc
+      -rpcpassword=123456
+      -addnode=omnicore_0.5.0:8332
+      -connect=omnicore_0.5.0:8332
+    networks:
+      - chainnodes
+    volumes:
+      - ./bitcoincore/docker-entrypoint.sh:/entrypoint.sh
+      - ./bitcoincore/data://home/bitcoin/.bitcoin
+  omnicore:
+    container_name: 'omnicore_0.5.0'
+    build:
+      context: ./omnicore
+      dockerfile: Dockerfile-0-5-0
+    ports:
+      - "8332:8332"
+      - "8432:8432"
+    command:
+      -server
+      -listen
+      -addnode=bitcoincore_0.15.2:8431
+      -printtoconsole
+      -regtest=1
+      -port=8332
+      -rpcport=8432
+      -rpcuser=btcrpc
+      -rpcpassword=123456
+      -txindex=1
+    networks:
+      - chainnodes
+    volumes:
+      - ./omnicore/docker-entrypoint.sh:/entrypoint.sh
+      - ./omnicore/data://home/bitcoin/.bitcoin
+networks:
+  chainnodes:

@@ -1,0 +1,28 @@
+FROM debian:stable-slim
+
+LABEL maintainer.0="João Fonseca (@joaopaulofonseca)" \
+  maintainer.1="Pedro Branco (@pedrobranco)" \
+  maintainer.2="Rui Marinho (@ruimarinho)"
+
+RUN useradd -r bitcoin \
+  && apt-get update -y \
+  && apt-get install -y curl gnupg gosu \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+ENV BITCOIN_DATA=/home/bitcoin/.bitcoin
+ENV PATH=/opt/omnicore-0.5.0/bin:$PATH
+
+RUN curl -SLO https://github.com/OmniLayer/omnicore/releases/download/v0.5.0/omnicore-0.5.0-x86_64-linux-gnu.tar.gz \
+  && tar -xzf *.tar.gz -C /opt \
+  && rm *.tar.gz
+
+COPY docker-entrypoint.sh /entrypoint.sh
+
+VOLUME ["/home/bitcoin/.bitcoin"]
+
+EXPOSE 8332 8333 18332 18333 18443 18444 8332 8432
+
+ENTRYPOINT ["sh", "/entrypoint.sh"]
+
+CMD ["omnicored"]
