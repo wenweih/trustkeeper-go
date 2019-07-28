@@ -58,12 +58,7 @@ services:
       - "8546:8546"
     volumes:
       - ./ethereum/data:/root/.ethereum
-    command:
-      --rpcapi admin,debug,eth,miner,net,personal,shh,txpool,web3
-      --rpc
-      --dev
-      --txpool.accountqueue 1000
-      --rpcaddr 0.0.0.0
+    command: "--gcmode archive --rpc --datadir /root/.ethereum --txpool.accountqueue 1000 --rpcaddr 0.0.0.0 --dev --dev.period 1 --rpcapi admin,db,eth,net,web3,personal,web3,miner,debug,sha3,txpool"
     networks:
       - chainnodes
 networks:
