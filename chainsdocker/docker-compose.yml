@@ -9,8 +9,6 @@ services:
     ports:
       - "8331:8331"
       - "8431:8431"
-    extra_hosts:
-      - "outside:172.17.0.1"
     command:
       -server=1
       -listen=1
@@ -23,7 +21,7 @@ services:
       -rpcallowip=0.0.0.0/0
       -addnode=omnicore_0.5.0:8332
       -connect=omnicore_0.5.0:8332
-      -blocknotify='curl http://172.17.0.1:3001/btc-best-block-notify?hash=%s'
+      -blocknotify='curl http://10.200.10.1:3001/btc-best-block-notify?hash=%s'
     networks:
       - chainnodes
     volumes:

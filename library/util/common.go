@@ -2,6 +2,7 @@ package common
 
 import (
   "net"
+  "github.com/gin-gonic/gin"
 )
 
 const (
@@ -54,4 +55,19 @@ func LocalIP() string {
     }
   }
   return ""
+}
+
+
+// GinRespException bad response util
+func GinRespException(c *gin.Context, code int, err error) {
+  c.AbortWithStatusJSON(code, &JSONAbortMsg{
+    Code: code,
+    Msg: err.Error(),
+  })
+}
+
+// JSONAbortMsg about json
+type JSONAbortMsg struct {
+  Code  int `json:"code"`
+  Msg   string `json:"msg"`
 }

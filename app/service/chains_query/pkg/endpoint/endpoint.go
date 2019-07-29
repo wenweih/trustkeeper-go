@@ -8,7 +8,7 @@ import (
 
 // BitcoincoreBlockRequest collects the request parameters for the BitcoincoreBlock method.
 type BitcoincoreBlockRequest struct {
-	BlockHash string `json:"block_hash"`
+	BlockHash *chainhash.Hash `json:"block_hash"`
 }
 
 // BitcoincoreBlockResponse collects the response parameters for the BitcoincoreBlock method.
@@ -42,7 +42,7 @@ type Failure interface {
 }
 
 // BitcoincoreBlock implements Service. Primarily useful in a client.
-func (e Endpoints) BitcoincoreBlock(ctx context.Context, blockHash string) (b0 *btcjson.GetBlockVerboseResult, e1 error) {
+func (e Endpoints) BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (b0 *btcjson.GetBlockVerboseResult, e1 error) {
 	request := BitcoincoreBlockRequest{BlockHash: blockHash}
 	response, err := e.BitcoincoreBlockEndpoint(ctx, request)
 	if err != nil {

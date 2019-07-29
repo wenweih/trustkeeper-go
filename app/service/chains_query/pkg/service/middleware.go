@@ -3,6 +3,8 @@ package service
 import (
 	"context"
 	log "github.com/go-kit/kit/log"
+	"github.com/btcsuite/btcd/btcjson"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
 )
 
 // Middleware describes a service middleware.
@@ -22,7 +24,7 @@ func LoggingMiddleware(logger log.Logger) Middleware {
 
 }
 
-func (l loggingMiddleware) BitcoincoreBlock(ctx context.Context, blockHash string) (b0 *btcjson.GetBlockVerboseResult, e1 error) {
+func (l loggingMiddleware) BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (b0 *btcjson.GetBlockVerboseResult, e1 error) {
 	defer func() {
 		l.logger.Log("method", "BitcoincoreBlock", "blockHash", blockHash, "b0", b0, "e1", e1)
 	}()
