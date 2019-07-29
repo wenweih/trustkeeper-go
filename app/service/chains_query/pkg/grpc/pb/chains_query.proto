@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package pb;
+
+
+
+//The ChainsQuery service definition.
+service ChainsQuery {
+ rpc BitcoincoreBlock (BitcoincoreBlockRequest) returns (BitcoincoreBlockReply);
+}
+
+message BitcoincoreBlockRequest {}
+
+message BitcoincoreBlockReply {}
+
