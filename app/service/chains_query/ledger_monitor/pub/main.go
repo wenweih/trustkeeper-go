@@ -18,7 +18,7 @@ var (
 
   conf   *configure.Conf
   logger log.Logger
-  svc    service.ChainsQueryService
+  svc    service.LedgerMonitorService
 )
 
 var rootCmd = &cobra.Command {
@@ -38,8 +38,7 @@ func main()  {
   }
   // messageClient = &mq.MessagingClient{}
   // messageClient.ConnectToBroker(conf.MQ)
-
-  svc, err = service.New(*conf, logger, []service.Middleware{})
+  svc, err = service.NewLedgerMonitorService(*conf, logger)
   if err != nil {
     logger.Log("svc error: ", err.Error())
     os.Exit(1)
