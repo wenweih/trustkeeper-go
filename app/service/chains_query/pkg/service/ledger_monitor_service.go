@@ -14,7 +14,7 @@ import (
 // LedgerMonitorService describes the service.
 type LedgerMonitorService interface {
 	BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error)
-	EthereumSubscribeNewHead(ctc context.Context, ch chan<- *types.Header) (ethereum.Subscription, error)
+	EthereumSubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error)
 }
 
 // NewLedgerMonitorService returns a ChainsQueryService with all of the expected middleware wired in.
@@ -29,6 +29,6 @@ func NewLedgerMonitorService(conf configure.Conf, logger log.Logger) (LedgerMoni
 }
 
 
-func (b *basicChainsQueryService) EthereumSubscribeNewHead(ctc context.Context, ch chan<- *types.Header) (ethereum.Subscription, error) {
-	return b.biz.EthereumSubscribeNewHead(ctc, ch)
+func (b *basicChainsQueryService) EthereumSubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error) {
+	return b.biz.EthereumSubscribeNewHead(ctx, ch)
 }
