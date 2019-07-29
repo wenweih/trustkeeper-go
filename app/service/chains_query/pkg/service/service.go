@@ -11,6 +11,8 @@ import (
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/rpcclient"
 	log "github.com/go-kit/kit/log"
+
+	"github.com/ethereum/go-ethereum/ethclient"
 )
 
 // ChainsQueryService describes the service.
@@ -23,14 +25,19 @@ type basicChainsQueryService struct {
 }
 
 // NewBasicChainsQueryService returns a naive, stateless implementation of ChainsQueryService.
-func NewBasicChainsQueryService(conf configure.Conf, logger log.Logger) (ChainsQueryService, error) {
+func NewBasicChainsQueryService(conf configure.Conf, logger log.Logger) (*basicChainsQueryService, error) {
 	btcclient, err := rpcclient.New(conf.BTCconnCfg, nil)
 	if err != nil {
 		return nil, errors.New(strings.Join([]string{"rpcclient error", err.Error()}, ":"))
 	}
 
+	ethereumClient, err := ethclient.Dial(conf.ETHRPC)
+	if err != nil {
+		return nil, errors.New(strings.Join([]string{"Ethereum client error", err.Error()}, ":"))
+	}
+
 	return &basicChainsQueryService{
-		biz: repository.New(btcclient),
+		biz: repository.New(btcclient, ethereumClient),
 	}, nil
 }
 
@@ -47,6 +54,7 @@ func New(conf configure.Conf, logger log.Logger, middleware []Middleware) (Chain
 	}
 	return svc, nil
 }
+
 
 func (b *basicChainsQueryService) BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error) {
 	return b.biz.QueryBitcoincoreBlock(ctx, blockHash)

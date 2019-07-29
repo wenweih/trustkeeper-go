@@ -12,6 +12,7 @@ type Conf struct {
 	ConsulAddress	string
 	Redis         string
 	BTCconnCfg    *rpcclient.ConnConfig
+	ETHRPC        string
 	MQ            string
 }
 
@@ -41,11 +42,14 @@ func New() (*Conf, error) {
 	bitcoinPass := data.Data["btcpass"].(string)
 	mq := data.Data["mq"].(string)
 
+	eth_rpc := data.Data["eth_rpc"].(string)
+
 	return &Conf{
 		DBInfo:			dbInfo,
 		ConsulAddress: consulAddr,
 		Redis: redis,
 		MQ: mq,
+		ETHRPC: eth_rpc,
 		BTCconnCfg: &rpcclient.ConnConfig{
 			Host: bitcoinHost,
 			User: bitcoinUsr,
