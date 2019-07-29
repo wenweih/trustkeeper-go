@@ -9,17 +9,21 @@ services:
     ports:
       - "8331:8331"
       - "8431:8431"
+    extra_hosts:
+      - "outside:172.17.0.1"
     command:
-      -server
-      -listen
+      -server=1
+      -listen=1
       -printtoconsole
       -regtest=1
       -port=8331
       -rpcport=8431
       -rpcuser=btcrpc
       -rpcpassword=123456
+      -rpcallowip=0.0.0.0/0
       -addnode=omnicore_0.5.0:8332
       -connect=omnicore_0.5.0:8332
+      -blocknotify='curl http://172.17.0.1:3001/btc-best-block-notify?hash=%s'
     networks:
       - chainnodes
     volumes:
@@ -58,7 +62,7 @@ services:
       - "8546:8546"
     volumes:
       - ./ethereum/data:/root/.ethereum
-    command: "--gcmode archive --rpc --datadir /root/.ethereum --txpool.accountqueue 1000 --rpcaddr 0.0.0.0 --dev --dev.period 1 --rpcapi admin,db,eth,net,web3,personal,web3,miner,debug,sha3,txpool"
+    command: "--gcmode archive --rpc --datadir /root/.ethereum --txpool.accountqueue 1000 --rpcaddr 0.0.0.0 --dev --rpcapi admin,db,eth,net,web3,personal,web3,miner,debug,sha3,txpool"
     networks:
       - chainnodes
 networks:
