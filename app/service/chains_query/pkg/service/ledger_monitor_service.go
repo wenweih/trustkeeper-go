@@ -2,6 +2,7 @@ package service
 
 import (
   "context"
+  "math/big"
   log "github.com/go-kit/kit/log"
   "github.com/btcsuite/btcd/btcjson"
   "github.com/btcsuite/btcd/chaincfg/chainhash"
@@ -16,6 +17,7 @@ type LedgerMonitorService interface {
 	BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error)
 	EthereumSubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error)
   MQPublish(msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error
+  EthereumBlock(ctx context.Context, blockNumber *big.Int) (*types.Block, error)
 }
 
 // NewLedgerMonitorService returns a ChainsQueryService with all of the expected middleware wired in.
@@ -35,4 +37,8 @@ func (b *basicChainsQueryService) EthereumSubscribeNewHead(ctx context.Context, 
 
 func (b *basicChainsQueryService) MQPublish(msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error {
   return b.biz.MQPublish(msg, exchangeName, exchangeType, bindingKey, queueName)
+}
+
+func (b *basicChainsQueryService) EthereumBlock(ctx context.Context, number *big.Int) (*types.Block, error) {
+  return b.biz.EthereumBlock(ctx, number)
 }

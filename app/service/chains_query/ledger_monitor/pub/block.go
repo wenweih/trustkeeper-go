@@ -3,12 +3,10 @@ package main
 import (
   "os"
   "context"
-  // "math/big"
-  // "trustkeeper-go/app/service/chains_query/pkg/configure"
+  "math/big"
   "github.com/spf13/cobra"
   "github.com/gin-gonic/gin"
   "github.com/ethereum/go-ethereum/core/types"
-  // "github.com/ethereum/go-ethereum/ethclient"
 )
 
 var blockMonitor = &cobra.Command {
@@ -31,13 +29,20 @@ var blockMonitor = &cobra.Command {
         logger.Log(err.Error())
         os.Exit(1)
       }
+
+      // maintain orderHeight and increase 1 each subscribe callback, because head.number would jump blocks
+      var orderHeight = new(big.Int)
       defer sub.Unsubscribe()
       for {
         select {
         case err := <-sub.Err():
           logger.Log("sub:", err.Error())
         case head := <-blockCh:
-          logger.Log(head.Hash().String())
+          ordertmp, err := subHandle(orderHeight, head)
+          if err != nil {
+            logger.Log("Ethereum subscribe handle error", err.Error())
+          }
+          orderHeight = ordertmp
         }
       }
     case "eosio":
