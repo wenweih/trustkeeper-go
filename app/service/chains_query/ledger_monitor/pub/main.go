@@ -2,7 +2,6 @@ package main
 
 import (
   "os"
-  "trustkeeper-go/library/mq"
   "trustkeeper-go/app/service/chains_query/pkg/configure"
   "github.com/spf13/cobra"
   "github.com/ethereum/go-ethereum/ethclient"
@@ -14,8 +13,6 @@ var (
   err error
   chain	string
   ethereumClient *ethclient.Client
-  messageClient mq.IMessagingClient
-
   conf   *configure.Conf
   logger log.Logger
   svc    service.LedgerMonitorService
@@ -36,8 +33,6 @@ func main()  {
     logger.Log("configure err: ", err.Error())
     os.Exit(1)
   }
-  // messageClient = &mq.MessagingClient{}
-  // messageClient.ConnectToBroker(conf.MQ)
   svc, err = service.NewLedgerMonitorService(*conf, logger)
   if err != nil {
     logger.Log("svc error: ", err.Error())

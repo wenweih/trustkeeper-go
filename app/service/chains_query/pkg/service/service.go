@@ -13,6 +13,8 @@ import (
 	log "github.com/go-kit/kit/log"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+
+	"trustkeeper-go/library/mq"
 )
 
 // ChainsQueryService describes the service.
@@ -36,8 +38,13 @@ func NewBasicChainsQueryService(conf configure.Conf, logger log.Logger) (*basicC
 		return nil, errors.New(strings.Join([]string{"Ethereum client error", err.Error()}, ":"))
 	}
 
+	messageClient := &mq.MessagingClient{}
+	if err := messageClient.ConnectToBroker(conf.MQ); err != nil {
+		return nil, errors.New(strings.Join([]string{"mq connection to broker error", err.Error()}, ":"))
+	}
+
 	return &basicChainsQueryService{
-		biz: repository.New(btcclient, ethereumClient),
+		biz: repository.New(btcclient, ethereumClient, messageClient),
 	}, nil
 }
 

@@ -15,6 +15,7 @@ import (
 type LedgerMonitorService interface {
 	BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error)
 	EthereumSubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error)
+  MQPublish(msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error
 }
 
 // NewLedgerMonitorService returns a ChainsQueryService with all of the expected middleware wired in.
@@ -28,7 +29,10 @@ func NewLedgerMonitorService(conf configure.Conf, logger log.Logger) (LedgerMoni
 	return svc, nil
 }
 
-
 func (b *basicChainsQueryService) EthereumSubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error) {
 	return b.biz.EthereumSubscribeNewHead(ctx, ch)
+}
+
+func (b *basicChainsQueryService) MQPublish(msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error {
+  return b.biz.MQPublish(msg, exchangeName, exchangeType, bindingKey, queueName)
 }
