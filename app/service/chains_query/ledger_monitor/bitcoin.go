@@ -30,7 +30,7 @@ func btcBestBlockNotifyHandle(c *gin.Context) {
     common.GinRespException(c, http.StatusInternalServerError, fmt.Errorf("json Marshal %s", err))
     return
   }
-  if err := svc.MQPublish(body, "bestblock", "fanout", "bitcoincore", "bitcoincore_best_block_queue");
+  if err := svc.MQPublish(body, "bestblock", "direct", "bitcoincore", "bitcoincore_best_block_queue");
     err != nil {
       logger.Log("fail to publish bitcoin block msg to mq", err.Error())
       common.GinRespException(c, http.StatusInternalServerError, fmt.Errorf("MQPublish %s", err))

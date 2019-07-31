@@ -48,7 +48,7 @@ func subHandle(orderHeight *big.Int, head *types.Header) (*big.Int, error) {
 		if err := svc.MQPublish(
       body,
       "bestblock",
-      "fanout",
+      "direct",
       "ethereum",
       "ethereum_best_block_queue");
       err != nil {

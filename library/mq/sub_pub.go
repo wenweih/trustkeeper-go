@@ -28,7 +28,7 @@ func (m *MessagingClient) Publish(body []byte, exchangeName, exchangeType, bindi
 
 	ch, err := m.conn.Channel() // Get a channel from the connection
 	if err != nil {
-		return nil
+		return err
 	}
 	defer ch.Close()
 
