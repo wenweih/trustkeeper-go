@@ -2,13 +2,14 @@ package main
 
 import (
   "os"
+  "bytes"
   "sync"
+  "encoding/gob"
   "encoding/json"
   "github.com/spf13/cobra"
   "github.com/streadway/amqp"
   common "trustkeeper-go/library/util"
   "github.com/btcsuite/btcd/btcjson"
-  "github.com/ethereum/go-ethereum/core/types"
 )
 
 var traceTx = &cobra.Command {
@@ -16,7 +17,6 @@ var traceTx = &cobra.Command {
   Short: "Trace blockchain tx",
   Run: func(cmd *cobra.Command, args []string) {
     switch chain {
-
     case "bitcoincore":
       var wg sync.WaitGroup
       wg.Add(1)
@@ -52,16 +52,18 @@ func ethReceive(wg *sync.WaitGroup) {
 	<-forever
 }
 
-
 func onEthMessage(d amqp.Delivery) {
-	var mqdata *types.Block
-	err := json.Unmarshal(d.Body, &mqdata)
+	mqdata := EthereumBlock{}
+  buf := bytes.NewBuffer(d.Body)
+  dc := gob.NewDecoder(buf)
+  err := dc.Decode(&mqdata)
   if err != nil {
-    logger.Log("EthereumBlockUnmarshalError", err.Error())
+    logger.Log("EthereumBlockReadError", err.Error())
+    return
   }
-  logger.Log("blockhash", mqdata.Hash().String())
-  for _, tx := range mqdata.Body().Transactions {
-    logger.Log("tx", tx.Hash().String())
+  logger.Log("blockhash", mqdata.Hash.String())
+  for _, tx := range mqdata.Tx {
+    logger.Log("tx", tx.THash)
   }
 }
 
