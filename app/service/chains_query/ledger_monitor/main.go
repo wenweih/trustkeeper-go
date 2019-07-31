@@ -23,7 +23,7 @@ var rootCmd = &cobra.Command {
 	Short: "Blockchain ledger monitor",
 }
 
-func main()  {
+func main() {
   logger = log.NewLogfmtLogger(os.Stderr)
 	logger = log.With(logger, "ts", log.DefaultTimestampUTC)
 	logger = log.With(logger, "caller", log.DefaultCaller)
@@ -46,6 +46,7 @@ func main()  {
 
 func init()  {
   rootCmd.AddCommand(blockMonitor)
-  blockMonitor.Flags().StringVarP(&chain, "chain", "c", "", "Support bitcoincore, ethereum")
-  blockMonitor.MarkFlagRequired("chain")
+  rootCmd.AddCommand(traceTx)
+  rootCmd.PersistentFlags().StringVarP(&chain, "chain", "c", "", "Support bitcoincore, ethereum")
+  rootCmd.MarkFlagRequired("chain")
 }

@@ -4,9 +4,9 @@ import (
   "context"
   "math/big"
   log "github.com/go-kit/kit/log"
+  "github.com/streadway/amqp"
   "github.com/btcsuite/btcd/btcjson"
   "github.com/btcsuite/btcd/chaincfg/chainhash"
-
   "github.com/ethereum/go-ethereum/core/types"
   "github.com/ethereum/go-ethereum"
   "trustkeeper-go/app/service/chains_query/pkg/configure"
@@ -16,8 +16,11 @@ import (
 type LedgerMonitorService interface {
 	BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error)
 	EthereumSubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error)
-  MQPublish(msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error
   EthereumBlock(ctx context.Context, blockNumber *big.Int) (*types.Block, error)
+  MQPublish(msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error
+  MQSubscribe(
+    exchangeName, exchangeType, queueName,
+    bindingKey, consumerName string, handleFunc func(amqp.Delivery)) error
 }
 
 // NewLedgerMonitorService returns a ChainsQueryService with all of the expected middleware wired in.
@@ -35,10 +38,16 @@ func (b *basicChainsQueryService) EthereumSubscribeNewHead(ctx context.Context, 
 	return b.biz.EthereumSubscribeNewHead(ctx, ch)
 }
 
+func (b *basicChainsQueryService) EthereumBlock(ctx context.Context, number *big.Int) (*types.Block, error) {
+  return b.biz.EthereumBlock(ctx, number)
+}
+
+
 func (b *basicChainsQueryService) MQPublish(msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error {
   return b.biz.MQPublish(msg, exchangeName, exchangeType, bindingKey, queueName)
 }
 
-func (b *basicChainsQueryService) EthereumBlock(ctx context.Context, number *big.Int) (*types.Block, error) {
-  return b.biz.EthereumBlock(ctx, number)
+func (b *basicChainsQueryService) MQSubscribe(exchangeName, exchangeType, queueName,
+  bindingKey, consumerName string, handleFunc func(amqp.Delivery)) error {
+    return b.biz.MQSubscribe(exchangeName, exchangeType, queueName, bindingKey, consumerName, handleFunc)
 }

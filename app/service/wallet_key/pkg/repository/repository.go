@@ -2,7 +2,7 @@ package repository
 
 import (
   "github.com/syndtr/goleveldb/leveldb"
-  libLeveldb "trustkeeper-go/Library/database/leveldb"
+  libLeveldb "trustkeeper-go/library/database/leveldb"
 )
 
 type repo struct {

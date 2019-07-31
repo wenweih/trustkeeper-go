@@ -2,6 +2,9 @@ package common
 
 import (
   "net"
+  "os"
+  "syscall"
+  "os/signal"
   "github.com/gin-gonic/gin"
 )
 
@@ -70,4 +73,17 @@ func GinRespException(c *gin.Context, code int, err error) {
 type JSONAbortMsg struct {
   Code  int `json:"code"`
   Msg   string `json:"msg"`
+}
+
+
+// Handles Ctrl+C or most other means of "controlled" shutdown gracefully. Invokes the supplied func before exiting.
+func HandleSigterm(handleExit func()) {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, syscall.SIGTERM)
+	go func() {
+		<-c
+		handleExit()
+		os.Exit(1)
+	}()
 }

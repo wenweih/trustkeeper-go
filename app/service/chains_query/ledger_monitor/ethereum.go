@@ -26,7 +26,8 @@ func subHandle(orderHeight *big.Int, head *types.Header) (*big.Int, error) {
     "orderHeight",
     orderHeight.Int64(),
     "SubscriptBlockHeight",
-    originBlock.Number().Int64())
+    originBlock.Number().Int64(),
+    "OriginBlockHash", originBlock.Hash().String())
 
 	for blockNumber := orderHeight.Int64();
   blockNumber <= originBlock.Number().Int64();
