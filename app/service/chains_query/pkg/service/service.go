@@ -6,14 +6,12 @@ import (
 	"strings"
 	"trustkeeper-go/app/service/chains_query/pkg/configure"
 	"trustkeeper-go/app/service/chains_query/pkg/repository"
-
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/rpcclient"
 	log "github.com/go-kit/kit/log"
-
 	"github.com/ethereum/go-ethereum/ethclient"
-
+	"trustkeeper-go/library/database/orm"
 	"trustkeeper-go/library/mq"
 )
 
@@ -43,8 +41,12 @@ func NewBasicChainsQueryService(conf configure.Conf, logger log.Logger) (*basicC
 		return nil, errors.New(strings.Join([]string{"mq connection to broker error", err.Error()}, ":"))
 	}
 
+	db, err := orm.DB(conf.DBInfo)
+	if err != nil {
+		return nil, err
+	}
 	return &basicChainsQueryService{
-		biz: repository.New(btcclient, ethereumClient, messageClient),
+		biz: repository.New(btcclient, ethereumClient, messageClient, db, logger),
 	}, nil
 }
 

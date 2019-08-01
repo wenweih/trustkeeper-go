@@ -9,7 +9,6 @@ import (
 	"trustkeeper-go/app/service/wallet_management/pkg/repository"
 	"trustkeeper-go/library/database/orm"
 	"trustkeeper-go/library/database/redis"
-
 	log "github.com/go-kit/kit/log"
 )
 

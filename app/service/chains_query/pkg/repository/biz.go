@@ -17,40 +17,13 @@ type IBiz interface {
     bindingKey, consumerName string, handleFunc func(amqp.Delivery)) error
   QueryBitcoincoreBlock(
     ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error)
+  QueryBTCBlockCH(ctx context.Context, height int64) (<-chan UTXOBlockResult)
+  TrackBlock(
+    ctx context.Context, bestBlockHeight int64, isTracking bool, queryBlockResultCh <- chan UTXOBlockResult) (bool, int64)
+  GetBTCBlockHashByHeight(ctx context.Context, height int64) (*chainhash.Hash, error)
+  QueryBTCLedgerInfo(ctx context.Context) (*btcjson.GetBlockChainInfoResult, error)
   EthereumSubscribeNewHead(ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error)
   EthereumBlock(ctx context.Context, number *big.Int) (*types.Block, error)
-}
-
-func (repo *repo) QueryBitcoincoreBlock (
-  ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error){
-  return repo.bitcoinCLient.GetBlockVerboseTxM(blockHash)
-}
-
-func (repo *repo) EthereumSubscribeNewHead(
-  ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error) {
-  return repo.ethClient.SubscribeNewHead(ctx, ch)
-}
-
-func (repo *repo) MQPublish(
-  msg []byte,
-  exchangeName,
-  exchangeType,
-  bindingKey,
-  queueName string) error {
-  return repo.MQ.Publish(msg, exchangeName, exchangeType, bindingKey, queueName)
-}
-
-func (repo *repo) MQSubscribe(
-  exchangeName,
-  exchangeType,
-  queueName,
-  bindingKey,
-  consumerName string,
-  handleFunc func(amqp.Delivery)) error {
-  return repo.MQ.Subscribe(exchangeName, exchangeType, queueName, bindingKey, consumerName, handleFunc)
-}
-
-
-func (repo *repo) EthereumBlock(ctx context.Context, number *big.Int) (*types.Block, error) {
-  return repo.ethClient.BlockByNumber(ctx, number)
+  CreateBtcBlockWithUtxoPipeline(ctx context.Context, height int64) (<-chan CreateBlockResult)
+  CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultCh <- chan UTXOBlockResult) (<-chan CreateBlockResult)
 }

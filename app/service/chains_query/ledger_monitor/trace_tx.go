@@ -1,6 +1,7 @@
 package main
 
 import (
+  "context"
   "os"
   "bytes"
   "sync"
@@ -18,6 +19,50 @@ var traceTx = &cobra.Command {
   Run: func(cmd *cobra.Command, args []string) {
     switch chain {
     case "bitcoincore":
+      // query ledger info
+      ctx := context.Background()
+      ledgerInfo, err := svc.QueryBTCLedgerInfo(ctx)
+      // ledgerInfoI, err := b.Query.Ledger()
+      if err != nil {
+        logger.Log("QueryBTCLedgerInfo", err.Error())
+      }
+      // ledgerInfo := ledgerInfoI.(*btcjson.GetBlockChainInfoResult)
+
+      // queryBlockResult := b.Query.Block(int64(ledgerInfo.Headers - 5))
+      // createBlockResul := <- sqldb.CreateBitcoinBlockWithUTXOs(queryBlockResult)
+      // if createBlockResul.Error != nil{
+      //   configure.Sugar.Fatal(createBlockResul.Error.Error())
+      // }
+
+      createBlockResul := <- svc.CreateBtcBlockWithUtxoPipeline(ctx, int64(ledgerInfo.Headers - 5))
+      if createBlockResul.Error != nil{
+        logger.Log("CreateBtcBlockWithUtxoPipeline", createBlockResul.Error.Error())
+      }
+
+      bestBlock := createBlockResul.Block
+      logger.Log("CreateBlock", bestBlock.Height, "Hash", bestBlock.Hash)
+      // configure.Sugar.Info("create block successfully,", " height: ", bestBlock.Height, " hash: ", bestBlock.Hash)
+
+      isTracking := true
+      trackHeight := bestBlock.Height - 1
+      for isTracking {
+        isTracking, trackHeight = svc.TrackBtcBlockPipeline(
+          ctx, trackHeight, bestBlock.Height, isTracking)
+        // ch := b.Query.Block(trackHeight)
+        // isTracking, trackHeight = sqldb.TrackBlock(bestBlock.Height, isTracking, ch)
+      }
+
+      dbBestHeight := bestBlock.Height
+      for height := (dbBestHeight + 1); height <= int64(ledgerInfo.Headers); height++ {
+        createBlockResul := <- svc.CreateBtcBlockWithUtxoPipeline(ctx, height)
+        // ch := b.Query.Block(height)
+        // createBlockResul := <- sqldb.CreateBitcoinBlockWithUTXOs(ch)
+        if createBlockResul.Error != nil{
+          logger.Log("createBlockResulError", createBlockResul.Error.Error())
+          // configure.Sugar.Fatal(createBlockResul.Error.Error())
+        }
+      }
+
       var wg sync.WaitGroup
       wg.Add(1)
       go bitcoinMQ(&wg)
@@ -79,9 +124,33 @@ func bitcoinMQ(wg *sync.WaitGroup)  {
 }
 
 func onBitcoinMessage(d amqp.Delivery) {
+  ctx := context.Background()
 	var mqdata *btcjson.GetBlockVerboseResult
 	if err := json.Unmarshal(d.Body, &mqdata); err != nil {
     logger.Log("GetBlockVerboseResultUnmarshalError", err.Error())
+    return
   }
-  logger.Log("blockhash", mqdata.Hash)
+  logger.Log("Consumer Bitcoin New Block", mqdata.Hash)
+
+  // createBlockResult := svc.CreateBTCBlockWithUTXOs(ctx, mqdata)
+
+  // blockCh := make(chan common.QueryBlockResult)
+  // go func (rawBlock *btcjson.GetBlockVerboseResult)  {
+  //   defer close(blockCh)
+  //   blockCh  <- common.QueryBlockResult{Block: rawBlock, Chain: blockchain.Bitcoin}
+  // }(mqdata)
+  // createBlockResult := <- sqldb.CreateBitcoinBlockWithUTXOs(blockCh)
+  createBlockResult := <- svc.CreateBTCBlockWithUTXOs(ctx, mqdata)
+  if createBlockResult.Error != nil{
+    logger.Log("CreateBTCBlockWithUTXOsError", createBlockResult.Error.Error())
+  }
+
+  isTracking := true
+  trackHeight := mqdata.Height - 1
+  for isTracking {
+    isTracking, trackHeight = svc.TrackBtcBlockPipeline(
+      ctx, trackHeight, mqdata.Height, isTracking)
+    // ch := b.Query.Block(trackHeight)
+    // isTracking, trackHeight = sqldb.TrackBlock(mqdata.Height, isTracking, ch)
+  }
 }
