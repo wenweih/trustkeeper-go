@@ -62,25 +62,25 @@ type QueryOmniPropertyRequest struct {
 
 // QueryOmniPropertyResponse collects the response parameters for the QueryOmniProperty method.
 type QueryOmniPropertyResponse struct {
-	R0 *repository.OmniProperty `json:"r0"`
-	E1 error                    `json:"e1"`
+	Property *repository.OmniProperty `json:"r0"`
+	Err error                    `json:"e1"`
 }
 
 // MakeQueryOmniPropertyEndpoint returns an endpoint that invokes QueryOmniProperty on the service.
 func MakeQueryOmniPropertyEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(QueryOmniPropertyRequest)
-		r0, e1 := s.QueryOmniProperty(ctx, req.Propertyid)
-		return QueryOmniPropertyResponse{
-			E1: e1,
-			R0: r0,
-		}, nil
+		resp, err := s.QueryOmniProperty(ctx, req.Propertyid)
+		if err != nil {
+			return QueryOmniPropertyResponse{Err: err}, err
+		}
+		return QueryOmniPropertyResponse{Property: resp}, nil
 	}
 }
 
 // Failed implements Failer.
 func (r QueryOmniPropertyResponse) Failed() error {
-	return r.E1
+	return r.Err
 }
 
 // QueryOmniProperty implements Service. Primarily useful in a client.
@@ -88,7 +88,7 @@ func (e Endpoints) QueryOmniProperty(ctx context.Context, propertyid int64) (r0 
 	request := QueryOmniPropertyRequest{Propertyid: propertyid}
 	response, err := e.QueryOmniPropertyEndpoint(ctx, request)
 	if err != nil {
-		return
+		return nil, err
 	}
-	return response.(QueryOmniPropertyResponse).R0, response.(QueryOmniPropertyResponse).E1
+	return response.(QueryOmniPropertyResponse).Property, nil
 }

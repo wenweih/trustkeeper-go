@@ -35,7 +35,7 @@ func (l loggingMiddleware) BitcoincoreBlock(ctx context.Context, blockHash *chai
 
 func (l loggingMiddleware) QueryOmniProperty(ctx context.Context, propertyid int64) (r0 *repository.OmniProperty, e1 error) {
 	defer func() {
-		l.logger.Log("method", "QueryOmniProperty", "propertyid", propertyid, "r0", r0, "e1", e1)
+		l.logger.Log("method", "QueryOmniProperty", "propertyid", propertyid, "e1", e1)
 	}()
 	return l.next.QueryOmniProperty(ctx, propertyid)
 }
