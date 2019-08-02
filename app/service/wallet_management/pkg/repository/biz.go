@@ -187,7 +187,7 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
   address := ""
   switch chains[0].Bip44id {
   case 0:
-    btcAddress, err := addressIndexLevel.Address(&chaincfg.MainNetParams)
+    btcAddress, err := addressIndexLevel.Address(&chaincfg.RegressionNetParams)
     if err != nil {
       return nil, err
     }

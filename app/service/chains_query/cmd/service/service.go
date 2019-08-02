@@ -93,6 +93,8 @@ func Run() {
 		os.Exit(1)
 	}
 
+	conf = *c
+
 	svc, err := service.New(conf, logger, getServiceMiddleware(logger))
 	if err != nil {
 		logger.Log("svc error: ", err.Error())

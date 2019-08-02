@@ -6,18 +6,18 @@ import(
 
 // OmniProperty omnicore property
 type OmniProperty struct {
-  Propertyid    int64    `json:"propertyid"`
-  Name          string   `json:"name"`
-  Category      string   `json:"category"`
-  Subcategory   string   `json:"subcategory"`
-  URL           string   `json:"url"`
-  Divisible     bool     `json:"divisible"`
-  Issuer        string   `json:"issuer"`
-  Creationtxid  string   `json:"creationtxid"`
-  Fixedissuance bool     `json:"fixedissuance"`
-  Managedissuance bool   `json:"managedissuance"`
-  Freezingenabled bool   `json:"freezingenabled"`
-  Totaltokens string     `json:"totaltokens"`
+  Propertyid    int64    `json:"Propertyid"`
+  Name          string   `json:"Name"`
+  Category      string   `json:"Category"`
+  Subcategory   string   `json:"Subcategory"`
+  URL           string   `json:"URL"`
+  Divisible     bool     `json:"Divisible"`
+  Issuer        string   `json:"Issuer"`
+  Creationtxid  string   `json:"Creationtxid"`
+  Fixedissuance bool     `json:"Fixedissuance"`
+  Managedissuance bool   `json:"Managedissuance"`
+  Freezingenabled bool   `json:"Freezingenabled"`
+  Totaltokens string     `json:"Totaltokens"`
 }
 
 func (repo *repo ) QueryOmniProperty(propertyid int64) (*OmniProperty, error) {

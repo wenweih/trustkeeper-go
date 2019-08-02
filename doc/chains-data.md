@@ -1,0 +1,3 @@
+omnicore address mhJbuA1g19mw6EYjuV2jFhkzRZUesfgLgQ
+
+omnicore token issue txid b7cc479db230e5b425bb2f90800bc6ab9c47052fe63c485f0fca326f95d256c1 propertyname omni_first_token propertyid 2147483651

@@ -2,9 +2,11 @@ package service
 
 import (
 	"context"
-	log "github.com/go-kit/kit/log"
+	"trustkeeper-go/app/service/chains_query/pkg/repository"
+
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	log "github.com/go-kit/kit/log"
 )
 
 // Middleware describes a service middleware.
@@ -29,4 +31,11 @@ func (l loggingMiddleware) BitcoincoreBlock(ctx context.Context, blockHash *chai
 		l.logger.Log("method", "BitcoincoreBlock", "blockHash", blockHash, "b0", b0, "e1", e1)
 	}()
 	return l.next.BitcoincoreBlock(ctx, blockHash)
+}
+
+func (l loggingMiddleware) QueryOmniProperty(ctx context.Context, propertyid int64) (r0 *repository.OmniProperty, e1 error) {
+	defer func() {
+		l.logger.Log("method", "QueryOmniProperty", "propertyid", propertyid, "r0", r0, "e1", e1)
+	}()
+	return l.next.QueryOmniProperty(ctx, propertyid)
 }

@@ -19,17 +19,21 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	return g
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
-	options := map[string][]grpc.ServerOption{"BitcoincoreBlock": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "BitcoincoreBlock", logger))}}
+	options := map[string][]grpc.ServerOption{
+		"BitcoincoreBlock":  {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "BitcoincoreBlock", logger))},
+		"QueryOmniProperty": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryOmniProperty", logger))},
+	}
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
 	mw["BitcoincoreBlock"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "BitcoincoreBlock")), endpoint.InstrumentingMiddleware(duration.With("method", "BitcoincoreBlock"))}
+	mw["QueryOmniProperty"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryOmniProperty")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryOmniProperty"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"BitcoincoreBlock"}
+	methods := []string{"BitcoincoreBlock", "QueryOmniProperty"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

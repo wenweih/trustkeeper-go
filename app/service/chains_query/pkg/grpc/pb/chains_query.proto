@@ -6,10 +6,33 @@ package pb;
 
 //The ChainsQuery service definition.
 service ChainsQuery {
- rpc BitcoincoreBlock (BitcoincoreBlockRequest) returns (BitcoincoreBlockReply);
+ rpc BitcoincoreBlock  (BitcoincoreBlockRequest ) returns (BitcoincoreBlockReply );
+ rpc QueryOmniProperty (QueryOmniPropertyRequest) returns (QueryOmniPropertyReply);
 }
 
 message BitcoincoreBlockRequest {}
 
 message BitcoincoreBlockReply {}
 
+message QueryOmniPropertyRequest {
+  int64 propertyid = 1;
+}
+
+message OmniProperty {
+  int64 Propertyid = 1;
+  string Name = 2;
+  string Category = 3;
+  string Subcategory = 4;
+  string URL = 5;
+  bool Divisible = 6;
+  string Issuer = 7;
+  string Creationtxid = 8;
+  bool Fixedissuance = 9;
+  bool Managedissuance = 10;
+  bool Freezingenabled = 11;
+  string Totaltokens = 12;
+}
+
+message QueryOmniPropertyReply {
+  OmniProperty OmniProperty = 1;
+}

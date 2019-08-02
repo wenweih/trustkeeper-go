@@ -10,15 +10,22 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	BitcoincoreBlockEndpoint endpoint.Endpoint
+	BitcoincoreBlockEndpoint  endpoint.Endpoint
+	QueryOmniPropertyEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.ChainsQueryService, mdw map[string][]endpoint.Middleware) Endpoints {
-	eps := Endpoints{BitcoincoreBlockEndpoint: MakeBitcoincoreBlockEndpoint(s)}
+	eps := Endpoints{
+		BitcoincoreBlockEndpoint:  MakeBitcoincoreBlockEndpoint(s),
+		QueryOmniPropertyEndpoint: MakeQueryOmniPropertyEndpoint(s),
+	}
 	for _, m := range mdw["BitcoincoreBlock"] {
 		eps.BitcoincoreBlockEndpoint = m(eps.BitcoincoreBlockEndpoint)
+	}
+	for _, m := range mdw["QueryOmniProperty"] {
+		eps.QueryOmniPropertyEndpoint = m(eps.QueryOmniPropertyEndpoint)
 	}
 	return eps
 }

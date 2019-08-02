@@ -9,9 +9,13 @@ import (
 
 // NewGRPCServer makes a set of endpoints available as a gRPC AddServer
 type grpcServer struct {
-	bitcoincoreBlock grpc.Handler
+	bitcoincoreBlock  grpc.Handler
+	queryOmniProperty grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.ChainsQueryServer {
-	return &grpcServer{bitcoincoreBlock: makeBitcoincoreBlockHandler(endpoints, options["BitcoincoreBlock"])}
+	return &grpcServer{
+		bitcoincoreBlock:  makeBitcoincoreBlockHandler(endpoints, options["BitcoincoreBlock"]),
+		queryOmniProperty: makeQueryOmniPropertyHandler(endpoints, options["QueryOmniProperty"]),
+	}
 }
