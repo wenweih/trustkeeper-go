@@ -45,6 +45,7 @@ services:
       -rpcport=8432
       -rpcuser=btcrpc
       -rpcpassword=123456
+      -rpcallowip=0.0.0.0/0
       -txindex=1
     networks:
       - chainnodes

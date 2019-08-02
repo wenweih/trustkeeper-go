@@ -12,6 +12,7 @@ type Conf struct {
 	ConsulAddress	string
 	Redis         string
 	BTCconnCfg    *rpcclient.ConnConfig
+	OmniconnCfg    *rpcclient.ConnConfig
 	ETHRPC        string
 	MQ            string
 }
@@ -36,11 +37,15 @@ func New() (*Conf, error) {
 	dbInfo := strings.Join([]string{host, port, user, dbname, password, sslmode}, " ")
 	consulAddr := data.Data["consuladdr"].(string)
 	redis := data.Data["redis"].(string)
+	mq := data.Data["mq"].(string)
 
 	bitcoinHost := data.Data["btchost"].(string)
-	bitcoinUsr := data.Data["btcuse"].(string)
+	bitcoinUsr := data.Data["btcusr"].(string)
 	bitcoinPass := data.Data["btcpass"].(string)
-	mq := data.Data["mq"].(string)
+
+	omniHost := data.Data["omnihost"].(string)
+	omniUsr := data.Data["omniusr"].(string)
+	omniPass := data.Data["omnipass"].(string)
 
 	eth_rpc := data.Data["eth_rpc"].(string)
 
@@ -54,6 +59,13 @@ func New() (*Conf, error) {
 			Host: bitcoinHost,
 			User: bitcoinUsr,
 			Pass: bitcoinPass,
+			HTTPPostMode: true,
+			DisableTLS: true,
+		},
+		OmniconnCfg: &rpcclient.ConnConfig{
+			Host: omniHost,
+			User: omniUsr,
+			Pass: omniPass,
 			HTTPPostMode: true,
 			DisableTLS: true,
 		},

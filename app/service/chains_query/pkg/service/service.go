@@ -6,18 +6,20 @@ import (
 	"strings"
 	"trustkeeper-go/app/service/chains_query/pkg/configure"
 	"trustkeeper-go/app/service/chains_query/pkg/repository"
+	"trustkeeper-go/library/database/orm"
+	"trustkeeper-go/library/mq"
+
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/rpcclient"
-	log "github.com/go-kit/kit/log"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"trustkeeper-go/library/database/orm"
-	"trustkeeper-go/library/mq"
+	log "github.com/go-kit/kit/log"
 )
 
 // ChainsQueryService describes the service.
 type ChainsQueryService interface {
 	BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error)
+	QueryOmniProperty(ctx context.Context, propertyid int64) (*repository.OmniProperty, error)
 }
 
 type basicChainsQueryService struct {
@@ -28,7 +30,12 @@ type basicChainsQueryService struct {
 func NewBasicChainsQueryService(conf configure.Conf, logger log.Logger) (*basicChainsQueryService, error) {
 	btcclient, err := rpcclient.New(conf.BTCconnCfg, nil)
 	if err != nil {
-		return nil, errors.New(strings.Join([]string{"rpcclient error", err.Error()}, ":"))
+		return nil, errors.New(strings.Join([]string{"btc rpcclient error", err.Error()}, ":"))
+	}
+
+	omniClient, err := rpcclient.New(conf.OmniconnCfg, nil)
+	if err != nil {
+		return nil, errors.New(strings.Join([]string{"omni rpcclient error", err.Error()}, ":"))
 	}
 
 	ethereumClient, err := ethclient.Dial(conf.ETHRPC)
@@ -46,7 +53,7 @@ func NewBasicChainsQueryService(conf configure.Conf, logger log.Logger) (*basicC
 		return nil, err
 	}
 	return &basicChainsQueryService{
-		biz: repository.New(btcclient, ethereumClient, messageClient, db, logger),
+		biz: repository.New(btcclient, omniClient, ethereumClient, messageClient, db, logger),
 	}, nil
 }
 
@@ -64,7 +71,10 @@ func New(conf configure.Conf, logger log.Logger, middleware []Middleware) (Chain
 	return svc, nil
 }
 
-
 func (b *basicChainsQueryService) BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error) {
 	return b.biz.QueryBitcoincoreBlock(ctx, blockHash)
+}
+
+func (b *basicChainsQueryService) QueryOmniProperty(ctx context.Context, propertyid int64) (*repository.OmniProperty, error) {
+	return b.biz.QueryOmniProperty(propertyid)
 }

@@ -13,6 +13,7 @@ import(
 // Repo repo obj
 type repo struct {
   bitcoinClient *rpcclient.Client
+  omniClient *rpcclient.Client
   ethClient     *ethclient.Client
   MQ            *mq.MessagingClient
   db            *gorm.DB
@@ -22,6 +23,7 @@ type repo struct {
 // New new repo
 func New(
   btcClient *rpcclient.Client,
+  omniClient *rpcclient.Client,
   ethClient *ethclient.Client,
   mq *mq.MessagingClient,
   db *gorm.DB,
@@ -34,6 +36,7 @@ func New(
   )
   repo := repo{
     bitcoinClient: btcClient,
+    omniClient: omniClient,
     ethClient: ethClient,
     MQ: mq,
     db: db,
