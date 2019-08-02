@@ -464,10 +464,10 @@ func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname s
 
 // GetWalletsRequest collects the request parameters for the GetWallets method.
 type GetWalletsRequest struct {
-	Groupid string  `json:"groupid"`
-	Page    int     `json:"page"`
-	Limit   int     `json:"limit"`
-	Bip44Change int `json:"Bip44Change"`
+	Groupid     string `json:"groupid"`
+	Page        int    `json:"page"`
+	Limit       int    `json:"limit"`
+	Bip44Change int    `json:"Bip44Change"`
 }
 
 // GetWalletsResponse collects the response parameters for the GetWallets method.
@@ -483,7 +483,7 @@ func MakeGetWalletsEndpoint(s service.WebapiService) endpoint.Endpoint {
 		wallets, err := s.GetWallets(ctx, req.Groupid, req.Page, req.Limit, req.Bip44Change)
 		if err != nil {
 			return GetWalletsResponse{
-				Err:     err,
+				Err: err,
 			}, nil
 		}
 		return GetWalletsResponse{
@@ -500,9 +500,9 @@ func (r GetWalletsResponse) Failed() error {
 // GetWallets implements Service. Primarily useful in a client.
 func (e Endpoints) GetWallets(ctx context.Context, groupid string, page int, limit, bip44change int) (wallets []*repository.ChainWithWallets, err error) {
 	request := GetWalletsRequest{
-		Groupid: groupid,
-		Limit:   limit,
-		Page:    page,
+		Groupid:     groupid,
+		Limit:       limit,
+		Page:        page,
 		Bip44Change: bip44change,
 	}
 	response, err := e.GetWalletsEndpoint(ctx, request)
@@ -514,4 +514,42 @@ func (e Endpoints) GetWallets(ctx context.Context, groupid string, page int, lim
 		return nil, fmt.Errorf("GetWalletsResponse type assertion error")
 	}
 	return resp.Wallets, nil
+}
+
+// QueryTokenRequest collects the request parameters for the QueryToken method.
+type QueryTokenRequest struct {
+	Identify string `json:"identify"`
+}
+
+// QueryTokenResponse collects the response parameters for the QueryToken method.
+type QueryTokenResponse struct {
+	Symbol string `json:"symbol"`
+	Err    error  `json:"err"`
+}
+
+// MakeQueryTokenEndpoint returns an endpoint that invokes QueryToken on the service.
+func MakeQueryTokenEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(QueryTokenRequest)
+		symbol, err := s.QueryToken(ctx, req.Identify)
+		if err != nil {
+			return QueryTokenResponse{Err: err}, err
+		}
+		return QueryTokenResponse{Symbol: symbol}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r QueryTokenResponse) Failed() error {
+	return r.Err
+}
+
+// QueryToken implements Service. Primarily useful in a client.
+func (e Endpoints) QueryToken(ctx context.Context, identify string) (symbol string, err error) {
+	request := QueryTokenRequest{Identify: identify}
+	response, err := e.QueryTokenEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(QueryTokenResponse).Symbol, nil
 }

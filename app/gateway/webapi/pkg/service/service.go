@@ -1,6 +1,7 @@
 package service
 
 import (
+	"strconv"
 	"context"
 	"errors"
 	"fmt"
@@ -20,8 +21,11 @@ import (
 	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
 
 	txGrpcClient "trustkeeper-go/app/service/transaction/client"
-	txService "trustkeeper-go/app/service/transaction/pkg/service"
 	txRepository "trustkeeper-go/app/service/transaction/pkg/repository"
+	txService "trustkeeper-go/app/service/transaction/pkg/service"
+
+	chainsqueryGrpcClient "trustkeeper-go/app/service/chains_query/client"
+	chainsqueryService "trustkeeper-go/app/service/chains_query/pkg/service"
 
 	"github.com/caarlos0/env"
 	log "github.com/go-kit/kit/log"
@@ -42,6 +46,7 @@ type WebapiService interface {
 	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (result []*repository.GroupAsset, err error)
 	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (id, address, respchainname string, status bool, err error)
 	GetWallets(ctx context.Context, groupid string, page, limit, bip44change int) (wallets []*repository.ChainWithWallets, err error)
+	QueryToken(ctx context.Context, identify string) (symbol string, err error)
 }
 
 // Credentials Signup Signin params
@@ -56,6 +61,7 @@ type basicWebapiService struct {
 	dashboardSrv dashboardService.DashboardService
 	WalletSrv    walletManagementService.WalletManagementService
 	txSrv        txService.TransactionService
+	chainsQuerySrv chainsqueryService.ChainsQueryService
 }
 
 func makeError(ctx context.Context, err error) error {
@@ -161,11 +167,17 @@ func NewBasicWebapiService(logger log.Logger) (WebapiService, error) {
 		return nil, fmt.Errorf("txGrpcClient: %s", err.Error())
 	}
 
+	chainsqueryClient, err := chainsqueryGrpcClient.New(cfg.ConsulAddr, logger)
+	if err != nil {
+		return nil, fmt.Errorf("txGrpcClient: %s", err.Error())
+	}
+
 	return &basicWebapiService{
 		accountSrv:   accountClient,
 		dashboardSrv: dashboardClient,
 		WalletSrv:    wmClient,
-		txSrv: txClient,
+		txSrv:        txClient,
+		chainsQuerySrv: chainsqueryClient,
 	}, nil
 }
 
@@ -235,10 +247,10 @@ func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string)
 	for di, defaultChain := range defaultChains {
 		if defaultChain.Status {
 			groupAssetsResp[di] = &repository.GroupAsset{
-				Name:   defaultChain.Name,
-				Coin:   defaultChain.Coin,
+				Name:    defaultChain.Name,
+				Coin:    defaultChain.Coin,
 				Decimal: defaultChain.Decimal,
-				Status: false}
+				Status:  false}
 			for _, ga := range groupAssets {
 				if groupAssetsResp[di].Name != ga.Name &&
 					groupAssetsResp[di].Coin != ga.Coin {
@@ -247,10 +259,10 @@ func (b *basicWebapiService) GetGroupAssets(ctx context.Context, groupid string)
 				assets := make([]*repository.SimpleAsset, len(ga.SimpleAssets))
 				for it, asset := range ga.SimpleAssets {
 					assets[it] = &repository.SimpleAsset{
-						AssetID: asset.AssetID,
-						Symbol: asset.Symbol,
-						Status: asset.Status,
-						Decimal: asset.Decimal,
+						AssetID:  asset.AssetID,
+						Symbol:   asset.Symbol,
+						Status:   asset.Status,
+						Decimal:  asset.Decimal,
 						Identify: asset.Identify}
 				}
 				groupAssetsResp[di].ChainID = ga.ChainID
@@ -342,4 +354,21 @@ func (b *basicWebapiService) GetWallets(ctx context.Context, groupid string, pag
 		return nil, err
 	}
 	return respwallets, nil
+}
+
+func (b *basicWebapiService) QueryToken(ctx context.Context, identify string) (symbol string, err error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return "", err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	propertyid, err := strconv.ParseInt(identify, 10, 64)
+	if err != nil {
+		return "", err
+	}
+	omniProperty, err := b.chainsQuerySrv.QueryOmniProperty(ctxWithAuthInfo, propertyid)
+	if err != nil {
+		return "", err
+	}
+	return omniProperty.Name, err
 }
