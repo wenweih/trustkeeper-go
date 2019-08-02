@@ -21,6 +21,8 @@ const (
 
   WalletManagementSrv = "/services/walletmanagement/"
 
+  ChainsQuerySrv = "/services/chainsquery/"
+
   LevelDBDir = "tk_w"
 
   // jobs name
