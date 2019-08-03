@@ -76,6 +76,13 @@ func New(consulAddr string, logger log.Logger) (service.WalletManagementService,
     retry := lb.Retry(retryMax, retryTimeout, balancer)
     endpoints.GetWalletsEndpoint = retry
   }
+  {
+    factory := factoryFor(walletmanagementEndpoint.MakeQueryWalletsForGroupByChainNameEndpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.QueryWalletsForGroupByChainNameEndpoint = retry
+  }
   return endpoints, nil
 }
 

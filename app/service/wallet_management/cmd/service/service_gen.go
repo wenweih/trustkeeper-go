@@ -20,11 +20,12 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
 	options := map[string][]grpc.ServerOption{
-		"AssignedXpubToGroup": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "AssignedXpubToGroup", logger))},
-		"CreateChain":         {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateChain", logger))},
-		"CreateWallet":        {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateWallet", logger))},
-		"GetChains":           {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetChains", logger))},
-		"GetWallets":          {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetWallets", logger))},
+		"AssignedXpubToGroup":             {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "AssignedXpubToGroup", logger))},
+		"CreateChain":                     {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateChain", logger))},
+		"CreateWallet":                    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateWallet", logger))},
+		"GetChains":                       {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetChains", logger))},
+		"GetWallets":                      {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetWallets", logger))},
+		"QueryWalletsForGroupByChainName": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryWalletsForGroupByChainName", logger))},
 	}
 	return options
 }
@@ -34,12 +35,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["AssignedXpubToGroup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "AssignedXpubToGroup")), endpoint.InstrumentingMiddleware(duration.With("method", "AssignedXpubToGroup"))}
 	mw["CreateWallet"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateWallet")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateWallet"))}
 	mw["GetWallets"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetWallets")), endpoint.InstrumentingMiddleware(duration.With("method", "GetWallets"))}
+	mw["QueryWalletsForGroupByChainName"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryWalletsForGroupByChainName")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryWalletsForGroupByChainName"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"GetChains", "CreateChain", "AssignedXpubToGroup", "CreateWallet", "GetWallets"}
+	methods := []string{"GetChains", "CreateChain", "AssignedXpubToGroup", "CreateWallet", "GetWallets", "QueryWalletsForGroupByChainName"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

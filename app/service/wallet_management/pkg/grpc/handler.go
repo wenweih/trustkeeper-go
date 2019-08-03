@@ -156,7 +156,7 @@ func encodeGetWalletsResponse(_ context.Context, r interface{}) (interface{}, er
 	if resp.Err != nil {
 		return nil, resp.Err
 	}
-	wallets :=[]*pb.ChainWithWallets{}
+	wallets := []*pb.ChainWithWallets{}
 	if err := copier.Copy(&wallets, resp.ChainWithWallets); err != nil {
 		return nil, err
 	}
@@ -168,4 +168,38 @@ func (g *grpcServer) GetWallets(ctx context1.Context, req *pb.GetWalletsRequest)
 		return nil, err
 	}
 	return rep.(*pb.GetWalletsReply), nil
+}
+
+func makeQueryWalletsForGroupByChainNameHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.QueryWalletsForGroupByChainNameEndpoint, decodeQueryWalletsForGroupByChainNameRequest, encodeQueryWalletsForGroupByChainNameResponse, options...)
+}
+
+func decodeQueryWalletsForGroupByChainNameRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.QueryWalletsForGroupByChainNameRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb QueryWalletsForGroupByChainNameRequest type assersion error")
+	}
+	return endpoint.QueryWalletsForGroupByChainNameRequest{Groupid: req.Groupid, ChainName: req.ChainName}, nil
+}
+
+func encodeQueryWalletsForGroupByChainNameResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.QueryWalletsForGroupByChainNameResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint QueryWalletsForGroupByChainNameResponse type assersion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	pbWallets := make([]*pb.Wallet, 0)
+	if err := copier.Copy(&pbWallets, resp.Wallets); err != nil {
+		return nil, err
+	}
+	return &pb.QueryWalletsForGroupByChainNameReply{Wallets: pbWallets}, nil
+}
+func (g *grpcServer) QueryWalletsForGroupByChainName(ctx context1.Context, req *pb.QueryWalletsForGroupByChainNameRequest) (*pb.QueryWalletsForGroupByChainNameReply, error) {
+	_, rep, err := g.queryWalletsForGroupByChainName.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.QueryWalletsForGroupByChainNameReply), nil
 }

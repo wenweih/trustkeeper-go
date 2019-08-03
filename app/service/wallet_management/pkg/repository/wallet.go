@@ -1,7 +1,9 @@
 package repository
 
 import (
+  "context"
   "github.com/jinzhu/gorm"
+  "github.com/jinzhu/copier"
   "trustkeeper-go/app/service/wallet_management/pkg/model"
 )
 
@@ -30,4 +32,21 @@ type Wallet struct {
   Address    string  `json:"Address"`
   Status     bool    `json:"Status"`
   ChainName  string  `json:"ChainName"`
+}
+
+
+func (repo *repo) QueryWalletsForGroupByChainName(ctx context.Context, groupid, chainName string) ([]*Wallet, error) {
+  chain := model.Chain{}
+  err := repo.db.Where("name = ?", chainName).First(&chain).Error
+  if err != nil {
+    return nil, err
+  }
+  xpub := model.Xpub{}
+  repo.db.Preload("Wallets").Where("group_id = ? AND bip44_chain_id = ? AND state = ?", groupid, chain.Bip44id, Assigned).First(&xpub)
+
+  wallets :=[]*Wallet{}
+  if err := copier.Copy(&wallets, &xpub.Wallets); err != nil {
+    return nil, err
+  }
+  return wallets, nil
 }

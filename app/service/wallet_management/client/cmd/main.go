@@ -1,7 +1,6 @@
 package main
 
 import (
-  "time"
   "fmt"
   "os"
   "context"
@@ -34,9 +33,7 @@ func main()  {
     logger.Log("service client error: ", err.Error())
   }
   ctxWithAuthInfo := context.WithValue(context.Background(), "auth",
-		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "1d30be4e-d61e-42da-9cb2-b0d794e12314", "470630148222189569"})
-  ctx, cancel := context.WithTimeout(ctxWithAuthInfo, 5*time.Second)
-  defer cancel()
+		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "dab3452a-defe-461d-ae52-c31bced94f7a", "471192264474624001"})
 
   // for _, str := range []string{"aa", "bb", "ccc", "ee", "dd", "ff", "gg", "hh"} {
   //   if err := s.CreateChain(ctxWithAuthInfo, str, "bit44ID", true); err != nil {
@@ -61,14 +58,23 @@ func main()  {
   // }
   // logger.Log("wallet: address", wallet.Address, "id: ", wallet.ID, " status: ", wallet.Status)
 
-  wallets, err := s.GetWallets(ctx, "", 1, 5, 0)
+  // wallets, err := s.GetWallets(ctxWithAuthInfo, "", 1, 5, 0)
+  // if err != nil {
+  //   logger.Log("GetWallets without groupid error: ", err.Error())
+  // }
+  // for _, wallet := range wallets {
+  //   for _, w := range wallet.Wallets {
+  //     fmt.Println("ChainName: ", wallet.ChainName, " TotalSize: ", wallet.TotalSize, *w)
+  //   }
+  // }
+
+  walletsForGroupAndChain, err := s.QueryWalletsForGroupByChainName(ctxWithAuthInfo, "471192380250750977", "Ethereum")
   if err != nil {
     logger.Log("GetWallets without groupid error: ", err.Error())
   }
-  for _, wallet := range wallets {
-    for _, w := range wallet.Wallets {
-      fmt.Println("ChainName: ", wallet.ChainName, " TotalSize: ", wallet.TotalSize, *w)
-    }
+
+  for _, wallet := range walletsForGroupAndChain {
+    fmt.Println("wallet: ", wallet)
   }
   //
   // groupidwallets, err := s.GetWallets(ctx, "469764006120751105")

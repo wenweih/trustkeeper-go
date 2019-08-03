@@ -6,11 +6,12 @@ package pb;
 
 //The WalletManagement service definition.
 service WalletManagement {
- rpc CreateChain         (CreateChainRequest        ) returns (CreateChainReply        );
- rpc AssignedXpubToGroup (AssignedXpubToGroupRequest) returns (AssignedXpubToGroupReply);
- rpc GetChains           (GetChainsRequest          ) returns (GetChainsReply          );
- rpc CreateWallet        (CreateWalletRequest       ) returns (CreateWalletReply       );
- rpc GetWallets          (GetWalletsRequest         ) returns (GetWalletsReply         );
+ rpc CreateChain                     (CreateChainRequest                    ) returns (CreateChainReply                    );
+ rpc AssignedXpubToGroup             (AssignedXpubToGroupRequest            ) returns (AssignedXpubToGroupReply            );
+ rpc GetChains                       (GetChainsRequest                      ) returns (GetChainsReply                      );
+ rpc CreateWallet                    (CreateWalletRequest                   ) returns (CreateWalletReply                   );
+ rpc GetWallets                      (GetWalletsRequest                     ) returns (GetWalletsReply                     );
+ rpc QueryWalletsForGroupByChainName (QueryWalletsForGroupByChainNameRequest) returns (QueryWalletsForGroupByChainNameReply);
 }
 
 message CreateChainRequest {
@@ -58,9 +59,9 @@ message Wallet {
 }
 
 message ChainWithWallets {
-  repeated Wallet Wallets = 1;
-  int32 TotalSize = 2;
-  string ChainName = 3;
+ repeated Wallet Wallets   = 1;
+          int32  TotalSize = 2;
+          string ChainName = 3;
 }
 
 message CreateWalletReply {
@@ -68,12 +69,21 @@ message CreateWalletReply {
 }
 
 message GetWalletsRequest {
-  string groupid = 1;
-  int32 page = 2;
-  int32 limit = 3;
-  int32 bip44Change = 4;
+ string groupid     = 1;
+ int32  page        = 2;
+ int32  limit       = 3;
+ int32  bip44Change = 4;
 }
 
 message GetWalletsReply {
-  repeated ChainWithWallets ChainWithWallets = 1;
+ repeated ChainWithWallets ChainWithWallets = 1;
+}
+
+message QueryWalletsForGroupByChainNameRequest {
+  string groupid = 1;
+  string chainName = 2;
+}
+
+message QueryWalletsForGroupByChainNameReply {
+  repeated Wallet Wallets   = 1;
 }

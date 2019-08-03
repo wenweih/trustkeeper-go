@@ -9,6 +9,7 @@ import (
 	"trustkeeper-go/app/service/wallet_management/pkg/repository"
 	"trustkeeper-go/library/database/orm"
 	"trustkeeper-go/library/database/redis"
+
 	log "github.com/go-kit/kit/log"
 )
 
@@ -19,6 +20,7 @@ type WalletManagementService interface {
 	AssignedXpubToGroup(ctx context.Context, groupid string) (err error)
 	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (wallet *repository.Wallet, err error)
 	GetWallets(ctx context.Context, groupid string, page, limit, bip44change int32) (wallets []*repository.ChainWithWallets, err error)
+	QueryWalletsForGroupByChainName(ctx context.Context, groupid, chainName string) (wallets []*repository.Wallet, err error)
 	Close() error
 }
 
@@ -88,17 +90,25 @@ func NewBasicWalletManagementService() WalletManagementService {
 	return &basicWalletManagementService{}
 }
 
-func (b *basicWalletManagementService) GetChains(ctx context.Context) (chains []*repository.SimpleChain, err error) {
+func (b *basicWalletManagementService) GetChains(
+	ctx context.Context) (chains []*repository.SimpleChain, err error) {
 	chains, err = b.biz.GetChains(ctx, map[string]interface{}{})
 	return
 }
 
-func (b *basicWalletManagementService) CreateWallet(ctx context.Context, groupid string, chainname string, bip44change int) (wallet *repository.Wallet, err error) {
+func (b *basicWalletManagementService) CreateWallet(
+	ctx context.Context, groupid string, chainname string, bip44change int) (wallet *repository.Wallet, err error) {
 	wallet, err = b.biz.CreateWallet(ctx, groupid, chainname, bip44change)
 	return
 }
 
-func (b *basicWalletManagementService) GetWallets(ctx context.Context, groupid string, page, limit, bip44change int32) (wallets []*repository.ChainWithWallets, err error) {
+func (b *basicWalletManagementService) GetWallets(
+	ctx context.Context, groupid string, page, limit, bip44change int32) (wallets []*repository.ChainWithWallets, err error) {
 	wallets, err = b.biz.GetWallets(ctx, groupid, page, limit, bip44change)
 	return
+}
+
+func (b *basicWalletManagementService) QueryWalletsForGroupByChainName(
+	ctx context.Context, groupid string, chainName string) (wallets []*repository.Wallet, err error) {
+	return b.biz.QueryWalletsForGroupByChainName(ctx, groupid, chainName)
 }

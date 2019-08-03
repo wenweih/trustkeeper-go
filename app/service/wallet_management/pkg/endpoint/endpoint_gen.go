@@ -10,22 +10,24 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	GetChainsEndpoint           endpoint.Endpoint
-	CreateChainEndpoint         endpoint.Endpoint
-	AssignedXpubToGroupEndpoint endpoint.Endpoint
-	CreateWalletEndpoint        endpoint.Endpoint
-	GetWalletsEndpoint          endpoint.Endpoint
+	GetChainsEndpoint                       endpoint.Endpoint
+	CreateChainEndpoint                     endpoint.Endpoint
+	AssignedXpubToGroupEndpoint             endpoint.Endpoint
+	CreateWalletEndpoint                    endpoint.Endpoint
+	GetWalletsEndpoint                      endpoint.Endpoint
+	QueryWalletsForGroupByChainNameEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.WalletManagementService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
-		AssignedXpubToGroupEndpoint: MakeAssignedXpubToGroupEndpoint(s),
-		CreateChainEndpoint:         MakeCreateChainEndpoint(s),
-		CreateWalletEndpoint:        MakeCreateWalletEndpoint(s),
-		GetChainsEndpoint:           MakeGetChainsEndpoint(s),
-		GetWalletsEndpoint:          MakeGetWalletsEndpoint(s),
+		AssignedXpubToGroupEndpoint:             MakeAssignedXpubToGroupEndpoint(s),
+		CreateChainEndpoint:                     MakeCreateChainEndpoint(s),
+		CreateWalletEndpoint:                    MakeCreateWalletEndpoint(s),
+		GetChainsEndpoint:                       MakeGetChainsEndpoint(s),
+		GetWalletsEndpoint:                      MakeGetWalletsEndpoint(s),
+		QueryWalletsForGroupByChainNameEndpoint: MakeQueryWalletsForGroupByChainNameEndpoint(s),
 	}
 	for _, m := range mdw["GetChains"] {
 		eps.GetChainsEndpoint = m(eps.GetChainsEndpoint)
@@ -41,6 +43,9 @@ func New(s service.WalletManagementService, mdw map[string][]endpoint.Middleware
 	}
 	for _, m := range mdw["GetWallets"] {
 		eps.GetWalletsEndpoint = m(eps.GetWalletsEndpoint)
+	}
+	for _, m := range mdw["QueryWalletsForGroupByChainName"] {
+		eps.QueryWalletsForGroupByChainNameEndpoint = m(eps.QueryWalletsForGroupByChainNameEndpoint)
 	}
 	return eps
 }

@@ -65,3 +65,10 @@ func (l loggingMiddleware) GetWallets(ctx context.Context, groupid string, page,
 	}()
 	return l.next.GetWallets(ctx, groupid, page, limit, bip44change)
 }
+
+func (l loggingMiddleware) QueryWalletsForGroupByChainName(ctx context.Context, groupid string, chainName string) (wallets []*repository.Wallet, err error) {
+	defer func() {
+		l.logger.Log("method", "QueryWalletsForGroupByChainName", "groupid", groupid, "chainName", chainName, "wallets", wallets, "err", err)
+	}()
+	return l.next.QueryWalletsForGroupByChainName(ctx, groupid, chainName)
+}

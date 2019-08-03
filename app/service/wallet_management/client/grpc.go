@@ -43,12 +43,18 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		getWalletsEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "GetWallets", encodeGetWalletsRequest, decodeGetWalletsResponse, pb.GetWalletsReply{}, options...).Endpoint()
 	}
 
+	var queryWalletsForGroupByChainNameEndpoint endpoint.Endpoint
+	{
+		queryWalletsForGroupByChainNameEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "QueryWalletsForGroupByChainName", encodeQueryWalletsForGroupByChainNameRequest, decodeQueryWalletsForGroupByChainNameResponse, pb.QueryWalletsForGroupByChainNameReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		CreateChainEndpoint: createChainEndpoint,
 		AssignedXpubToGroupEndpoint: assignedXpubToGroupEndpoint,
 		CreateWalletEndpoint:        createWalletEndpoint,
 		GetChainsEndpoint:           getChainsEndpoint,
 		GetWalletsEndpoint:          getWalletsEndpoint,
+		QueryWalletsForGroupByChainNameEndpoint: queryWalletsForGroupByChainNameEndpoint,
 	}, nil
 }
 
@@ -175,4 +181,28 @@ func decodeGetWalletsResponse(_ context.Context, reply interface{}) (interface{}
 		return endpoint1.GetWalletsResponse{Err: err}, err
 	}
 	return endpoint1.GetWalletsResponse{ChainWithWallets: wallets}, nil
+}
+
+// encodeQueryWalletsForGroupByChainNameRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain QueryWalletsForGroupByChainName request to a gRPC request.
+func encodeQueryWalletsForGroupByChainNameRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.QueryWalletsForGroupByChainNameRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint QueryWalletsForGroupByChainNameRequest type assertion error")
+	}
+	return &pb.QueryWalletsForGroupByChainNameRequest{Groupid: r.Groupid, ChainName: r.ChainName}, nil
+}
+
+// decodeQueryWalletsForGroupByChainNameResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeQueryWalletsForGroupByChainNameResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.QueryWalletsForGroupByChainNameReply)
+	if !ok {
+		return nil, fmt.Errorf("pb QueryWalletsForGroupByChainNameReply type assertion error")
+	}
+	wallets := []*repository.Wallet{}
+	if err := copier.Copy(&wallets, resp.Wallets); err != nil {
+		return endpoint1.QueryWalletsForGroupByChainNameResponse{Err: err}, err
+	}
+	return endpoint1.QueryWalletsForGroupByChainNameResponse{Wallets: wallets}, nil
 }

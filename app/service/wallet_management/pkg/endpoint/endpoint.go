@@ -1,9 +1,9 @@
 package endpoint
 
 import (
-	"fmt"
 	"context"
 	"errors"
+	"fmt"
 	"trustkeeper-go/app/service/wallet_management/pkg/repository"
 	service "trustkeeper-go/app/service/wallet_management/pkg/service"
 
@@ -184,16 +184,16 @@ func (e Endpoints) CreateWallet(ctx context.Context, groupid string, chainname s
 
 // GetWalletsRequest collects the request parameters for the GetWallets method.
 type GetWalletsRequest struct {
-	Groupid string `json:"groupid"`
-	Page    int32  `json:"page"`
-	Limit   int32  `json:"limit"`
-	Bip44Change int32 `json:"bip44Change"`
+	Groupid     string `json:"groupid"`
+	Page        int32  `json:"page"`
+	Limit       int32  `json:"limit"`
+	Bip44Change int32  `json:"bip44Change"`
 }
 
 // GetWalletsResponse collects the response parameters for the GetWallets method.
 type GetWalletsResponse struct {
 	ChainWithWallets []*repository.ChainWithWallets `json:"ChainWithWallets"`
-	Err     error                `json:"err"`
+	Err              error                          `json:"err"`
 }
 
 // MakeGetWalletsEndpoint returns an endpoint that invokes GetWallets on the service.
@@ -231,4 +231,46 @@ func (e Endpoints) GetWallets(ctx context.Context, groupid string, page, limit, 
 		return nil, fmt.Errorf("endpoint GetWalletsResponse error")
 	}
 	return resp.ChainWithWallets, nil
+}
+
+// QueryWalletsForGroupByChainNameRequest collects the request parameters for the QueryWalletsForGroupByChainName method.
+type QueryWalletsForGroupByChainNameRequest struct {
+	Groupid   string `json:"groupid"`
+	ChainName string `json:"chain_name"`
+}
+
+// QueryWalletsForGroupByChainNameResponse collects the response parameters for the QueryWalletsForGroupByChainName method.
+type QueryWalletsForGroupByChainNameResponse struct {
+	Wallets []*repository.Wallet `json:"wallets"`
+	Err     error                `json:"err"`
+}
+
+// MakeQueryWalletsForGroupByChainNameEndpoint returns an endpoint that invokes QueryWalletsForGroupByChainName on the service.
+func MakeQueryWalletsForGroupByChainNameEndpoint(s service.WalletManagementService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(QueryWalletsForGroupByChainNameRequest)
+		wallets, err := s.QueryWalletsForGroupByChainName(ctx, req.Groupid, req.ChainName)
+		if err != nil {
+			return QueryWalletsForGroupByChainNameResponse {Err: err}, err
+		}
+		return QueryWalletsForGroupByChainNameResponse{Wallets: wallets}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r QueryWalletsForGroupByChainNameResponse) Failed() error {
+	return r.Err
+}
+
+// QueryWalletsForGroupByChainName implements Service. Primarily useful in a client.
+func (e Endpoints) QueryWalletsForGroupByChainName(ctx context.Context, groupid string, chainName string) (wallets []*repository.Wallet, err error) {
+	request := QueryWalletsForGroupByChainNameRequest{
+		ChainName: chainName,
+		Groupid:   groupid,
+	}
+	response, err := e.QueryWalletsForGroupByChainNameEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(QueryWalletsForGroupByChainNameResponse).Wallets, nil
 }

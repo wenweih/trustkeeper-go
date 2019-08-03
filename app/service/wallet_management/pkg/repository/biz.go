@@ -11,7 +11,6 @@ import (
   "github.com/ethereum/go-ethereum/crypto"
   "github.com/btcsuite/btcd/chaincfg"
   "github.com/jinzhu/gorm"
-  // "github.com/biezhi/gorm-paginator/pagination"
   "github.com/jinzhu/copier"
 )
 
@@ -25,6 +24,7 @@ type IBiz interface {
   UpdateXpubState(ctx context.Context, from, to, groupid string) error
   CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (wallet *Wallet, err error)
   GetWallets(ctx context.Context, groupid string, page, limit, bip44change int32) (wallets []*ChainWithWallets, err error)
+  QueryWalletsForGroupByChainName(ctx context.Context, groupid, chainName string) (wallets []*Wallet, err error)
 }
 
 type Bip44AccountKey struct {
