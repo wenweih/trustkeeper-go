@@ -106,13 +106,6 @@ func (l loggingMiddleware) GetWallets(ctx context.Context, groupid string, page 
 	return l.next.GetWallets(ctx, groupid, page, limit, bip44change)
 }
 
-func (l loggingMiddleware) QueryToken(ctx context.Context, identify string) (symbol string, err error) {
-	defer func() {
-		l.logger.Log("method", "QueryToken", "identify", identify, "symbol", symbol, "err", err)
-	}()
-	return l.next.QueryToken(ctx, identify)
-}
-
 func (l loggingMiddleware) QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error) {
 	defer func() {
 		l.logger.Log("method", "QueryOmniProperty", "identify", identify, "asset", asset, "err", err)

@@ -46,7 +46,6 @@ type WebapiService interface {
 	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.GroupAsset, groupid string) (result []*repository.GroupAsset, err error)
 	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (id, address, respchainname string, status bool, err error)
 	GetWallets(ctx context.Context, groupid string, page, limit, bip44change int) (wallets []*repository.ChainWithWallets, err error)
-	QueryToken(ctx context.Context, identify string) (symbol string, err error)
 	QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error)
 }
 
@@ -355,23 +354,6 @@ func (b *basicWebapiService) GetWallets(ctx context.Context, groupid string, pag
 		return nil, err
 	}
 	return respwallets, nil
-}
-
-func (b *basicWebapiService) QueryToken(ctx context.Context, identify string) (symbol string, err error) {
-	uid, nid, roles, err := b.auth(ctx)
-	if err != nil {
-		return "", err
-	}
-	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
-	propertyid, err := strconv.ParseInt(identify, 10, 64)
-	if err != nil {
-		return "", err
-	}
-	omniProperty, err := b.chainsQuerySrv.QueryOmniProperty(ctxWithAuthInfo, propertyid)
-	if err != nil {
-		return "", err
-	}
-	return omniProperty.Name, err
 }
 
 func (b *basicWebapiService) QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error) {
