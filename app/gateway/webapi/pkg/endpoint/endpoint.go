@@ -553,3 +553,43 @@ func (e Endpoints) QueryToken(ctx context.Context, identify string) (symbol stri
 	}
 	return response.(QueryTokenResponse).Symbol, nil
 }
+
+// QueryOmniPropertyRequest collects the request parameters for the QueryOmniProperty method.
+type QueryOmniPropertyRequest struct {
+	Identify string `json:"identify"`
+}
+
+// QueryOmniPropertyResponse collects the response parameters for the QueryOmniProperty method.
+type QueryOmniPropertyResponse struct {
+	Asset *repository.SimpleAsset `json:"asset"`
+	Err   error                   `json:"err"`
+}
+
+// MakeQueryOmniPropertyEndpoint returns an endpoint that invokes QueryOmniProperty on the service.
+func MakeQueryOmniPropertyEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(QueryOmniPropertyRequest)
+		asset, err := s.QueryOmniProperty(ctx, req.Identify)
+		if err != nil {
+			return QueryOmniPropertyResponse {Err: err}, err
+		}
+		return QueryOmniPropertyResponse{
+			Asset: asset,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r QueryOmniPropertyResponse) Failed() error {
+	return r.Err
+}
+
+// QueryOmniProperty implements Service. Primarily useful in a client.
+func (e Endpoints) QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error) {
+	request := QueryOmniPropertyRequest{Identify: identify}
+	response, err := e.QueryOmniPropertyEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(QueryOmniPropertyResponse).Asset, nil
+}

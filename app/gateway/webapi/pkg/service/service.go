@@ -1,11 +1,11 @@
 package service
 
 import (
-	"strconv"
 	"context"
 	"errors"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	// "github.com/jinzhu/gorm"
@@ -47,6 +47,7 @@ type WebapiService interface {
 	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (id, address, respchainname string, status bool, err error)
 	GetWallets(ctx context.Context, groupid string, page, limit, bip44change int) (wallets []*repository.ChainWithWallets, err error)
 	QueryToken(ctx context.Context, identify string) (symbol string, err error)
+	QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error)
 }
 
 // Credentials Signup Signin params
@@ -57,10 +58,10 @@ type Credentials struct {
 }
 
 type basicWebapiService struct {
-	accountSrv   accountService.AccountService
-	dashboardSrv dashboardService.DashboardService
-	WalletSrv    walletManagementService.WalletManagementService
-	txSrv        txService.TransactionService
+	accountSrv     accountService.AccountService
+	dashboardSrv   dashboardService.DashboardService
+	WalletSrv      walletManagementService.WalletManagementService
+	txSrv          txService.TransactionService
 	chainsQuerySrv chainsqueryService.ChainsQueryService
 }
 
@@ -173,10 +174,10 @@ func NewBasicWebapiService(logger log.Logger) (WebapiService, error) {
 	}
 
 	return &basicWebapiService{
-		accountSrv:   accountClient,
-		dashboardSrv: dashboardClient,
-		WalletSrv:    wmClient,
-		txSrv:        txClient,
+		accountSrv:     accountClient,
+		dashboardSrv:   dashboardClient,
+		WalletSrv:      wmClient,
+		txSrv:          txClient,
 		chainsQuerySrv: chainsqueryClient,
 	}, nil
 }
@@ -371,4 +372,24 @@ func (b *basicWebapiService) QueryToken(ctx context.Context, identify string) (s
 		return "", err
 	}
 	return omniProperty.Name, err
+}
+
+func (b *basicWebapiService) QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	propertyid, err := strconv.ParseInt(identify, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	omniProperty, err := b.chainsQuerySrv.QueryOmniProperty(ctxWithAuthInfo, propertyid)
+	if err != nil {
+		return nil, err
+	}
+	return &repository.SimpleAsset{
+		Symbol: omniProperty.Name,
+		Identify: strconv.FormatInt(omniProperty.Propertyid, 10),
+		Decimal: 100000000}, err
 }

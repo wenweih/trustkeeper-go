@@ -112,3 +112,10 @@ func (l loggingMiddleware) QueryToken(ctx context.Context, identify string) (sym
 	}()
 	return l.next.QueryToken(ctx, identify)
 }
+
+func (l loggingMiddleware) QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error) {
+	defer func() {
+		l.logger.Log("method", "QueryOmniProperty", "identify", identify, "asset", asset, "err", err)
+	}()
+	return l.next.QueryOmniProperty(ctx, identify)
+}

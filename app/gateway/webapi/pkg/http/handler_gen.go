@@ -24,5 +24,6 @@ func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]http.Serv
 	makeCreateWalletHandler(m, endpoints, options["CreateWallet"])
 	makeGetWalletsHandler(m, endpoints, options["GetWallets"])
 	makeQueryTokenHandler(m, endpoints, options["QueryToken"])
+	makeQueryOmniPropertyHandler(m, endpoints, options["QueryOmniProperty"])
 	return m
 }

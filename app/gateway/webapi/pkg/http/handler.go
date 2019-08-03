@@ -106,6 +106,8 @@ func err2code(err error) int {
 		return http.StatusUnauthorized
 	case strings.Contains(err.Error(), "context deadline exceeded"):
 		return http.StatusRequestTimeout
+	case strings.Contains(err.Error(), "does not exist"):
+		return http.StatusNotFound
 	default:
 		return http.StatusInternalServerError
 	}
@@ -373,6 +375,31 @@ func decodeQueryTokenRequest(_ context.Context, r *http.Request) (interface{}, e
 // encodeQueryTokenResponse is a transport/http.EncodeResponseFunc that encodes
 // the response as JSON to the response writer
 func encodeQueryTokenResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
+
+// makeQueryOmniPropertyHandler creates the handler logic
+func makeQueryOmniPropertyHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/query-omni-property", http1.NewServer(endpoints.QueryOmniPropertyEndpoint, decodeQueryOmniPropertyRequest, encodeQueryOmniPropertyResponse, options...))
+}
+
+// decodeQueryOmniPropertyRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeQueryOmniPropertyRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	req := endpoint.QueryOmniPropertyRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeQueryOmniPropertyResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeQueryOmniPropertyResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
 	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
 		ErrorEncoder(ctx, f.Failed(), w)
 		return nil
