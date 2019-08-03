@@ -64,3 +64,10 @@ func (l loggingMiddleware) ChangeGroupAssets(ctx context.Context, chainAssets []
 	}()
 	return l.next.ChangeGroupAssets(ctx, chainAssets, groupid)
 }
+
+func (l loggingMiddleware) AddAsset(ctx context.Context, groupid string, chainid string, symbol string, identify string, decimal string) (asset *repository.SimpleAsset, err error) {
+	defer func() {
+		l.logger.Log("method", "AddAsset", "groupid", groupid, "chainid", chainid, "symbol", symbol, "identify", identify, "decimal", decimal, "asset", asset, "err", err)
+	}()
+	return l.next.AddAsset(ctx, groupid, chainid, symbol, identify, decimal)
+}

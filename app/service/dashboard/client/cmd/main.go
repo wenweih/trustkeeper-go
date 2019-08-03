@@ -1,6 +1,7 @@
 package main
 
 import (
+  "fmt"
   "os"
   "context"
   log "github.com/go-kit/kit/log"
@@ -33,7 +34,7 @@ func main()  {
     logger.Log("service client error: ", err.Error())
   }
   ctxWithAuthInfo := context.WithValue(context.Background(), "auth",
-		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "ebcd33a8-bf8c-4e21-a39a-eaab1e6d83c3", "468348110207778817"})
+		struct{Roles []string;UID string;NID string}{[]string{"merchant_admin"}, "dab3452a-defe-461d-ae52-c31bced94f7a", "471192264474624001"})
   //
   // var namespaceID = "466361632420134913"
   // group, err := s.CreateGroup(ctxWithAuthInfo, "55ee782d-4404-435c-b587-e5cf5ecc7da1", randomdata.SillyName(), "deeeeee", namespaceID)
@@ -46,7 +47,7 @@ func main()  {
   // }
 
   // 468348259016146945  468348353832910849
-  chainAssets, err := s.GetGroupAssets(ctxWithAuthInfo, "468348259016146945")
+  chainAssets, err := s.GetGroupAssets(ctxWithAuthInfo, "471192325366218753")
   if err != nil {
     logger.Log("fail to GetGroupAsset", err.Error())
   }
@@ -57,7 +58,13 @@ func main()  {
     }
   }
 
-  if _, err := s.ChangeGroupAssets(ctxWithAuthInfo, chainAssets, "468348259016146945"); err != nil {
-    logger.Log("fail to ChangeGroupAssets", err.Error())
+  asset, err := s.AddAsset(ctxWithAuthInfo, "471192325366218753", "471868166221627393", "USDT", "1", "100000000")
+  if err != nil {
+    logger.Log("AddAssetError", err.Error())
   }
+  fmt.Println("AddedAsset: ", asset)
+
+  // if _, err := s.ChangeGroupAssets(ctxWithAuthInfo, chainAssets, "468348259016146945"); err != nil {
+  //   logger.Log("fail to ChangeGroupAssets", err.Error())
+  // }
 }

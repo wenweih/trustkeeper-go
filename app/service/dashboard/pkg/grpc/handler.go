@@ -3,13 +3,13 @@ package grpc
 import (
 	"context"
 	"fmt"
-	"github.com/jinzhu/copier"
 	endpoint "trustkeeper-go/app/service/dashboard/pkg/endpoint"
 	pb "trustkeeper-go/app/service/dashboard/pkg/grpc/pb"
+	"trustkeeper-go/app/service/dashboard/pkg/repository"
 
 	grpc "github.com/go-kit/kit/transport/grpc"
+	"github.com/jinzhu/copier"
 	context1 "golang.org/x/net/context"
-	"trustkeeper-go/app/service/dashboard/pkg/repository"
 )
 
 func makeGetGroupsHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
@@ -166,4 +166,41 @@ func (g *grpcServer) ChangeGroupAssets(ctx context1.Context, req *pb.ChangeGroup
 		return nil, err
 	}
 	return rep.(*pb.ChangeGroupAssetsReply), nil
+}
+
+func makeAddAssetHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.AddAssetEndpoint, decodeAddAssetRequest, encodeAddAssetResponse, options...)
+}
+
+func decodeAddAssetRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.AddAssetRequest)
+	if !ok {
+		return nil, fmt.Errorf("interface{} to pb AddAssetRequest type assertion error")
+	}
+	return endpoint.AddAssetRequest{
+		Groupid: req.Groupid,
+		Chainid: req.Chainid,
+		Symbol: req.Symbol,
+		Identify: req.Identify,
+		Decimal: req.Decimal}, nil
+}
+
+func encodeAddAssetResponse(_ context.Context, r interface{}) (interface{}, error) {
+	response, ok := r.(endpoint.AddAssetResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint AddAssetResponse type assertion error")
+	}
+	pbSimpleAsset := pb.SimpleAsset{}
+	if err := copier.Copy(&pbSimpleAsset, response.Asset); err != nil {
+		return nil, err
+	}
+	return &pb.AddAssetReply{Asset: &pbSimpleAsset}, nil
+}
+
+func (g *grpcServer) AddAsset(ctx context1.Context, req *pb.AddAssetRequest) (*pb.AddAssetReply, error) {
+	_, rep, err := g.addAsset.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.AddAssetReply), nil
 }

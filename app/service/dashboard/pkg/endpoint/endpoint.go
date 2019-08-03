@@ -213,12 +213,12 @@ func (r GetGroupAssetsResponse) Failed() error {
 // ChangeGroupAssetsRequest collects the request parameters for the ChangeGroupAssets method.
 type ChangeGroupAssetsRequest struct {
 	ChainAssets []*repository.ChainAsset `json:"chainassets"`
-	Groupid string `json:"groupid"`
+	Groupid     string                   `json:"groupid"`
 }
 
 // ChangeGroupAssetsResponse collects the response parameters for the ChangeGroupAssets method.
 type ChangeGroupAssetsResponse struct {
-	Err error `json:"err"`
+	Err         error                    `json:"err"`
 	ChainAssets []*repository.ChainAsset `json:"chainassets"`
 }
 
@@ -247,4 +247,54 @@ func (e Endpoints) ChangeGroupAssets(ctx context.Context, chainAssets []*reposit
 		return nil, err
 	}
 	return resp.(ChangeGroupAssetsResponse).ChainAssets, nil
+}
+
+// AddAssetRequest collects the request parameters for the AddAsset method.
+type AddAssetRequest struct {
+	Groupid  string `json:"groupid"`
+	Chainid  string `json:"chainid"`
+	Symbol   string `json:"symbol"`
+	Identify string `json:"identify"`
+	Decimal  string `json:"decimal"`
+}
+
+// AddAssetResponse collects the response parameters for the AddAsset method.
+type AddAssetResponse struct {
+	Asset *repository.SimpleAsset `json:"asset"`
+	Err   error                   `json:"err"`
+}
+
+// MakeAddAssetEndpoint returns an endpoint that invokes AddAsset on the service.
+func MakeAddAssetEndpoint(s service.DashboardService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(AddAssetRequest)
+		asset, err := s.AddAsset(ctx, req.Groupid, req.Chainid, req.Symbol, req.Identify, req.Decimal)
+		if err != nil {
+			return AddAssetResponse{Err: err}, err
+		}
+		return AddAssetResponse{
+			Asset: asset,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r AddAssetResponse) Failed() error {
+	return r.Err
+}
+
+// AddAsset implements Service. Primarily useful in a client.
+func (e Endpoints) AddAsset(ctx context.Context, groupid string, chainid string, symbol string, identify string, decimal string) (asset *repository.SimpleAsset, err error) {
+	request := AddAssetRequest{
+		Chainid:  chainid,
+		Decimal:  decimal,
+		Groupid:  groupid,
+		Identify: identify,
+		Symbol:   symbol,
+	}
+	response, err := e.AddAssetEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(AddAssetResponse).Asset, nil
 }

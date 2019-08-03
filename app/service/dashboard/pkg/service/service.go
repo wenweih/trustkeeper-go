@@ -18,6 +18,7 @@ type DashboardService interface {
 	UpdateGroup(ctx context.Context, groupID, name, desc string) (err error)
 	GetGroupAssets(ctx context.Context, groupID string) (chainAssets []*repository.ChainAsset, err error)
 	ChangeGroupAssets(ctx context.Context, chainAssets []*repository.ChainAsset, groupid string) (result []*repository.ChainAsset, err error)
+	AddAsset(ctx context.Context, groupid, chainid, symbol, identify, decimal string) (asset *repository.SimpleAsset, err error)
 	Close() error
 }
 
@@ -58,6 +59,12 @@ func (b *basicDashboardService) ChangeGroupAssets(ctx context.Context, chainAsse
 	return
 }
 
+func (b *basicDashboardService) AddAsset(
+	ctx context.Context, groupid string, chainid string,
+	symbol string, identify string, decimal string) (asset *repository.SimpleAsset, err error) {
+	return b.biz.AddAsset(ctx, groupid, chainid, symbol, identify, decimal)
+}
+
 // returns a naive, stateless implementation of DashboardService.
 func newBasicDashboardService(conf configure.Conf, logger log.Logger) (*basicDashboardService, error) {
 	db, err := orm.DB(conf.DBInfo)
@@ -77,7 +84,6 @@ func New(conf configure.Conf, logger log.Logger, middleware []Middleware) (Dashb
 	if err != nil {
 		return nil, err
 	}
-
 	var svc DashboardService = bs
 	for _, m := range middleware {
 		svc = m(svc)
@@ -93,4 +99,9 @@ func NewJobsService(conf configure.Conf, logger log.Logger) (JobService, error) 
 	}
 	var svc JobService = bs
 	return svc, nil
+}
+
+// NewBasicDashboardService returns a naive, stateless implementation of DashboardService.
+func NewBasicDashboardService() DashboardService {
+	return &basicDashboardService{}
 }

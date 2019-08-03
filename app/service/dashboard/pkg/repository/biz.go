@@ -18,6 +18,7 @@ type IBiz interface {
   UpdateGroup(ctx context.Context, groupID, name, desc string) error
   QueryChainAsset(ctx context.Context, query map[string]interface{}) (chainAssets []*ChainAsset, err error)
   ChangeGroupAssets(ctx context.Context, chainAssets []*ChainAsset, groupid string) (result []*ChainAsset, err error)
+  AddAsset(ctx context.Context, groupid, chainid, symbol, identify, decimal string) (asset *SimpleAsset, err error)
 }
 
 func (repo *repo) Signup(uuid, email, name, xpub string) error {
@@ -208,6 +209,29 @@ func (repo *repo) createAuth(roles []string, resource string) error {
     return fmt.Errorf("not allow")
   }
   return nil
+}
+
+func (repo *repo) AddAsset(ctx context.Context, groupid, chainid, symbol, identify, decimal string) (*SimpleAsset, error) {
+  uint64Decimal, err := strconv.ParseUint(decimal, 10, 64)
+  if err != nil {
+    return nil, err
+  }
+  asset := model.Asset{
+    GroupID: groupid,
+    Symbol: symbol,
+    ChainID: chainid,
+    Status: true,
+    Identify: identify,
+    Decimal: uint64Decimal}
+  if err := repo.db.Create(&asset).Error; err != nil {
+    return nil, err
+  }
+  return &SimpleAsset{
+    AssetID: strconv.FormatUint(uint64(asset.ID), 10),
+    Symbol: asset.Symbol,
+    Status: asset.Status,
+    Identify: asset.Identify,
+    Decimal: asset.Decimal}, nil
 }
 
 func extractAuthInfoFromContext(ctx context.Context) (string, string, []string, error) {

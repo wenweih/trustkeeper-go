@@ -20,6 +20,7 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
 	options := map[string][]grpc.ServerOption{
+		"AddAsset":          {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "AddAsset", logger))},
 		"ChangeGroupAssets": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "ChangeGroupAssets", logger))},
 		"CreateGroup":       {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateGroup", logger))},
 		"GetGroupAssets":    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetGroupAssets", logger))},
@@ -34,12 +35,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["UpdateGroup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "UpdateGroup")), endpoint.InstrumentingMiddleware(duration.With("method", "UpdateGroup"))}
 	mw["GetGroupAssets"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetGroupAssets")), endpoint.InstrumentingMiddleware(duration.With("method", "GetGroupAssets"))}
 	mw["ChangeGroupAssets"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ChangeGroupAssets")), endpoint.InstrumentingMiddleware(duration.With("method", "ChangeGroupAssets"))}
+	mw["AddAsset"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "AddAsset")), endpoint.InstrumentingMiddleware(duration.With("method", "AddAsset"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"CreateGroup", "GetGroups", "UpdateGroup", "GetGroupAssets", "ChangeGroupAssets"}
+	methods := []string{"CreateGroup", "GetGroups", "UpdateGroup", "GetGroupAssets", "ChangeGroupAssets", "AddAsset"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

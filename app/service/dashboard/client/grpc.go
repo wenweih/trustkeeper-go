@@ -44,7 +44,13 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		changeGroupAssetsEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "ChangeGroupAssets", encodeChangeGroupAssetsRequest, decodeChangeGroupAssetsResponse, pb.ChangeGroupAssetsReply{}, options...).Endpoint()
 	}
 
+  var addAssetEndpoint endpoint.Endpoint
+	{
+		addAssetEndpoint = grpc1.NewClient(conn, "pb.Dashboard", "AddAsset", encodeAddAssetRequest, decodeAddAssetResponse, pb.AddAssetReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
+    AddAssetEndpoint:          addAssetEndpoint,
     ChangeGroupAssetsEndpoint: changeGroupAssetsEndpoint,
 		CreateGroupEndpoint: createGroupEndpoint,
 		GetGroupsEndpoint:   getGroupsEndpoint,
@@ -177,4 +183,31 @@ func decodeChangeGroupAssetsResponse(_ context.Context, reply interface{}) (inte
     return endpoint1.ChangeGroupAssetsResponse{Err: err}, err
   }
   return endpoint1.ChangeGroupAssetsResponse{ChainAssets: endpointChainAssets}, nil
+}
+
+// encodeAddAssetRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain AddAsset request to a gRPC request.
+func encodeAddAssetRequest(_ context.Context, request interface{}) (interface{}, error) {
+  r, ok := request.(endpoint1.AddAssetRequest)
+  if !ok {
+    return nil, fmt.Errorf("request interface to endpoint AddAssetRequest type assertion error")
+  }
+  return &pb.AddAssetRequest{
+    Groupid: r.Groupid, Chainid: r.Chainid,
+    Decimal: r.Decimal, Identify: r.Identify, Symbol: r.Symbol}, nil
+}
+
+// decodeAddAssetResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeAddAssetResponse(_ context.Context, reply interface{}) (interface{}, error) {
+  resp, ok := reply.(*pb.AddAssetReply)
+  if !ok {
+    e := fmt.Errorf("pb AddAssetReply type assertion error")
+    return endpoint1.AddAssetResponse{Err: e}, e
+  }
+  simpleAsset := repository.SimpleAsset{}
+  if err := copier.Copy(&simpleAsset, resp.Asset); err != nil {
+    return endpoint1.AddAssetResponse{Err: err}, err
+  }
+  return endpoint1.AddAssetResponse{Asset: &simpleAsset}, nil
 }

@@ -15,12 +15,14 @@ type Endpoints struct {
 	UpdateGroupEndpoint       endpoint.Endpoint
 	GetGroupAssetsEndpoint    endpoint.Endpoint
 	ChangeGroupAssetsEndpoint endpoint.Endpoint
+	AddAssetEndpoint          endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.DashboardService, mdw map[string][]endpoint.Middleware) Endpoints {
 	eps := Endpoints{
+		AddAssetEndpoint:          MakeAddAssetEndpoint(s),
 		ChangeGroupAssetsEndpoint: MakeChangeGroupAssetsEndpoint(s),
 		CreateGroupEndpoint:       MakeCreateGroupEndpoint(s),
 		GetGroupAssetsEndpoint:    MakeGetGroupAssetsEndpoint(s),
@@ -41,6 +43,9 @@ func New(s service.DashboardService, mdw map[string][]endpoint.Middleware) Endpo
 	}
 	for _, m := range mdw["ChangeGroupAssets"] {
 		eps.ChangeGroupAssetsEndpoint = m(eps.ChangeGroupAssetsEndpoint)
+	}
+	for _, m := range mdw["AddAsset"] {
+		eps.AddAssetEndpoint = m(eps.AddAssetEndpoint)
 	}
 	return eps
 }

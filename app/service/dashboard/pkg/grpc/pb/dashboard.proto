@@ -11,6 +11,7 @@ service Dashboard {
  rpc UpdateGroup       (UpdateGroupRequest      ) returns (UpdateGroupReply      );
  rpc GetGroupAsset     (GetGroupAssetRequest    ) returns (GetGroupAssetReply    );
  rpc ChangeGroupAssets (ChangeGroupAssetsRequest) returns (ChangeGroupAssetsReply);
+ rpc AddAsset          (AddAssetRequest         ) returns (AddAssetReply         );
 }
 
 message GetGroupsRequest {
@@ -51,11 +52,11 @@ message GetGroupAssetRequest {
 }
 
 message SimpleAsset {
- string AssetID = 1;
- string symbol  = 2;
- bool   status  = 3;
+ string AssetID  = 1;
+ string symbol   = 2;
+ bool   status   = 3;
  string Identify = 4;
- uint64 Decimal = 5;
+ uint64 Decimal  = 5;
 }
 
 message ChainAsset {
@@ -72,10 +73,22 @@ message GetGroupAssetReply {
 }
 
 message ChangeGroupAssetsRequest {
-  repeated ChainAsset chainassets = 1;
-  string groupid = 2;
+ repeated ChainAsset chainassets = 1;
+          string     groupid     = 2;
 }
 
 message ChangeGroupAssetsReply {
-  repeated ChainAsset chainassets = 1;
+ repeated ChainAsset chainassets = 1;
+}
+
+message AddAssetRequest {
+  string Groupid = 1;
+  string Chainid = 2;
+  string Symbol = 3;
+  string Identify = 4;
+  string Decimal = 5;
+}
+
+message AddAssetReply {
+  SimpleAsset Asset = 1;
 }

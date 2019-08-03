@@ -14,10 +14,12 @@ type grpcServer struct {
 	updateGroup       grpc.Handler
 	getGroupAssets    grpc.Handler
 	changeGroupAssets grpc.Handler
+	addAsset          grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.DashboardServer {
 	return &grpcServer{
+		addAsset:          makeAddAssetHandler(endpoints, options["AddAsset"]),
 		changeGroupAssets: makeChangeGroupAssetsHandler(endpoints, options["ChangeGroupAssets"]),
 		createGroup:       makeCreateGroupHandler(endpoints, options["CreateGroup"]),
 		getGroupAssets:    makeGetGroupAssetsHandler(endpoints, options["GetGroupAssets"]),
