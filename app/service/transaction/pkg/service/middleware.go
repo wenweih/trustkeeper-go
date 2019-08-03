@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	log "github.com/go-kit/kit/log"
 	"trustkeeper-go/app/service/transaction/pkg/repository"
+
+	log "github.com/go-kit/kit/log"
 )
 
 // Middleware describes a service middleware.
@@ -35,4 +36,11 @@ func (l loggingMiddleware) AssignAssetsToWallet(ctx context.Context, address str
 		l.logger.Log("method", "AssignAssetsToWallet", "address", address, "assets", assets, "err", err)
 	}()
 	return l.next.AssignAssetsToWallet(ctx, address, assets)
+}
+
+func (l loggingMiddleware) CreateBalancesForAsset(ctx context.Context, wallets []*repository.Wallet, asset *repository.SimpleAsset) (err error) {
+	defer func() {
+		l.logger.Log("method", "CreateBalancesForAsset", "wallets", wallets, "asset", asset, "err", err)
+	}()
+	return l.next.CreateBalancesForAsset(ctx, wallets, asset)
 }

@@ -46,6 +46,13 @@ func New(consulAddr string, logger log.Logger) (service.TransactionService, erro
     retry := lb.Retry(retryMax, retryTimeout, balancer)
     endpoints.AssignAssetsToWalletEndpoint = retry
   }
+  {
+    factory := factoryFor(transactionEndpoint.MakeCreateBalancesForAssetEndpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.CreateBalancesForAssetEndpoint = retry
+  }
   return endpoints, nil
 }
 

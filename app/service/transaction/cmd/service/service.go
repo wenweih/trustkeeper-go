@@ -3,6 +3,16 @@ package service
 import (
 	"flag"
 	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	endpoint "trustkeeper-go/app/service/transaction/pkg/endpoint"
+	grpc "trustkeeper-go/app/service/transaction/pkg/grpc"
+	pb "trustkeeper-go/app/service/transaction/pkg/grpc/pb"
+	service "trustkeeper-go/app/service/transaction/pkg/service"
+
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
@@ -13,21 +23,13 @@ import (
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	grpc1 "google.golang.org/grpc"
-	"net"
-	"net/http"
-	"os"
-	"os/signal"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"syscall"
-	endpoint "trustkeeper-go/app/service/transaction/pkg/endpoint"
-	grpc "trustkeeper-go/app/service/transaction/pkg/grpc"
-	pb "trustkeeper-go/app/service/transaction/pkg/grpc/pb"
-	service "trustkeeper-go/app/service/transaction/pkg/service"
 
-	common "trustkeeper-go/library/util"
-	"trustkeeper-go/library/consul"
 	"trustkeeper-go/app/service/transaction/pkg/configure"
+	"trustkeeper-go/library/consul"
+	common "trustkeeper-go/library/util"
+
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 

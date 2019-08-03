@@ -6,20 +6,34 @@ package pb;
 
 //The Transaction service definition.
 service Transaction {
- rpc AssignAssetsToWallet (AssignAssetsToWalletRequest) returns (AssignAssetsToWalletReply);
+ rpc AssignAssetsToWallet   (AssignAssetsToWalletRequest  ) returns (AssignAssetsToWalletReply  );
+ rpc CreateBalancesForAsset (CreateBalancesForAssetRequest) returns (CreateBalancesForAssetReply);
 }
 
 message SimpleAsset {
- string AssetID = 1;
- string symbol  = 2;
- bool   status  = 3;
+ string AssetID  = 1;
+ string symbol   = 2;
+ bool   status   = 3;
  string Identify = 4;
- uint64 Decimal = 5;
+ uint64 Decimal  = 5;
+}
+
+message Wallet {
+  string Address = 1;
+  bool Status = 2;
+  string ChainName = 3;
 }
 
 message AssignAssetsToWalletRequest {
-           string address = 1;
-  repeated SimpleAsset SimpleAssets = 2;
+          string      address      = 1;
+ repeated SimpleAsset SimpleAssets = 2;
 }
 
 message AssignAssetsToWalletReply {}
+
+message CreateBalancesForAssetRequest {
+  SimpleAsset Asset = 1;
+  repeated Wallet Wallets = 2;
+}
+
+message CreateBalancesForAssetReply {}

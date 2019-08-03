@@ -19,18 +19,24 @@ import (
 func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service.TransactionService, error) {
 	var assignAssetsToWalletEndpoint endpoint.Endpoint
 	{
-		assignAssetsToWalletEndpoint = grpc1.NewClient(conn, "pb.Transaction", "AssignAssetsToWallet", encodeAssignAssetsToWalletRequest, decodeAssignAssetsToWalletResponse, pb.AssignAssetsToWalletReply{}, options...).Endpoint()
+		assignAssetsToWalletEndpoint = grpc1.NewClient(conn, "pb.Transaction", "AssignAssetsToWallet",
+			encodeAssignAssetsToWalletRequest, decodeAssignAssetsToWalletResponse, pb.AssignAssetsToWalletReply{}, options...).Endpoint()
+	}
+	var createBalancesForAssetEndpoint endpoint.Endpoint
+	{
+		createBalancesForAssetEndpoint = grpc1.NewClient(conn, "pb.Transaction", "CreateBalancesForAsset",
+			encodeCreateBalancesForAssetRequest, decodeCreateBalancesForAssetResponse, pb.CreateBalancesForAssetReply{}, options...).Endpoint()
 	}
 
 	return endpoint1.Endpoints{
 		AssignAssetsToWalletEndpoint: assignAssetsToWalletEndpoint,
+		CreateBalancesForAssetEndpoint: createBalancesForAssetEndpoint,
 	}, nil
 }
 
 // encodeAssignAssetsToWalletRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain AssignAssetsToWallet request to a gRPC request.
 func encodeAssignAssetsToWalletRequest(_ context.Context, request interface{}) (interface{}, error) {
-	// return nil, errors.New("'Transaction' Encoder is not impelemented")
 	r, ok := request.(endpoint1.AssignAssetsToWalletRequest)
   if !ok {
     return nil, fmt.Errorf("request interface to endpoint AssignAssetsToWalletRequest type assertion error")
@@ -51,4 +57,34 @@ func decodeAssignAssetsToWalletResponse(_ context.Context, reply interface{}) (i
     return endpoint1.AssignAssetsToWalletResponse{Err: e}, e
   }
   return endpoint1.AssignAssetsToWalletResponse{}, nil
+}
+
+// encodeCreateBalancesForAssetRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain CreateBalancesForAsset request to a gRPC request.
+func encodeCreateBalancesForAssetRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.CreateBalancesForAssetRequest)
+	if !ok {
+		return nil, fmt.Errorf("request interface to endpoint CreateBalancesForAssetRequest type assertion error")
+	}
+	pbSimpleAsset := pb.SimpleAsset{}
+	if err := copier.Copy(&pbSimpleAsset, r.Asset); err != nil {
+		return nil, err
+	}
+
+	wallets := make([]*pb.Wallet, 0)
+	if err := copier.Copy(&wallets, &r.Wallets); err != nil {
+		return nil, err
+	}
+	return &pb.CreateBalancesForAssetRequest{Asset: &pbSimpleAsset, Wallets: wallets}, nil
+}
+
+// decodeCreateBalancesForAssetResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeCreateBalancesForAssetResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	_, ok := reply.(*pb.CreateBalancesForAssetReply)
+	if !ok {
+		e := fmt.Errorf("pb CreateBalancesForAssetReply type assertion error")
+		return endpoint1.CreateBalancesForAssetResponse{Err: e}, e
+	}
+	return endpoint1.CreateBalancesForAssetResponse{}, nil
 }

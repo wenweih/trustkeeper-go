@@ -10,15 +10,22 @@ import (
 // meant to be used as a helper struct, to collect all of the endpoints into a
 // single parameter.
 type Endpoints struct {
-	AssignAssetsToWalletEndpoint endpoint.Endpoint
+	AssignAssetsToWalletEndpoint   endpoint.Endpoint
+	CreateBalancesForAssetEndpoint endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
 // expected endpoint middlewares
 func New(s service.TransactionService, mdw map[string][]endpoint.Middleware) Endpoints {
-	eps := Endpoints{AssignAssetsToWalletEndpoint: MakeAssignAssetsToWalletEndpoint(s)}
+	eps := Endpoints{
+		AssignAssetsToWalletEndpoint:   MakeAssignAssetsToWalletEndpoint(s),
+		CreateBalancesForAssetEndpoint: MakeCreateBalancesForAssetEndpoint(s),
+	}
 	for _, m := range mdw["AssignAssetsToWallet"] {
 		eps.AssignAssetsToWalletEndpoint = m(eps.AssignAssetsToWalletEndpoint)
+	}
+	for _, m := range mdw["CreateBalancesForAsset"] {
+		eps.CreateBalancesForAssetEndpoint = m(eps.CreateBalancesForAssetEndpoint)
 	}
 	return eps
 }

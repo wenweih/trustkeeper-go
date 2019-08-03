@@ -19,17 +19,21 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	return g
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
-	options := map[string][]grpc.ServerOption{"AssignAssetsToWallet": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "AssignAssetsToWallet", logger))}}
+	options := map[string][]grpc.ServerOption{
+		"AssignAssetsToWallet":   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "AssignAssetsToWallet", logger))},
+		"CreateBalancesForAsset": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateBalancesForAsset", logger))},
+	}
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
 	mw["AssignAssetsToWallet"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "AssignAssetsToWallet")), endpoint.InstrumentingMiddleware(duration.With("method", "AssignAssetsToWallet"))}
+	mw["CreateBalancesForAsset"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateBalancesForAsset")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateBalancesForAsset"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"AssignAssetsToWallet"}
+	methods := []string{"AssignAssetsToWallet", "CreateBalancesForAsset"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

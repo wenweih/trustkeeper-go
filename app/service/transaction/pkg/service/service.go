@@ -11,9 +11,10 @@ import (
 type TransactionService interface {
 	Close() error
 	AssignAssetsToWallet(ctx context.Context, address string, assets []*repository.SimpleAsset) (err error)
+	CreateBalancesForAsset(ctx context.Context, wallets []*repository.Wallet, asset *repository.SimpleAsset) (err error)
 }
 
-type basicTransactionService struct{
+type basicTransactionService struct {
 	biz repository.IBiz
 }
 
@@ -23,6 +24,11 @@ func (b *basicTransactionService) Close() error {
 
 func (b *basicTransactionService) AssignAssetsToWallet(ctx context.Context, address string, assets []*repository.SimpleAsset) (err error) {
 	err = b.biz.AssignAssetsToWallet(ctx, address, assets)
+	return
+}
+
+func (b *basicTransactionService) CreateBalancesForAsset(ctx context.Context, wallets []*repository.Wallet, asset *repository.SimpleAsset) (err error) {
+	err = b.biz.CreateBalancesForAsset(ctx, wallets, asset)
 	return
 }
 

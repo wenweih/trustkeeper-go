@@ -2,9 +2,10 @@ package endpoint
 
 import (
 	"context"
-	endpoint "github.com/go-kit/kit/endpoint"
 	"trustkeeper-go/app/service/transaction/pkg/repository"
 	service "trustkeeper-go/app/service/transaction/pkg/service"
+
+	endpoint "github.com/go-kit/kit/endpoint"
 )
 
 // AssignAssetsToWalletRequest collects the request parameters for the AssignAssetsToWallet method.
@@ -54,6 +55,47 @@ func (e Endpoints) AssignAssetsToWallet(ctx context.Context, address string, ass
 		Assets:  assets,
 	}
 	_, err = e.AssignAssetsToWalletEndpoint(ctx, request)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// CreateBalancesForAssetRequest collects the request parameters for the CreateBalancesForAsset method.
+type CreateBalancesForAssetRequest struct {
+	Wallets []*repository.Wallet    `json:"wallets"`
+	Asset   *repository.SimpleAsset `json:"asset"`
+}
+
+// CreateBalancesForAssetResponse collects the response parameters for the CreateBalancesForAsset method.
+type CreateBalancesForAssetResponse struct {
+	Err error `json:"err"`
+}
+
+// MakeCreateBalancesForAssetEndpoint returns an endpoint that invokes CreateBalancesForAsset on the service.
+func MakeCreateBalancesForAssetEndpoint(s service.TransactionService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(CreateBalancesForAssetRequest)
+		err := s.CreateBalancesForAsset(ctx, req.Wallets, req.Asset)
+		if err != nil {
+			return CreateBalancesForAssetResponse{Err: err}, err
+		}
+		return CreateBalancesForAssetResponse{}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r CreateBalancesForAssetResponse) Failed() error {
+	return r.Err
+}
+
+// CreateBalancesForAsset implements Service. Primarily useful in a client.
+func (e Endpoints) CreateBalancesForAsset(ctx context.Context, wallets []*repository.Wallet, asset *repository.SimpleAsset) (err error) {
+	request := CreateBalancesForAssetRequest{
+		Asset:   asset,
+		Wallets: wallets,
+	}
+	_, err = e.CreateBalancesForAssetEndpoint(ctx, request)
 	if err != nil {
 		return err
 	}

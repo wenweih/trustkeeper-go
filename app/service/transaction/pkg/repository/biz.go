@@ -10,7 +10,25 @@ import (
 // IBiz dashboard service business logic
 type IBiz interface {
   AssignAssetsToWallet(ctx context.Context, address string, assets []*SimpleAsset) (err error)
+  CreateBalancesForAsset(ctx context.Context, wallets []*Wallet, asset *SimpleAsset) (err error)
   Close() error
+}
+
+func (repo *repo) CreateBalancesForAsset(ctx context.Context, wallets []*Wallet, asset *SimpleAsset) (error) {
+  tx := repo.db.Begin()
+  for _, wallet := range wallets {
+    tx.FirstOrCreate(&model.Balance{
+      Address: wallet.Address,
+      Symbol: asset.Symbol,
+      Identify: asset.Identify,
+      Decimal: asset.Decimal})
+  }
+  err := tx.Commit().Error
+  if err != nil {
+    tx.Rollback()
+    return err
+  }
+  return nil
 }
 
 func (repo *repo) AssignAssetsToWallet(ctx context.Context, address string, assets []*SimpleAsset) (err error) {
