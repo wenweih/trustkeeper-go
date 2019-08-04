@@ -383,3 +383,28 @@ func encodeQueryOmniPropertyResponse(ctx context.Context, w http.ResponseWriter,
 	err = json.NewEncoder(w).Encode(response)
 	return
 }
+
+// makeCreateTokenHandler creates the handler logic
+func makeCreateTokenHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/create-token", http1.NewServer(endpoints.CreateTokenEndpoint, decodeCreateTokenRequest, encodeCreateTokenResponse, options...))
+}
+
+// decodeCreateTokenRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeCreateTokenRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	req := endpoint.CreateTokenRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeCreateTokenResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeCreateTokenResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}

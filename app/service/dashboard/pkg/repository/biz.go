@@ -216,16 +216,17 @@ func (repo *repo) AddAsset(ctx context.Context, groupid, chainid, symbol, identi
   if err != nil {
     return nil, err
   }
-  asset := model.Asset{
+  asset := model.Asset{}
+  if err := repo.db.Where(model.Asset{
     GroupID: groupid,
     Symbol: symbol,
     ChainID: chainid,
     Status: true,
     Identify: identify,
-    Decimal: uint64Decimal}
-  if err := repo.db.Create(&asset).Error; err != nil {
+    Decimal: uint64Decimal}).FirstOrCreate(&asset).Error; err != nil {
     return nil, err
   }
+
   return &SimpleAsset{
     AssetID: strconv.FormatUint(uint64(asset.ID), 10),
     Symbol: asset.Symbol,

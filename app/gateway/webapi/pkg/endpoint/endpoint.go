@@ -533,7 +533,7 @@ func MakeQueryOmniPropertyEndpoint(s service.WebapiService) endpoint.Endpoint {
 		req := request.(QueryOmniPropertyRequest)
 		asset, err := s.QueryOmniProperty(ctx, req.Identify)
 		if err != nil {
-			return QueryOmniPropertyResponse {Err: err}, err
+			return QueryOmniPropertyResponse{Err: err}, err
 		}
 		return QueryOmniPropertyResponse{
 			Asset: asset,
@@ -554,4 +554,54 @@ func (e Endpoints) QueryOmniProperty(ctx context.Context, identify string) (asse
 		return nil, err
 	}
 	return response.(QueryOmniPropertyResponse).Asset, nil
+}
+
+// CreateTokenRequest collects the request parameters for the CreateToken method.
+type CreateTokenRequest struct {
+	Groupid   string `json:"groupid"`
+	Chainid   string `json:"chainid"`
+	Symbol    string `json:"symbol"`
+	Identify  string `json:"identify"`
+	Decimal   string `json:"decimal"`
+	ChainName string `json:"chain_name"`
+}
+
+// CreateTokenResponse collects the response parameters for the CreateToken method.
+type CreateTokenResponse struct {
+	Asset *repository.SimpleAsset `json:"asset"`
+	Err   error                   `json:"err"`
+}
+
+// MakeCreateTokenEndpoint returns an endpoint that invokes CreateToken on the service.
+func MakeCreateTokenEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(CreateTokenRequest)
+		asset, err := s.CreateToken(ctx, req.Groupid, req.Chainid, req.Symbol, req.Identify, req.Decimal, req.ChainName)
+		if err != nil {
+			return CreateTokenResponse{Err: err}, err
+		}
+		return CreateTokenResponse{Asset: asset}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r CreateTokenResponse) Failed() error {
+	return r.Err
+}
+
+// CreateToken implements Service. Primarily useful in a client.
+func (e Endpoints) CreateToken(ctx context.Context, groupid string, chainid string, symbol string, identify string, decimal string, chainName string) (asset *repository.SimpleAsset, err error) {
+	request := CreateTokenRequest{
+		ChainName: chainName,
+		Chainid:   chainid,
+		Decimal:   decimal,
+		Groupid:   groupid,
+		Identify:  identify,
+		Symbol:    symbol,
+	}
+	response, err := e.CreateTokenEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(CreateTokenResponse).Asset, nil
 }

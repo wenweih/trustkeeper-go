@@ -112,3 +112,10 @@ func (l loggingMiddleware) QueryOmniProperty(ctx context.Context, identify strin
 	}()
 	return l.next.QueryOmniProperty(ctx, identify)
 }
+
+func (l loggingMiddleware) CreateToken(ctx context.Context, groupid string, chainid string, symbol string, identify string, decimal string, chainName string) (asset *repository.SimpleAsset, err error) {
+	defer func() {
+		l.logger.Log("method", "CreateToken", "groupid", groupid, "chainid", chainid, "symbol", symbol, "identify", identify, "decimal", decimal, "chainName", chainName, "asset", asset, "err", err)
+	}()
+	return l.next.CreateToken(ctx, groupid, chainid, symbol, identify, decimal, chainName)
+}

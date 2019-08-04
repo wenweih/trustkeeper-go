@@ -58,7 +58,7 @@ func main()  {
     }
   }
 
-  asset, err := s.AddAsset(ctxWithAuthInfo, "471192325366218753", "471868166221627393", "USDT", "1", "100000000")
+  asset, err := s.AddAsset(ctxWithAuthInfo, "471192325366218753", "471868166221627393", "Omni tokens", "1", "100000000")
   if err != nil {
     logger.Log("AddAssetError", err.Error())
   }

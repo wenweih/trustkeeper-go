@@ -47,6 +47,7 @@ type WebapiService interface {
 	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (id, address, respchainname string, status bool, err error)
 	GetWallets(ctx context.Context, groupid string, page, limit, bip44change int) (wallets []*repository.ChainWithWallets, err error)
 	QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error)
+	CreateToken(ctx context.Context, groupid, chainid, symbol, identify, decimal, chainName string) (asset *repository.SimpleAsset, err error)
 }
 
 // Credentials Signup Signin params
@@ -371,7 +372,47 @@ func (b *basicWebapiService) QueryOmniProperty(ctx context.Context, identify str
 		return nil, err
 	}
 	return &repository.SimpleAsset{
-		Symbol: omniProperty.Name,
+		Symbol:   omniProperty.Name,
 		Identify: strconv.FormatInt(omniProperty.Propertyid, 10),
-		Decimal: 100000000}, err
+		Decimal:  100000000}, err
+}
+
+func (b *basicWebapiService) CreateToken(
+	ctx context.Context, groupid string,
+	chainid string, symbol string,
+	identify string, decimal string, chainName string) (*repository.SimpleAsset, error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	asset, err := b.dashboardSrv.AddAsset(ctxWithAuthInfo, groupid, chainid, symbol, identify, decimal)
+	if err != nil {
+		return nil, err
+	}
+	wallets, err := b.WalletSrv.QueryWalletsForGroupByChainName(ctxWithAuthInfo, groupid, chainName)
+	if err != nil {
+		return nil, err
+	}
+
+	txSrvAsset := txRepository.SimpleAsset{}
+	if err := copier.Copy(&txSrvAsset, asset); err != nil {
+		return nil, err
+	}
+
+	respAsset := repository.SimpleAsset{}
+	if err := copier.Copy(&respAsset, asset); err != nil {
+		return nil, err
+	}
+
+	txSrvWallets := make([]*txRepository.Wallet, 0)
+	if err := copier.Copy(&txSrvWallets, &wallets); err != nil {
+		return nil, err
+	}
+
+	err = b.txSrv.CreateBalancesForAsset(ctxWithAuthInfo, txSrvWallets, &txSrvAsset)
+	if err != nil {
+		return nil, err
+	}
+	return &respAsset, nil
 }

@@ -112,6 +112,7 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options["CreateWallet"] = append(options["CreateWallet"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["GetWallets"] = append(options["GetWallets"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["QueryOmniProperty"] = append(options["QueryOmniProperty"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
+	options["CreateToken"] = append(options["CreateToken"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	httpHandler := http.NewHTTPHandler(endpoints, options)
 	httpListener, err := net.Listen("tcp", *httpAddr)
 	if err != nil {
