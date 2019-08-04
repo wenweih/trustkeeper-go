@@ -2,6 +2,7 @@ package repository
 
 import (
   "fmt"
+  "strings"
   "context"
   "google.golang.org/grpc/metadata"
   "trustkeeper-go/app/service/transaction/pkg/model"
@@ -14,21 +15,30 @@ type IBiz interface {
   Close() error
 }
 
+// What's the fastest way to do a bulk insert into Postgres?
+// https://stackoverflow.com/questions/758945/whats-the-fastest-way-to-do-a-bulk-insert-into-postgres
+// bulk insert, bulk query with gorm https://zhiruchen.github.io/2017/08/31/bulk-insert-bulk-query-with-gorm/
 func (repo *repo) CreateBalancesForAsset(ctx context.Context, wallets []*Wallet, asset *SimpleAsset) (error) {
-  tx := repo.db.Begin()
-  for _, wallet := range wallets {
-    tx.FirstOrCreate(&model.Balance{
-      Address: wallet.Address,
-      Symbol: asset.Symbol,
-      Identify: asset.Identify,
-      Decimal: asset.Decimal})
+  valueStrings := []string{}
+  valueArgs := []interface{}{}
+  for _, w := range wallets {
+    valueStrings = append(valueStrings, "(?, ?, ?, ?)")
+
+    valueArgs = append(valueArgs, w.Address)
+    valueArgs = append(valueArgs, asset.Symbol)
+    valueArgs = append(valueArgs, asset.Identify)
+    valueArgs = append(valueArgs, asset.Decimal)
   }
-  err := tx.Commit().Error
+  smt := `INSERT INTO balances(address, symbol, identify, decimal)
+    VALUES %s ON CONFLICT (address, symbol) DO UPDATE SET address = excluded.address`
+  smt = fmt.Sprintf(smt, strings.Join(valueStrings, ","))
+  tx := repo.db.Begin()
+  err := tx.Exec(smt, valueArgs...).Error
   if err != nil {
     tx.Rollback()
     return err
   }
-  return nil
+  return tx.Commit().Error
 }
 
 func (repo *repo) AssignAssetsToWallet(ctx context.Context, address string, assets []*SimpleAsset) (err error) {
