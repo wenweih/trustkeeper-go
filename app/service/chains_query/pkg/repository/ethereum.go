@@ -1,7 +1,10 @@
 package repository
 
 import (
+  "fmt"
+  "math"
   "context"
+  "strconv"
   "math/big"
   "github.com/ethereum/go-ethereum"
   "github.com/ethereum/go-ethereum/common"
@@ -12,7 +15,8 @@ import (
 type ERC20Token struct {
   Symbol   string `json:"Symbol"`
   Name     string `json:"Name"`
-  Decimals uint32 `json:"Decimals"`
+  Decimals uint64 `json:"Decimals"`
+  Address  string `json:"Address"`
 }
 
 func (repo *repo) EthereumSubscribeNewHead(
@@ -45,9 +49,15 @@ func (repo *repo) ERC20TokenInfo(ctx context.Context, tokenHex string) (*ERC20To
   if err != nil {
     return nil, err
   }
+  decimalsStr := fmt.Sprintf("%f", math.Pow10(int(decimals)))
+  decimalsUint64, err := strconv.ParseUint(decimalsStr[:len(decimalsStr)-7], 10, 64)
+  if err != nil {
+    return nil, err
+  }
 
   return &ERC20Token{
     Symbol: symbol,
     Name: name,
-    Decimals: uint32(decimals)}, nil
+    Address: tokenHex,
+    Decimals: decimalsUint64}, nil
 }

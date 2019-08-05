@@ -12,8 +12,9 @@ type SimpleAsset struct {
 // ERC20Token Ethereum erc20 token info
 type ERC20Token struct {
   Symbol   string `json:"Symbol"`
+  Address  string `json:"Address"`
   Name     string `json:"Name"`
-  Decimals uint32 `json:"Decimals"`
+  Decimals uint64 `json:"Decimals"`
 }
 
 // GroupAsset tokens correspond with chain resp

@@ -45,7 +45,8 @@ message ERC20TokenInfoRequest {
 message ERC20Token {
   string Symbol = 1;
   string Name = 2;
-  uint32 Decimals = 3;
+  uint64 Decimals = 3;
+  string Address = 4;
 }
 
 message ERC20TokenInfoReply {
