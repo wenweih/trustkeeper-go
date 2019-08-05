@@ -108,6 +108,8 @@ func err2code(err error) int {
 		return http.StatusRequestTimeout
 	case strings.Contains(err.Error(), "does not exist"):
 		return http.StatusNotFound
+	case strings.Contains(err.Error(), "duplicate key value"):
+		return http.StatusConflict
 	default:
 		return http.StatusInternalServerError
 	}

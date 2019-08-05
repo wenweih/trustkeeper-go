@@ -30,7 +30,7 @@ func (repo *repo) CreateBalancesForAsset(ctx context.Context, wallets []*Wallet,
     valueArgs = append(valueArgs, asset.Decimal)
   }
   smt := `INSERT INTO balances(address, symbol, identify, decimal)
-    VALUES %s ON CONFLICT (address, symbol) DO UPDATE SET address = excluded.address`
+    VALUES %s ON CONFLICT (address, symbol) DO UPDATE SET address=excluded.address,symbol=excluded.symbol`
   smt = fmt.Sprintf(smt, strings.Join(valueStrings, ","))
   tx := repo.db.Begin()
   err := tx.Exec(smt, valueArgs...).Error
