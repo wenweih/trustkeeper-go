@@ -8,6 +8,7 @@ package pb;
 service ChainsQuery {
  rpc BitcoincoreBlock  (BitcoincoreBlockRequest ) returns (BitcoincoreBlockReply );
  rpc QueryOmniProperty (QueryOmniPropertyRequest) returns (QueryOmniPropertyReply);
+ rpc ERC20TokenInfo    (ERC20TokenInfoRequest   ) returns (ERC20TokenInfoReply   );
 }
 
 message BitcoincoreBlockRequest {}
@@ -15,24 +16,38 @@ message BitcoincoreBlockRequest {}
 message BitcoincoreBlockReply {}
 
 message QueryOmniPropertyRequest {
-  int64 propertyid = 1;
+ int64 propertyid = 1;
 }
 
 message OmniProperty {
-  int64 Propertyid = 1;
-  string Name = 2;
-  string Category = 3;
-  string Subcategory = 4;
-  string URL = 5;
-  bool Divisible = 6;
-  string Issuer = 7;
-  string Creationtxid = 8;
-  bool Fixedissuance = 9;
-  bool Managedissuance = 10;
-  bool Freezingenabled = 11;
-  string Totaltokens = 12;
+ int64  Propertyid      =  1;
+ string Name            =  2;
+ string Category        =  3;
+ string Subcategory     =  4;
+ string URL             =  5;
+ bool   Divisible       =  6;
+ string Issuer          =  7;
+ string Creationtxid    =  8;
+ bool   Fixedissuance   =  9;
+ bool   Managedissuance = 10;
+ bool   Freezingenabled = 11;
+ string Totaltokens     = 12;
 }
 
 message QueryOmniPropertyReply {
-  OmniProperty OmniProperty = 1;
+ OmniProperty OmniProperty = 1;
+}
+
+message ERC20TokenInfoRequest {
+  string TokenHex = 1;
+}
+
+message ERC20Token {
+  string Symbol = 1;
+  string Name = 2;
+  uint32 Decimals = 3;
+}
+
+message ERC20TokenInfoReply {
+  ERC20Token ERC20Token = 1;
 }

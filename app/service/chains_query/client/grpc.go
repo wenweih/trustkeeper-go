@@ -31,8 +31,15 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 			encodeQueryOmniPropertyRequest, decodeQueryOmniPropertyResponse, pb.QueryOmniPropertyReply{}, options...).Endpoint()
 	}
 
+	var eRC20TokenInfoEndpoint endpoint.Endpoint
+	{
+		eRC20TokenInfoEndpoint = grpc1.NewClient(conn, "pb.ChainsQuery", "ERC20TokenInfo",
+			encodeERC20TokenInfoRequest, decodeERC20TokenInfoResponse, pb.ERC20TokenInfoReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		BitcoincoreBlockEndpoint:  bitcoincoreBlockEndpoint,
+		ERC20TokenInfoEndpoint:    eRC20TokenInfoEndpoint,
 		QueryOmniPropertyEndpoint: queryOmniPropertyEndpoint,
 	}, nil
 }
@@ -71,4 +78,28 @@ func decodeQueryOmniPropertyResponse(_ context.Context, reply interface{}) (inte
 		return nil, err
 	}
 	return endpoint1.QueryOmniPropertyResponse{Property: &property}, nil
+}
+
+// encodeERC20TokenInfoRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain ERC20TokenInfo request to a gRPC request.
+func encodeERC20TokenInfoRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.ERC20TokenInfoRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint ERC20TokenInfoRequest type assertion error")
+	}
+	return &pb.ERC20TokenInfoRequest{TokenHex: r.TokenHex}, nil
+}
+
+// decodeERC20TokenInfoResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeERC20TokenInfoResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.ERC20TokenInfoReply)
+	if !ok {
+		return nil, fmt.Errorf("pb ERC20TokenInfoReply type assertion error")
+	}
+	token := repository.ERC20Token{}
+	if err := copier.Copy(&token, resp.ERC20Token); err != nil {
+		return nil, err
+	}
+	return endpoint1.ERC20TokenInfoResponse{Token: &token}, nil
 }

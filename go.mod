@@ -14,8 +14,10 @@ require (
 	github.com/casbin/gorm-adapter v1.0.0
 	github.com/deckarep/golang-set v1.7.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/edsrzf/mmap-go v1.0.0 // indirect
 	github.com/elastic/gosigar v0.10.4 // indirect
 	github.com/ethereum/go-ethereum v1.9.1
+	github.com/gballet/go-libpcsclite v0.0.0-20190607065134-2772fd86a8ff // indirect
 	github.com/gin-gonic/gin v1.4.0
 	github.com/go-kit/kit v0.9.0
 	github.com/gocraft/work v0.5.1
@@ -26,18 +28,25 @@ require (
 	github.com/gosimple/slug v1.6.0 // indirect
 	github.com/hashicorp/consul/api v1.1.0
 	github.com/hashicorp/vault/api v1.0.4
+	github.com/huin/goupnp v1.0.0 // indirect
+	github.com/jackpal/go-nat-pmp v1.0.1 // indirect
 	github.com/jinzhu/copier v0.0.0-20190625015134-976e0346caa8
 	github.com/jinzhu/gorm v1.9.10
+	github.com/karalabe/usb v0.0.0-20190703133951-9be757f914c0 // indirect
 	github.com/lightstep/lightstep-tracer-go v0.17.0
+	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/oklog/oklog v0.3.2
+	github.com/olekukonko/tablewriter v0.0.1 // indirect
 	github.com/opentracing-contrib/go-observer v0.0.0-20170622124052-a52f23424492 // indirect
 	github.com/opentracing/basictracer-go v1.0.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/openzipkin-contrib/zipkin-go-opentracing v0.3.5 // indirect
 	github.com/openzipkin/zipkin-go-opentracing v0.3.5
-	github.com/prometheus/client_golang v1.0.0
+	github.com/pborman/uuid v1.2.0 // indirect
+	github.com/prometheus/client_golang v1.1.0
+	github.com/prometheus/tsdb v0.10.0 // indirect
 	github.com/qor/admin v0.0.0-20190723110324-8ecf009adc82 // indirect
 	github.com/qor/assetfs v0.0.0-20170713023933-ff57fdc13a14 // indirect
 	github.com/qor/audited v0.0.0-20171228121055-b52c9c2f0571 // indirect
@@ -49,10 +58,12 @@ require (
 	github.com/qor/transition v0.0.0-20190608002025-f17b56902e4b
 	github.com/qor/validations v0.0.0-20171228122639-f364bca61b46 // indirect
 	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
+	github.com/rjeczalik/notify v0.9.2 // indirect
 	github.com/robfig/cron v1.2.0 // indirect
 	github.com/rs/cors v1.6.0
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/cobra v0.0.5
+	github.com/status-im/keycard-go v0.0.0-20190424133014-d95853db0f48 // indirect
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570 // indirect
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/streadway/amqp v0.0.0-20190404075320-75d898a42a94
@@ -60,9 +71,10 @@ require (
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/theplant/cldr v0.0.0-20190423050709-9f76f7ce4ee8 // indirect
 	github.com/tyler-smith/go-bip39 v1.0.0
+	github.com/wsddn/go-ecdh v0.0.0-20161211032359-48726bab9208 // indirect
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80
 	google.golang.org/grpc v1.22.1
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
-	sourcegraph.com/sourcegraph/appdash v0.0.0-20190107175209-d9ea5c54f7dc
+	sourcegraph.com/sourcegraph/appdash v0.0.0-20190731080439-ebfcffb1b5c0
 )

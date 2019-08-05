@@ -40,4 +40,10 @@ func main()  {
     fmt.Println(err.Error())
   }
   fmt.Println("property:", property)
+
+  token, err := s.ERC20TokenInfo(ctxWithAuthInfo, "0xf0680d66aac362b1e42e21d3098ad61e92c6f43f")
+  if err != nil {
+    fmt.Println(err.Error())
+  }
+  fmt.Println("token:", token)
 }

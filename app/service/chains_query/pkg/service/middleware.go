@@ -39,3 +39,10 @@ func (l loggingMiddleware) QueryOmniProperty(ctx context.Context, propertyid int
 	}()
 	return l.next.QueryOmniProperty(ctx, propertyid)
 }
+
+func (l loggingMiddleware) ERC20TokenInfo(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error) {
+	defer func() {
+		l.logger.Log("method", "ERC20TokenInfo", "tokenHex", tokenHex, "token", token, "err", err)
+	}()
+	return l.next.ERC20TokenInfo(ctx, tokenHex)
+}

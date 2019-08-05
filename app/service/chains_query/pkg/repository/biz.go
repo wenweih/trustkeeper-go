@@ -26,6 +26,6 @@ type IBiz interface {
   EthereumBlock(ctx context.Context, number *big.Int) (*types.Block, error)
   CreateBtcBlockWithUtxoPipeline(ctx context.Context, height int64) (<-chan CreateBlockResult)
   CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultCh <- chan UTXOBlockResult) (<-chan CreateBlockResult)
-
   QueryOmniProperty(propertyid int64) (*OmniProperty, error)
+  ERC20TokenInfo(ctx context.Context, tokenHex string) (*ERC20Token, error)
 }

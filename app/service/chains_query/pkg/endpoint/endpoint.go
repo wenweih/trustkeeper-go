@@ -63,7 +63,7 @@ type QueryOmniPropertyRequest struct {
 // QueryOmniPropertyResponse collects the response parameters for the QueryOmniProperty method.
 type QueryOmniPropertyResponse struct {
 	Property *repository.OmniProperty `json:"r0"`
-	Err error                    `json:"e1"`
+	Err      error                    `json:"e1"`
 }
 
 // MakeQueryOmniPropertyEndpoint returns an endpoint that invokes QueryOmniProperty on the service.
@@ -91,4 +91,44 @@ func (e Endpoints) QueryOmniProperty(ctx context.Context, propertyid int64) (r0 
 		return nil, err
 	}
 	return response.(QueryOmniPropertyResponse).Property, nil
+}
+
+// ERC20TokenInfoRequest collects the request parameters for the ERC20TokenInfo method.
+type ERC20TokenInfoRequest struct {
+	TokenHex string `json:"token_hex"`
+}
+
+// ERC20TokenInfoResponse collects the response parameters for the ERC20TokenInfo method.
+type ERC20TokenInfoResponse struct {
+	Token *repository.ERC20Token `json:"token"`
+	Err   error                  `json:"err"`
+}
+
+// MakeERC20TokenInfoEndpoint returns an endpoint that invokes ERC20TokenInfo on the service.
+func MakeERC20TokenInfoEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ERC20TokenInfoRequest)
+		token, err := s.ERC20TokenInfo(ctx, req.TokenHex)
+		if err != nil {
+			return ERC20TokenInfoResponse{Err: err}, nil
+		}
+		return ERC20TokenInfoResponse{
+			Token: token,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r ERC20TokenInfoResponse) Failed() error {
+	return r.Err
+}
+
+// ERC20TokenInfo implements Service. Primarily useful in a client.
+func (e Endpoints) ERC20TokenInfo(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error) {
+	request := ERC20TokenInfoRequest{TokenHex: tokenHex}
+	response, err := e.ERC20TokenInfoEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(ERC20TokenInfoResponse).Token, nil
 }

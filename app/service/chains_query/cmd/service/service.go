@@ -26,9 +26,10 @@ import (
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
 
+	"trustkeeper-go/app/service/chains_query/pkg/configure"
 	"trustkeeper-go/library/consul"
 	common "trustkeeper-go/library/util"
-	"trustkeeper-go/app/service/chains_query/pkg/configure"
+
 	"google.golang.org/grpc/health/grpc_health_v1"
 )
 

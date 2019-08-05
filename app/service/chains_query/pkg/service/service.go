@@ -20,6 +20,7 @@ import (
 type ChainsQueryService interface {
 	BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error)
 	QueryOmniProperty(ctx context.Context, propertyid int64) (*repository.OmniProperty, error)
+	ERC20TokenInfo(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error)
 }
 
 type basicChainsQueryService struct {
@@ -77,4 +78,8 @@ func (b *basicChainsQueryService) BitcoincoreBlock(ctx context.Context, blockHas
 
 func (b *basicChainsQueryService) QueryOmniProperty(ctx context.Context, propertyid int64) (*repository.OmniProperty, error) {
 	return b.biz.QueryOmniProperty(propertyid)
+}
+
+func (b *basicChainsQueryService) ERC20TokenInfo(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error) {
+	return b.biz.ERC20TokenInfo(ctx, tokenHex)
 }

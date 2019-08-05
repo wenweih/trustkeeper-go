@@ -52,6 +52,13 @@ func New(consulAddr string, logger log.Logger) (service.ChainsQueryService, erro
     retry := lb.Retry(retryMax, retryTimeout, balancer)
     endpoints.QueryOmniPropertyEndpoint = retry
   }
+  {
+    factory := factoryFor(chainsquerytEndpoint.MakeERC20TokenInfoEndpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.ERC20TokenInfoEndpoint = retry
+  }
   return endpoints, nil
 }
 
