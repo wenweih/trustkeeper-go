@@ -119,3 +119,10 @@ func (l loggingMiddleware) CreateToken(ctx context.Context, groupid string, chai
 	}()
 	return l.next.CreateToken(ctx, groupid, chainid, symbol, identify, decimal, chainName)
 }
+
+func (l loggingMiddleware) EthToken(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error) {
+	defer func() {
+		l.logger.Log("method", "EthToken", "tokenHex", tokenHex, "token", token, "err", err)
+	}()
+	return l.next.EthToken(ctx, tokenHex)
+}

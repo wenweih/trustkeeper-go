@@ -9,6 +9,13 @@ type SimpleAsset struct {
   Decimal  uint64  `json:"Decimal"`
 }
 
+// ERC20Token Ethereum erc20 token info
+type ERC20Token struct {
+  Symbol   string `json:"Symbol"`
+  Name     string `json:"Name"`
+  Decimals uint32 `json:"Decimals"`
+}
+
 // GroupAsset tokens correspond with chain resp
 type GroupAsset struct {
   ChainID  string  `json:"ChainID"`

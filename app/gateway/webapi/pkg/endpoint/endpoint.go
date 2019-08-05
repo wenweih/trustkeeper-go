@@ -605,3 +605,41 @@ func (e Endpoints) CreateToken(ctx context.Context, groupid string, chainid stri
 	}
 	return response.(CreateTokenResponse).Asset, nil
 }
+
+// EthTokenRequest collects the request parameters for the EthToken method.
+type EthTokenRequest struct {
+	TokenHex string `json:"token_hex"`
+}
+
+// EthTokenResponse collects the response parameters for the EthToken method.
+type EthTokenResponse struct {
+	Token *repository.ERC20Token `json:"token"`
+	Err   error                  `json:"err"`
+}
+
+// MakeEthTokenEndpoint returns an endpoint that invokes EthToken on the service.
+func MakeEthTokenEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(EthTokenRequest)
+		token, err := s.EthToken(ctx, req.TokenHex)
+		return EthTokenResponse{
+			Err:   err,
+			Token: token,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r EthTokenResponse) Failed() error {
+	return r.Err
+}
+
+// EthToken implements Service. Primarily useful in a client.
+func (e Endpoints) EthToken(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error) {
+	request := EthTokenRequest{TokenHex: tokenHex}
+	response, err := e.EthTokenEndpoint(ctx, request)
+	if err != nil {
+		return
+	}
+	return response.(EthTokenResponse).Token, response.(EthTokenResponse).Err
+}

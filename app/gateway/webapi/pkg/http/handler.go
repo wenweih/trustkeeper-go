@@ -410,3 +410,28 @@ func encodeCreateTokenResponse(ctx context.Context, w http.ResponseWriter, respo
 	err = json.NewEncoder(w).Encode(response)
 	return
 }
+
+// makeEthTokenHandler creates the handler logic
+func makeEthTokenHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/eth-token", http1.NewServer(endpoints.EthTokenEndpoint, decodeEthTokenRequest, encodeEthTokenResponse, options...))
+}
+
+// decodeEthTokenRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeEthTokenRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	req := endpoint.EthTokenRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeEthTokenResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeEthTokenResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}

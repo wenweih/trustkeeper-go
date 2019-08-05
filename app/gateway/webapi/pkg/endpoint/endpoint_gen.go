@@ -23,6 +23,7 @@ type Endpoints struct {
 	CreateWalletEndpoint      endpoint.Endpoint
 	GetWalletsEndpoint        endpoint.Endpoint
 	QueryOmniPropertyEndpoint endpoint.Endpoint
+	EthTokenEndpoint          endpoint.Endpoint
 	CreateTokenEndpoint       endpoint.Endpoint
 }
 
@@ -34,6 +35,7 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 		CreateGroupEndpoint:       MakeCreateGroupEndpoint(s),
 		CreateTokenEndpoint:       MakeCreateTokenEndpoint(s),
 		CreateWalletEndpoint:      MakeCreateWalletEndpoint(s),
+		EthTokenEndpoint:          MakeEthTokenEndpoint(s),
 		GetGroupAssetsEndpoint:    MakeGetGroupAssetsEndpoint(s),
 		GetGroupsEndpoint:         MakeGetGroupsEndpoint(s),
 		GetRolesEndpoint:          MakeGetRolesEndpoint(s),
@@ -83,6 +85,9 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 	}
 	for _, m := range mdw["QueryOmniProperty"] {
 		eps.QueryOmniPropertyEndpoint = m(eps.QueryOmniPropertyEndpoint)
+	}
+	for _, m := range mdw["EthToken"] {
+		eps.EthTokenEndpoint = m(eps.EthTokenEndpoint)
 	}
 	for _, m := range mdw["CreateToken"] {
 		eps.CreateTokenEndpoint = m(eps.CreateTokenEndpoint)

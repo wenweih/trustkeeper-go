@@ -47,6 +47,7 @@ type WebapiService interface {
 	CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (id, address, respchainname string, status bool, err error)
 	GetWallets(ctx context.Context, groupid string, page, limit, bip44change int) (wallets []*repository.ChainWithWallets, err error)
 	QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error)
+	EthToken(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error)
 	CreateToken(ctx context.Context, groupid, chainid, symbol, identify, decimal, chainName string) (asset *repository.SimpleAsset, err error)
 }
 
@@ -375,6 +376,24 @@ func (b *basicWebapiService) QueryOmniProperty(ctx context.Context, identify str
 		Symbol:   omniProperty.Name,
 		Identify: strconv.FormatInt(omniProperty.Propertyid, 10),
 		Decimal:  100000000}, err
+}
+
+
+func (b *basicWebapiService) EthToken(ctx context.Context, tokenHex string) (*repository.ERC20Token, error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return nil, err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	token, err := b.chainsQuerySrv.ERC20TokenInfo(ctxWithAuthInfo, tokenHex)
+	if err != nil {
+		return nil, err
+	}
+	respToken := repository.ERC20Token{}
+	if err := copier.Copy(&respToken, token); err != nil {
+		return nil, err
+	}
+	return &respToken, err
 }
 
 func (b *basicWebapiService) CreateToken(
