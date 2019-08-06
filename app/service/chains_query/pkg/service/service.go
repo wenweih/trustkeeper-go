@@ -80,6 +80,6 @@ func (b *basicChainsQueryService) QueryOmniProperty(ctx context.Context, propert
 	return b.biz.QueryOmniProperty(propertyid)
 }
 
-func (b *basicChainsQueryService) ERC20TokenInfo(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error) {
+func (b *basicChainsQueryService) ERC20TokenInfo(ctx context.Context, tokenHex string) (*repository.ERC20Token, error) {
 	return b.biz.ERC20TokenInfo(ctx, tokenHex)
 }

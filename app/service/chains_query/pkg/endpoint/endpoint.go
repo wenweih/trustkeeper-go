@@ -110,7 +110,7 @@ func MakeERC20TokenInfoEndpoint(s service.ChainsQueryService) endpoint.Endpoint 
 		req := request.(ERC20TokenInfoRequest)
 		token, err := s.ERC20TokenInfo(ctx, req.TokenHex)
 		if err != nil {
-			return ERC20TokenInfoResponse{Err: err}, nil
+			return ERC20TokenInfoResponse{Err: err}, err
 		}
 		return ERC20TokenInfoResponse{
 			Token: token,

@@ -106,7 +106,9 @@ func err2code(err error) int {
 		return http.StatusUnauthorized
 	case strings.Contains(err.Error(), "context deadline exceeded"):
 		return http.StatusRequestTimeout
-	case strings.Contains(err.Error(), "does not exist"):
+	case strings.Contains(err.Error(), "does not exist") ||
+		strings.Contains(err.Error(), "no contract code at given address"):
+
 		return http.StatusNotFound
 	case strings.Contains(err.Error(), "duplicate key value"):
 		return http.StatusConflict

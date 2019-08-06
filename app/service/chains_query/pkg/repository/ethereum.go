@@ -34,7 +34,6 @@ func (repo *repo) ERC20TokenInfo(ctx context.Context, tokenHex string) (*ERC20To
   if err != nil {
     return nil, err
   }
-
   symbol, err := token.Symbol(nil)
   if err != nil {
     return nil, err
