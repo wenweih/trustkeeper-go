@@ -92,7 +92,7 @@ func onEthMessage(d amqp.Delivery) {
     logger.Log("EthereumBlockReadError", err.Error())
     return
   }
-  logger.Log("blockhash", mqdata.Hash.String())
+  logger.Log("blockhash", mqdata.Hash.String(), " height:", mqdata.Header.Number.String())
   for _, tx := range mqdata.Tx {
     logger.Log("tx", tx.THash)
   }
