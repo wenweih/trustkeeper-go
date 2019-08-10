@@ -16,4 +16,5 @@ wget https://github.com/ConsenSys/Tokens/raw/fdf687c69d998266a95f15216b1955a4965
 solc --abi EIP20.sol -o ./
 
 abigen --abi=EIP20.abi --pkg=token --out=erc20.go
-```
+``
+erc20 token address 0xf0680d66aac362b1e42e21d3098ad61e92c6f43f
