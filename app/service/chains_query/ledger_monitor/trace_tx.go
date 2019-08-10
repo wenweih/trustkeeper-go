@@ -11,6 +11,8 @@ import (
   "github.com/streadway/amqp"
   common "trustkeeper-go/library/util"
   "github.com/btcsuite/btcd/btcjson"
+  "github.com/ethereum/go-ethereum/common/hexutil"
+  "trustkeeper-go/app/service/chains_query/pkg/model"
 )
 
 var traceTx = &cobra.Command {
@@ -84,7 +86,7 @@ func ethReceive(wg *sync.WaitGroup) {
 }
 
 func onEthMessage(d amqp.Delivery) {
-	mqdata := EthereumBlock{}
+	mqdata := model.EthereumBlock{}
   buf := bytes.NewBuffer(d.Body)
   dc := gob.NewDecoder(buf)
   err := dc.Decode(&mqdata)
@@ -94,7 +96,11 @@ func onEthMessage(d amqp.Delivery) {
   }
   logger.Log("blockhash", mqdata.Hash.String(), " height:", mqdata.Header.Number.String())
   for _, tx := range mqdata.Tx {
-    logger.Log("tx", tx.THash)
+    v, err := hexutil.DecodeBig(tx.ValueHex)
+    if err != nil {
+      logger.Log("err:", err.Error())
+    }
+    logger.Log("tx", tx.THash, " value:", v.Int64(), " input data:", tx.Data)
   }
 }
 
