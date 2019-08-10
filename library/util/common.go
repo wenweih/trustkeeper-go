@@ -3,6 +3,7 @@ package common
 import (
   "net"
   "os"
+  "strconv"
   "syscall"
   "os/signal"
   "github.com/gin-gonic/gin"
@@ -88,4 +89,10 @@ func HandleSigterm(handleExit func()) {
 		handleExit()
 		os.Exit(1)
 	}()
+}
+
+func Hex2int(hexStr string) int64 {
+  // base 16 for hexadecimal
+  result, _ := strconv.ParseUint(hexStr, 16, 64)
+  return int64(result)
 }

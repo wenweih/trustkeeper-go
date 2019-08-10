@@ -32,6 +32,8 @@ func New(
     model.BtcUtxo{},
     model.BtcBlock{},
     model.Balance{},
+    model.Tx{},
+    model.BalanceLog{},
     &transition.StateChangeLog{},
   )
   repo := repo{

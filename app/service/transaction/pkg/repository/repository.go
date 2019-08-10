@@ -13,7 +13,11 @@ type repo struct {
 // New new repo
 func New(db *gorm.DB) IBiz {
   db.AutoMigrate(
-    model.Balance{})
+    model.Balance{},
+    model.Tx{},
+    model.BtcUtxo{},
+    model.BtcBlock{},
+    model.BalanceLog{},)
   repo := repo{db}
   var biz IBiz = &repo
   return biz

@@ -2,8 +2,13 @@ package repository
 
 import (
   "fmt"
+  "reflect"
+  "strings"
+  "strconv"
   "context"
+  common "trustkeeper-go/library/util"
   "github.com/btcsuite/btcd/btcjson"
+  "github.com/btcsuite/btcutil"
   "trustkeeper-go/app/service/chains_query/pkg/model"
 )
 
@@ -59,27 +64,84 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
 
     for _, tx := range rawBlock.Tx {
       for _, vout := range tx.Vout {
-        for _, address := range vout.ScriptPubKey.Addresses {
-          var (
-            balance model.Balance
-            utxo model.BtcUtxo
-          )
-          if err := ts.Where("address = ? AND Symbol = ?", address, "BTC").
-          First(&balance).Error;
-          err != nil && err.Error() == "record not found" {
-            continue
-          } else if err != nil {
-            createBlockCh <- CreateBlockResult{Error: fmt.Errorf("Query sub address err: %s", err)}
-            return
+        voutScriptPubKeyHex := vout.ScriptPubKey.Hex
+        // voutScriptPubKeyHex begin with 6a146f6d6e6900000000 is omni tx
+        // hex[20:28] is token identifier
+        // hex[28:44] is token amount to transfer
+        if strings.Contains(voutScriptPubKeyHex, "6a146f6d6e6900000000") {
+          // omni token transfer
+          for _, vin := range tx.Vin {
+            vinTx, err := repo.QueryBTCTx(ctx, vin.Txid)
+            if err != nil {
+              createBlockCh <- CreateBlockResult{Error: err}
+              return
+            }
+            voutForVin := vinTx.Vout[vin.Vout]
+            vinAddresses := voutForVin.ScriptPubKey.Addresses
+            for _, voutOmni := range tx.Vout {
+              // find omni token receiver address
+              // recharge address is equal to omni token sender
+              if voutOmni.N != vout.N &&
+                !reflect.DeepEqual(vinAddresses, voutOmni.ScriptPubKey.Addresses){
+                  omniPropertyID := common.Hex2int(voutScriptPubKeyHex[20:28])
+                  var (
+                    balance model.Balance
+                    txRecord model.Tx
+                  )
+                  for _, balanceAddress := range voutOmni.ScriptPubKey.Addresses {
+                    if err := ts.Where("address = ? AND identify = ?",
+                      balanceAddress, strconv.FormatInt(omniPropertyID, 10)).First(&balance).Error;
+                      err != nil && err.Error() == "record not found" {
+                        continue
+                    }else if err != nil{
+                      createBlockCh <- CreateBlockResult{Error: fmt.Errorf("Query subscript address from balance_t err: %s", err)}
+                      return
+                    }
+                  }
+                  ts.FirstOrCreate(&txRecord,
+                    model.Tx{
+                      TxID: tx.Txid,
+                      TxType: "deposit",
+                      Address: balance.Address,
+                      Asset: balance.Symbol,
+                      Amount: common.Hex2int(voutScriptPubKeyHex[28:44]),
+                      BalanceID: balance.ID,
+                    })
+              }
+            }
           }
-          ts.FirstOrCreate(
-            &utxo,
-            model.BtcUtxo{
-            Txid: tx.Txid,
-            Amount: vout.Value,
-            Height: rawBlock.Height,
-            VoutIndex: vout.N,
-            BtcBlockID: block.ID})
+        } else if (vout.Value != 0 && vout.ScriptPubKey.Addresses != nil) {
+          for _, address := range vout.ScriptPubKey.Addresses {
+            var (
+              balance model.Balance
+              utxo model.BtcUtxo
+              txRecord model.Tx
+            )
+            if err := ts.Where("address = ? AND Symbol = ?", address, "BTC").
+            First(&balance).Error;
+            err != nil && err.Error() == "record not found" {
+              continue
+            } else if err != nil {
+              createBlockCh <- CreateBlockResult{Error: fmt.Errorf("Query sub address err: %s", err)}
+              return
+            }
+            ts.FirstOrCreate(
+              &utxo,
+              model.BtcUtxo{
+              Txid: tx.Txid,
+              Amount: vout.Value,
+              Height: rawBlock.Height,
+              VoutIndex: vout.N,
+              BtcBlockID: block.ID})
+            ts.FirstOrCreate(&txRecord,
+              model.Tx{
+                TxID: tx.Txid,
+                TxType: "deposit",
+                Address: balance.Address,
+                Asset: balance.Symbol,
+                Amount: int64(btcutil.Amount(vout.Value * btcutil.SatoshiPerBitcoin)),
+                BalanceID: balance.ID})
+          }
         }
       }
     }
@@ -88,7 +150,6 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
       createBlockCh <- CreateBlockResult{Error: fmt.Errorf("database transaction err: %s", err)}
       return
     }
-    fmt.Println("Saved block to database, height: ", block.Height, " hash: ", block.Hash)
     createBlockCh <- CreateBlockResult{Block: &block}
   }()
   return createBlockCh

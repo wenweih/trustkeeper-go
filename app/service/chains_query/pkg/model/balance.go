@@ -11,4 +11,7 @@ type Balance struct {
   Symbol    string  `gorm:"unique_index:idx_address_symbol;not null"`
   Identify  string
   Decimal   uint64
+  Amount    uint64  `gorm:"type:bigint"`
+  Txes      []Tx
+  BalanceLog []BalanceLog
 }
