@@ -44,6 +44,12 @@ func New(
     MQ: mq,
     db: db,
     logger: logger}
+  repo.DeclareExChange(ExchangeNameForBitcoincoreBestBlock, "fanout")
+  repo.DeclareExChange(ExchangeNameForEthereumBestBlock, "fanout")
+  repo.DeclareQueue(QueueNameForBitcoincoreTraceTx)
+  repo.DeclareQueue(QueueNameForBitcoincoreUpdateTx)
+  repo.DeclareQueue(QueueNameForEthereumTraceTx)
+  repo.DeclareQueue(QueueNameForEthereumUpdateTx)
   var biz IBiz = &repo
   return biz
 }

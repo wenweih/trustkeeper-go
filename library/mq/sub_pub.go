@@ -21,7 +21,7 @@ func (m *MessagingClient) ConnectToBroker(connectionString string) error {
 }
 
 // Publish publishes a message to the named exchange
-func (m *MessagingClient) Publish(body []byte, exchangeName, exchangeType, bindingKey, queueName string) error {
+func (m *MessagingClient) Publish(body []byte, exchangeName, exchangeType, bindingKey string) error {
 	if m.conn == nil {
 		return errors.New("Publish error: conn is nil")
 	}
@@ -32,10 +32,7 @@ func (m *MessagingClient) Publish(body []byte, exchangeName, exchangeType, bindi
 	}
 	defer ch.Close()
 
-	if err := ExChangeDeclare(exchangeName, exchangeType, ch); err != nil {
-		return err
-	}
-	if _, err := QueueDeclare(queueName, ch); err != nil {
+	if err := m.ExChangeDeclare(exchangeName, exchangeType); err != nil {
 		return err
 	}
 	err = ch.Publish(
@@ -55,8 +52,7 @@ func (m *MessagingClient) Subscribe(exchangeName, exchangeType, queueName, bindi
 	if err != nil {
 		return errors.New(strings.Join([]string{"Subscribe channel error: "}, err.Error()))
 	}
-	ExChangeDeclare(exchangeName, exchangeType, ch)
-	queue, err := QueueDeclare(queueName, ch)
+	queue, err := m.QueueDeclare(queueName)
 	if err != nil {
 		return err
 	}
@@ -99,8 +95,13 @@ func consumeLoop(deliveries <-chan amqp.Delivery, handlerFunc func(d amqp.Delive
 }
 
 // ExChangeDeclare 声明 rabbitmq exchange
-func ExChangeDeclare(name, exchType string, ch *amqp.Channel) error {
-	err := ch.ExchangeDeclare(
+func (m *MessagingClient) ExChangeDeclare(name, exchType string) error {
+	ch, err := m.conn.Channel() // Get a channel from the connection
+	if err != nil {
+		return err
+	}
+	defer ch.Close()
+	err = ch.ExchangeDeclare(
 		name,     // name
 		exchType, // type
 		true,     // durable
@@ -113,7 +114,12 @@ func ExChangeDeclare(name, exchType string, ch *amqp.Channel) error {
 }
 
 // QueueDeclare 声明 queue
-func QueueDeclare(name string, ch *amqp.Channel) (*amqp.Queue, error) {
+func (m *MessagingClient) QueueDeclare(name string) (*amqp.Queue, error) {
+	ch, err := m.conn.Channel() // Get a channel from the connection
+	if err != nil {
+		return nil, err
+	}
+	defer ch.Close()
 	q, err := ch.QueueDeclare(
 		name,  // name
 		false, // durable

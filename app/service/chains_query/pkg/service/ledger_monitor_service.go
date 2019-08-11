@@ -29,7 +29,7 @@ type LedgerMonitorService interface {
     ctx context.Context, ch chan<- *types.Header) (ethereum.Subscription, error)
   EthereumBlock(
     ctx context.Context, blockNumber *big.Int) (*types.Block, error)
-  MQPublish(msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error
+  MQPublish(msg []byte, exchangeName, exchangeType, bindingKey string) error
   MQSubscribe(
     exchangeName, exchangeType, queueName,
     bindingKey, consumerName string, handleFunc func(amqp.Delivery)) error
@@ -62,8 +62,8 @@ func (b *basicChainsQueryService) EthereumBlock(
 
 
 func (b *basicChainsQueryService) MQPublish(
-  msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error {
-  return b.biz.MQPublish(msg, exchangeName, exchangeType, bindingKey, queueName)
+  msg []byte, exchangeName, exchangeType, bindingKey string) error {
+  return b.biz.MQPublish(msg, exchangeName, exchangeType, bindingKey)
 }
 
 func (b *basicChainsQueryService) MQSubscribe(exchangeName, exchangeType, queueName,

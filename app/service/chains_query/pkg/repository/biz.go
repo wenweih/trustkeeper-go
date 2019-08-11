@@ -12,7 +12,7 @@ import (
 )
 
 type IBiz interface {
-  MQPublish(msg []byte, exchangeName, exchangeType, bindingKey, queueName string) error
+  MQPublish(msg []byte, exchangeName, exchangeType, bindingKey string) error
   MQSubscribe(
     exchangeName, exchangeType, queueName,
     bindingKey, consumerName string, handleFunc func(amqp.Delivery)) error
