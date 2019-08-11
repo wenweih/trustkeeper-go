@@ -40,27 +40,26 @@ type EthereumBlock struct {
 func EncodeETHBlock(block types.Block) ([]byte, error) {
   buf := new(bytes.Buffer)
   buf.Reset()
-
   txs := block.Transactions()
 	txes := make([]*ETHSimpleTx, 0)
 	for _, tx := range txs {
-		ms, _ := tx.AsMessage(types.NewEIP155Signer(big.NewInt(1)))
-		var to string
-		pto := tx.To()
-		if pto != nil {
-			to = (*pto).Hex()
-		}
+		ms, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
+    if err != nil {
+      return nil, err
+    }
 		var txFee = new(big.Int)
 		txFee = txFee.Mul(tx.GasPrice(), big.NewInt(int64(tx.Gas())))
+    // tx.Data()
+    inputeData := hexutil.Encode(ms.Data())
 		txes = append(txes, &ETHSimpleTx{
 			THash:     tx.Hash().String(),
-			To:        to,
+			To:        tx.To().Hex(),
 			From:      ms.From().String(),
 			HeightHex: hexutil.EncodeBig(block.Number()),
 			ValueHex:  hexutil.EncodeBig(tx.Value()),
 			FeeHex:    hexutil.EncodeBig(txFee),
 			Txid:      tx.Hash().String(),
-      Data:      hexutil.Encode(tx.Data()),
+      Data:      inputeData,
 		})
 	}
 

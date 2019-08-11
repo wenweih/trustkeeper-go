@@ -32,6 +32,9 @@ type LedgerMonitorService interface {
   MQSubscribe(
     exchangeName, exchangeType, queueName,
     bindingKey, consumerName string, handleFunc func(amqp.Delivery)) error
+
+  CreateETHBlockWithTx(ctx context.Context, height int64) (error)
+  EthereumBestBlock(ctx context.Context) (*types.Block, error)
 }
 
 // NewLedgerMonitorService returns a ChainsQueryService with all of the expected middleware wired in.
@@ -93,4 +96,12 @@ func (b *basicChainsQueryService) CreateBTCBlockWithUTXOs(
     blockCh  <- repository.UTXOBlockResult{Block: rawBlock}
   }(rawBlock)
   return b.biz.CreateBTCBlockWithUTXOs(ctx, blockCh)
+}
+
+func (b *basicChainsQueryService) CreateETHBlockWithTx(ctx context.Context, height int64) (error) {
+  return b.biz.CreateETHBlockWithTx(ctx, height)
+}
+
+func (b *basicChainsQueryService) EthereumBestBlock(ctx context.Context) (*types.Block, error) {
+  return b.biz.EthereumBestBlock(ctx)
 }

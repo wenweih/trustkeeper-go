@@ -56,6 +56,15 @@ var traceTx = &cobra.Command {
       go bitcoinMQ(&wg)
       wg.Wait()
     case "ethereum":
+      // EthereumBestBlock
+      ctx := context.Background()
+      bestBlock, err := svc.EthereumBestBlock(ctx)
+      if err != nil {
+        logger.Log("EthereumBestBlock", err.Error())
+      }
+      if err := svc.CreateETHBlockWithTx(ctx, bestBlock.Number().Int64()); err != nil {
+        logger.Log("CreateETHBlockWithTx", err.Error())
+      }
       var wg sync.WaitGroup
     	wg.Add(1)
     	go ethReceive(&wg)

@@ -28,6 +28,14 @@ func (repo *repo) EthereumBlock(ctx context.Context, number *big.Int) (*types.Bl
   return repo.ethClient.BlockByNumber(ctx, number)
 }
 
+func (repo *repo) EthereumBestBlock(ctx context.Context) (*types.Block, error) {
+  head, err := repo.ethClient.HeaderByNumber(ctx, nil)
+  if err != nil {
+    return nil, err
+  }
+  return repo.EthereumBlock(ctx, head.Number)
+}
+
 func (repo *repo) ERC20TokenInfo(ctx context.Context, tokenHex string) (*ERC20Token, error) {
   tokenAddress := common.HexToAddress(tokenHex)
   token, err := NewETHToken(tokenAddress, repo.ethClient)
