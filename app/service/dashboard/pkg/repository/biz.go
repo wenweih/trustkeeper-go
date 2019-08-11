@@ -3,6 +3,7 @@ package repository
 import (
   "fmt"
   "context"
+  "strings"
   "strconv"
   "github.com/jinzhu/copier"
   "google.golang.org/grpc/metadata"
@@ -221,7 +222,7 @@ func (repo *repo) AddAsset(ctx context.Context, groupid, chainid, symbol, identi
     Symbol: symbol,
     ChainID: chainid,
     Status: true,
-    Identify: identify,
+    Identify: strings.ToLower(identify),
     Decimal: uint64Decimal}
   if err := repo.db.Create(&asset).Error; err != nil {
     return nil, err

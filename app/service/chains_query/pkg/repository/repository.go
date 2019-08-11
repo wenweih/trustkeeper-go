@@ -34,6 +34,7 @@ func New(
     model.Balance{},
     model.Tx{},
     model.BalanceLog{},
+    model.EthBlock{},
     &transition.StateChangeLog{},
   )
   repo := repo{

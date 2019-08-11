@@ -104,7 +104,7 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
                       TxType: "deposit",
                       Address: balance.Address,
                       Asset: balance.Symbol,
-                      Amount: common.Hex2int(voutScriptPubKeyHex[28:44]),
+                      Amount: strconv.FormatInt(common.Hex2int(voutScriptPubKeyHex[28:44]), 10),
                       BalanceID: balance.ID,
                     })
               }
@@ -139,7 +139,7 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
                 TxType: "deposit",
                 Address: balance.Address,
                 Asset: balance.Symbol,
-                Amount: int64(btcutil.Amount(vout.Value * btcutil.SatoshiPerBitcoin)),
+                Amount: strconv.FormatFloat(vout.Value * btcutil.SatoshiPerBitcoin, 'f', -int(0), 64),
                 BalanceID: balance.ID})
           }
         }
