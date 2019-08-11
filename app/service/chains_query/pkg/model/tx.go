@@ -4,7 +4,13 @@ import (
   "github.com/jinzhu/gorm"
 )
 
-// Balance balance related with assets for address
+const (
+  Pending string = "pending"
+  Success string = "success"
+  Fail string = "fail"
+)
+
+// Tx balance related with assets for address
 type Tx struct {
   gorm.Model
   TxID      string
@@ -15,4 +21,6 @@ type Tx struct {
   Confirmations uint16
   BalanceID uint
   Balance   Balance
+  ChainName string
+  State     string
 }
