@@ -11,6 +11,7 @@ import (
   "github.com/ethereum/go-ethereum"
   "trustkeeper-go/app/service/chains_query/pkg/configure"
   "trustkeeper-go/app/service/chains_query/pkg/repository"
+  "trustkeeper-go/app/service/chains_query/pkg/model"
 )
 
 // LedgerMonitorService describes the service.
@@ -33,8 +34,9 @@ type LedgerMonitorService interface {
     exchangeName, exchangeType, queueName,
     bindingKey, consumerName string, handleFunc func(amqp.Delivery)) error
 
-  CreateETHBlockWithTx(ctx context.Context, height int64) (error)
+  CreateETHBlockWithTx(ctx context.Context, height int64) (*model.EthBlock, error)
   EthereumBestBlock(ctx context.Context) (*types.Block, error)
+  EthereumDBBestBlock(ctx context.Context) (*model.EthBlock, error)
 }
 
 // NewLedgerMonitorService returns a ChainsQueryService with all of the expected middleware wired in.
@@ -98,10 +100,14 @@ func (b *basicChainsQueryService) CreateBTCBlockWithUTXOs(
   return b.biz.CreateBTCBlockWithUTXOs(ctx, blockCh)
 }
 
-func (b *basicChainsQueryService) CreateETHBlockWithTx(ctx context.Context, height int64) (error) {
+func (b *basicChainsQueryService) CreateETHBlockWithTx(ctx context.Context, height int64) (*model.EthBlock, error) {
   return b.biz.CreateETHBlockWithTx(ctx, height)
 }
 
 func (b *basicChainsQueryService) EthereumBestBlock(ctx context.Context) (*types.Block, error) {
   return b.biz.EthereumBestBlock(ctx)
+}
+
+func (b *basicChainsQueryService) EthereumDBBestBlock(ctx context.Context) (*model.EthBlock, error) {
+  return b.biz.EthererumDBBestBlock(ctx)
 }

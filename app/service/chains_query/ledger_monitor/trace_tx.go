@@ -1,17 +1,17 @@
 package main
 
 import (
-  "context"
   "os"
   "bytes"
   "sync"
+  "strings"
+  "context"
   "encoding/gob"
   "encoding/json"
   "github.com/spf13/cobra"
   "github.com/streadway/amqp"
   common "trustkeeper-go/library/util"
   "github.com/btcsuite/btcd/btcjson"
-  "github.com/ethereum/go-ethereum/common/hexutil"
   "trustkeeper-go/app/service/chains_query/pkg/model"
 )
 
@@ -56,14 +56,33 @@ var traceTx = &cobra.Command {
       go bitcoinMQ(&wg)
       wg.Wait()
     case "ethereum":
-      // EthereumBestBlock
       ctx := context.Background()
       bestBlock, err := svc.EthereumBestBlock(ctx)
       if err != nil {
         logger.Log("EthereumBestBlock", err.Error())
       }
-      if err := svc.CreateETHBlockWithTx(ctx, bestBlock.Number().Int64()); err != nil {
-        logger.Log("CreateETHBlockWithTx", err.Error())
+      bestHeight := bestBlock.Number().Int64()
+
+      dbBestBlock, err := svc.EthereumDBBestBlock(ctx)
+      if err != nil && !strings.Contains(err.Error(), "record not found"){
+        logger.Log("EthereumDBBestBlock", err.Error())
+        os.Exit(0)
+      }
+
+      minHeight := int64(0)
+      if dbBestBlock == nil {
+        minHeight = bestHeight - 12
+      } else {
+        minHeight = dbBestBlock.Height - 12
+      }
+
+      for traceHeight := bestHeight; traceHeight > minHeight; traceHeight-- {
+        block, err := svc.CreateETHBlockWithTx(ctx, traceHeight)
+        if err != nil {
+          logger.Log("CreateETHBlockWithTx", err.Error())
+        }else {
+          logger.Log("TraceBlock", traceHeight, "Hash", block.Hash)
+        }
       }
       var wg sync.WaitGroup
     	wg.Add(1)
@@ -103,13 +122,14 @@ func onEthMessage(d amqp.Delivery) {
     logger.Log("EthereumBlockReadError", err.Error())
     return
   }
-  logger.Log("blockhash", mqdata.Hash.String(), " height:", mqdata.Header.Number.String())
-  for _, tx := range mqdata.Tx {
-    v, err := hexutil.DecodeBig(tx.ValueHex)
+  blockHeight := mqdata.Header.Number.Int64()
+  for traceHeight := blockHeight; traceHeight > blockHeight -12; traceHeight-- {
+    block, err := svc.CreateETHBlockWithTx(context.Background(), traceHeight)
     if err != nil {
-      logger.Log("err:", err.Error())
+      logger.Log("CreateETHBlockWithTx", err.Error())
+    }else {
+      logger.Log("TraceBlock", traceHeight, "Hash", block.Hash)
     }
-    logger.Log("tx", tx.THash, " value:", v.Int64(), " input data:", tx.Data)
   }
 }
 

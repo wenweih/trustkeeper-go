@@ -8,6 +8,7 @@ import (
   "github.com/ethereum/go-ethereum/core/types"
   "github.com/ethereum/go-ethereum"
   "github.com/streadway/amqp"
+  "trustkeeper-go/app/service/chains_query/pkg/model"
 )
 
 type IBiz interface {
@@ -27,8 +28,9 @@ type IBiz interface {
   CreateBtcBlockWithUtxoPipeline(ctx context.Context, height int64) (<-chan CreateBlockResult)
   CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultCh <- chan UTXOBlockResult) (<-chan CreateBlockResult)
   QueryOmniProperty(propertyid int64) (*OmniProperty, error)
-  
+
   ERC20TokenInfo(ctx context.Context, tokenHex string) (*ERC20Token, error)
-  CreateETHBlockWithTx(ctx context.Context, height int64) (error)
+  CreateETHBlockWithTx(ctx context.Context, height int64) (*model.EthBlock, error)
   EthereumBestBlock(ctx context.Context) (*types.Block, error)
+  EthererumDBBestBlock(ctx context.Context) (*model.EthBlock, error)
 }
