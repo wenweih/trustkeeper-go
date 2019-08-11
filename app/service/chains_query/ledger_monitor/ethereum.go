@@ -9,6 +9,7 @@ import(
   "math/big"
   "github.com/ethereum/go-ethereum/core/types"
   "trustkeeper-go/app/service/chains_query/pkg/model"
+  "trustkeeper-go/app/service/chains_query/pkg/repository"
 )
 
 func subHandle(orderHeight *big.Int, head *types.Header) (*big.Int, error) {
@@ -49,10 +50,9 @@ func subHandle(orderHeight *big.Int, head *types.Header) (*big.Int, error) {
     }
 		if err := svc.MQPublish(
       data,
-      "bestblock",
-      "direct",
-      "ethereum",
-      "ethereum_best_block_queue");
+      repository.ExchangeNameForEthereumBestBlock,
+      "fanout",
+      repository.BindKeyEthereum);
       err != nil {
         e := errors.New(strings.Join([]string{"EtherumPublishError", err.Error()}, ""))
         return big.NewInt(blockNumber), e

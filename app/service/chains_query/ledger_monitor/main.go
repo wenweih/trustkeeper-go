@@ -47,6 +47,7 @@ func main() {
 func init()  {
   rootCmd.AddCommand(blockMonitor)
   rootCmd.AddCommand(traceTx)
+  rootCmd.AddCommand(updateTx)
   rootCmd.PersistentFlags().StringVarP(&chain, "chain", "c", "", "Support bitcoincore, ethereum")
   rootCmd.MarkFlagRequired("chain")
 }

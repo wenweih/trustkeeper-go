@@ -8,6 +8,7 @@ import (
   "github.com/gin-gonic/gin"
   "github.com/btcsuite/btcd/chaincfg/chainhash"
   common "trustkeeper-go/library/util"
+  "trustkeeper-go/app/service/chains_query/pkg/repository"
 )
 
 func btcBestBlockNotifyHandle(c *gin.Context) {
@@ -30,7 +31,8 @@ func btcBestBlockNotifyHandle(c *gin.Context) {
     common.GinRespException(c, http.StatusInternalServerError, fmt.Errorf("json Marshal %s", err))
     return
   }
-  if err := svc.MQPublish(body, "bestblock", "direct", "bitcoincore", "bitcoincore_best_block_queue");
+  if err := svc.MQPublish(body, repository.ExchangeNameForBitcoincoreBestBlock,
+    "fanout", repository.BindKeyBitcoincore);
     err != nil {
       logger.Log("fail to publish bitcoin block msg to mq", err.Error())
       common.GinRespException(c, http.StatusInternalServerError, fmt.Errorf("MQPublish %s", err))

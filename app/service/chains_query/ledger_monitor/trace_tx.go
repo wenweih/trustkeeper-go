@@ -13,6 +13,7 @@ import (
   common "trustkeeper-go/library/util"
   "github.com/btcsuite/btcd/btcjson"
   "trustkeeper-go/app/service/chains_query/pkg/model"
+  "trustkeeper-go/app/service/chains_query/pkg/repository"
 )
 
 var traceTx = &cobra.Command {
@@ -105,8 +106,10 @@ var traceTx = &cobra.Command {
 func ethReceive(wg *sync.WaitGroup) {
 	defer wg.Done()
 	forever := make(chan bool)
-  err := svc.MQSubscribe("bestblock", "direct", "ethereum_best_block_queue",
-    "ethereum", "eth", onEthMessage)
+  err := svc.MQSubscribe(repository.ExchangeNameForEthereumBestBlock,
+    "fanout",
+    repository.QueueNameForEthereumTraceTx,
+    repository.BindKeyEthereum, "trace_tx_eth", onEthMessage)
   if err != nil {
     logger.Log("ethReceiveFail", err.Error())
   }
@@ -136,8 +139,11 @@ func onEthMessage(d amqp.Delivery) {
 func bitcoinMQ(wg *sync.WaitGroup)  {
   defer wg.Done()
   forever := make(chan bool)
-  err := svc.MQSubscribe("bestblock", "direct", "bitcoincore_best_block_queue",
-    "bitcoincore", "btc", onBitcoinMessage)
+  err := svc.MQSubscribe(
+    repository.ExchangeNameForBitcoincoreBestBlock,
+    "fanout",
+    repository.QueueNameForBitcoincoreTraceTx,
+    repository.BindKeyBitcoincore, "trace_tx_btc", onBitcoinMessage)
   if err != nil {
     logger.Log("bitcoinMQ", err.Error())
   }
