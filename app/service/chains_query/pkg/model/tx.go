@@ -5,9 +5,12 @@ import (
 )
 
 const (
-  Pending string = "pending"
-  Success string = "success"
-  Fail string = "fail"
+  StatePending string = "pending"
+  StateSuccess string = "success"
+  StateFail string = "fail"
+
+  ChainBitcoin string = "Bitcoincore"
+  ChainEthereum string = "Ethereum"
 )
 
 // Tx balance related with assets for address

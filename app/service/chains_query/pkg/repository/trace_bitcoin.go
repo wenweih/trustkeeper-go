@@ -106,7 +106,7 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
                       Asset: balance.Symbol,
                       Amount: strconv.FormatInt(common.Hex2int(voutScriptPubKeyHex[28:44]), 10),
                       BalanceID: balance.ID,
-                      ChainName: "Bitcoincore"})
+                      ChainName: model.ChainBitcoin})
               }
             }
           }
@@ -141,7 +141,7 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
                 Asset: balance.Symbol,
                 Amount: strconv.FormatFloat(vout.Value * btcutil.SatoshiPerBitcoin, 'f', -int(0), 64),
                 BalanceID: balance.ID,
-                ChainName: "Bitcoincore"})
+                ChainName: model.ChainBitcoin})
           }
         }
       }

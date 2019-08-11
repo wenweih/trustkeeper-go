@@ -80,7 +80,7 @@ func (repo *repo) CreateETHBlockWithTx(ctx context.Context, height int64) (*mode
         Asset: balance.Symbol,
         Amount: amount.String(),
         BalanceID: balance.ID,
-        ChainName: "Ethereum"})
+        ChainName: model.ChainEthereum})
     } else {
       var (
         txRecord model.Tx
@@ -105,7 +105,7 @@ func (repo *repo) CreateETHBlockWithTx(ctx context.Context, height int64) (*mode
         Asset: balance.Symbol,
         Amount: amountBig.String(),
         BalanceID: balance.ID,
-        ChainName: "Ethereum"})
+        ChainName: model.ChainEthereum})
     }
   }
   if err := ts.Commit().Error; err != nil {
