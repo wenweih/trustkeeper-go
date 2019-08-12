@@ -35,4 +35,5 @@ type IBiz interface {
   EthererumDBBestBlock(ctx context.Context) (*model.EthBlock, error)
 
   UpdateEthereumTx(ctx context.Context)
+  UpdateBitcoincoreTx(ctx context.Context)
 }

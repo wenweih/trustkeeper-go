@@ -22,6 +22,8 @@ services:
       -addnode=omnicore_0.5.0:8332
       -connect=omnicore_0.5.0:8332
       -blocknotify='curl http://10.200.10.1:3001/btc-best-block-notify?hash=%s'
+      -txindex=1
+      -reindex
     networks:
       - chainnodes
     volumes:

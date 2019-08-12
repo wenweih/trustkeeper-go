@@ -238,3 +238,30 @@ func (repo *repo) TrackBlock(
   }
   return isTracking, trackHeight
 }
+
+func (repo *repo) UpdateBitcoincoreTx(ctx context.Context) {
+  txes := make([]model.Tx, 0)
+  err := repo.db.Where("chain_name = ?", model.ChainBitcoin).
+    Not("state", []string{model.StateSuccess, model.StateFail}).Find(&txes).Error
+  if err != nil {
+    repo.logger.Log("UpdateEthereumTx:", err.Error())
+  }
+  ts := repo.db.Begin()
+  for _, tx := range txes {
+    rawtx, err := repo.QueryBTCTx(ctx, tx.TxID)
+    if err != nil {
+      repo.logger.Log("UpdateBitcoincoreTx:", err.Error())
+      continue
+    }
+    if rawtx.Confirmations >= DepositBitcoincoreComfirmation {
+      repo.logger.Log("UpdateBitcoincoreTx", tx.TxID, "StateFrom", tx.State, "To", model.StateSuccess)
+      ts.Model(&tx).UpdateColumn("state", model.StateSuccess)
+    } else {
+      repo.logger.Log("UpdateBitcoincoreTx", tx.TxID, "Confirmation", tx.Confirmations, "To", rawtx.Confirmations)
+      ts.Model(&tx).UpdateColumn("confirmations", rawtx.Confirmations)
+    }
+  }
+  if err := ts.Commit().Error; err != nil {
+    repo.logger.Log("UpdateBitcoincoreTx:", err.Error())
+  }
+}

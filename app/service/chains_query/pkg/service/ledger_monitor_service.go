@@ -39,6 +39,7 @@ type LedgerMonitorService interface {
   EthereumDBBestBlock(ctx context.Context) (*model.EthBlock, error)
 
   UpdateEthereumTx(ctx context.Context)
+  UpdateBitcoincoreTx(ctx context.Context)
 }
 
 // NewLedgerMonitorService returns a ChainsQueryService with all of the expected middleware wired in.
@@ -116,4 +117,8 @@ func (b *basicChainsQueryService) EthereumDBBestBlock(ctx context.Context) (*mod
 
 func (b *basicChainsQueryService) UpdateEthereumTx(ctx context.Context) {
   b.biz.UpdateEthereumTx(ctx)
+}
+
+func (b *basicChainsQueryService) UpdateBitcoincoreTx(ctx context.Context) {
+  b.biz.UpdateBitcoincoreTx(ctx)
 }

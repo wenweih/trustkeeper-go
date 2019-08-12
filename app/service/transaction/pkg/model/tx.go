@@ -6,6 +6,7 @@ import (
 
 const (
   StatePending string = "pending"
+  StateConfirming string = "confirming"
   StateSuccess string = "success"
   StateFail string = "fail"
 

@@ -6,6 +6,11 @@ import (
   "github.com/btcsuite/btcd/chaincfg/chainhash"
 )
 
+const (
+  // DepositBitcoincoreComfirmation more than DepositBitcoincoreComfirmation mean deposit successfully
+  DepositBitcoincoreComfirmation uint64 = 6
+)
+
 func (repo *repo) QueryBitcoincoreBlock (
   ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error){
   return repo.bitcoinClient.GetBlockVerboseTxM(blockHash)

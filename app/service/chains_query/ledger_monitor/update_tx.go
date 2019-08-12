@@ -21,6 +21,7 @@ var updateTx = &cobra.Command {
   Run: func(cmd *cobra.Command, args []string) {
     switch chain {
     case "bitcoincore":
+      svc.UpdateBitcoincoreTx(context.Background())
       var wg sync.WaitGroup
       wg.Add(1)
       go bitcoinUpdateTxMQ(&wg)
@@ -87,5 +88,5 @@ func onBitcoinUpdateTxMessage(d amqp.Delivery) {
     logger.Log("GetBlockVerboseResultUnmarshalError", err.Error())
     return
   }
-  logger.Log("Consumer Bitcoin New Block", mqdata.Hash)
+  svc.UpdateBitcoincoreTx(context.Background())
 }
