@@ -4,6 +4,7 @@ import (
   "os"
   "bytes"
   "sync"
+  "context"
   "encoding/gob"
   "encoding/json"
   "github.com/spf13/cobra"
@@ -25,6 +26,7 @@ var updateTx = &cobra.Command {
       go bitcoinUpdateTxMQ(&wg)
       wg.Wait()
     case "ethereum":
+      svc.UpdateEthereumTx(context.Background())
       var wg sync.WaitGroup
     	wg.Add(1)
     	go ethUpdateTxReceive(&wg)
@@ -62,7 +64,7 @@ func onEthUpdateTxMessage(d amqp.Delivery) {
     logger.Log("EthereumBlockReadError", err.Error())
     return
   }
-  logger.Log("Ethereum", mqdata)
+  svc.UpdateEthereumTx(context.Background())
 }
 
 func bitcoinUpdateTxMQ(wg *sync.WaitGroup)  {

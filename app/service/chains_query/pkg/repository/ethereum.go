@@ -11,6 +11,11 @@ import (
   "github.com/ethereum/go-ethereum/core/types"
 )
 
+const (
+  // DepositEthereumComfirmation more than DepositEthereumComfirmation mean deposit successfully
+  DepositEthereumComfirmation int64 = 12
+)
+
 // ERC20Token Ethereum erc20 token info
 type ERC20Token struct {
   Symbol   string `json:"Symbol"`
@@ -67,4 +72,9 @@ func (repo *repo) ERC20TokenInfo(ctx context.Context, tokenHex string) (*ERC20To
     Name: name,
     Address: tokenHex,
     Decimals: decimalsUint64}, nil
+}
+
+// QueryEthereumTx query ethereum tx
+func (repo *repo) QueryEthereumTxReceipt(ctx context.Context, txid string) (*types.Receipt, error) {
+  return repo.ethClient.TransactionReceipt(ctx, common.HexToHash(txid))
 }

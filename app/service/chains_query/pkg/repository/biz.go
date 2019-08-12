@@ -33,4 +33,6 @@ type IBiz interface {
   CreateETHBlockWithTx(ctx context.Context, height int64) (*model.EthBlock, error)
   EthereumBestBlock(ctx context.Context) (*types.Block, error)
   EthererumDBBestBlock(ctx context.Context) (*model.EthBlock, error)
+
+  UpdateEthereumTx(ctx context.Context)
 }

@@ -6,6 +6,7 @@ import (
 
 const (
   StatePending string = "pending"
+  StateConfirming string = "confirming"
   StateSuccess string = "success"
   StateFail string = "fail"
 
@@ -21,7 +22,7 @@ type Tx struct {
   Address   string
   Asset     string
   Amount    string
-  Confirmations uint16
+  Confirmations int64
   BalanceID uint
   Balance   Balance
   ChainName string

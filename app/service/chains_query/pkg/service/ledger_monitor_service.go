@@ -37,6 +37,8 @@ type LedgerMonitorService interface {
   CreateETHBlockWithTx(ctx context.Context, height int64) (*model.EthBlock, error)
   EthereumBestBlock(ctx context.Context) (*types.Block, error)
   EthereumDBBestBlock(ctx context.Context) (*model.EthBlock, error)
+
+  UpdateEthereumTx(ctx context.Context)
 }
 
 // NewLedgerMonitorService returns a ChainsQueryService with all of the expected middleware wired in.
@@ -110,4 +112,8 @@ func (b *basicChainsQueryService) EthereumBestBlock(ctx context.Context) (*types
 
 func (b *basicChainsQueryService) EthereumDBBestBlock(ctx context.Context) (*model.EthBlock, error) {
   return b.biz.EthererumDBBestBlock(ctx)
+}
+
+func (b *basicChainsQueryService) UpdateEthereumTx(ctx context.Context) {
+  b.biz.UpdateEthereumTx(ctx)
 }

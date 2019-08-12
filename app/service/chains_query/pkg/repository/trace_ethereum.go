@@ -80,6 +80,7 @@ func (repo *repo) CreateETHBlockWithTx(ctx context.Context, height int64) (*mode
         Asset: balance.Symbol,
         Amount: amount.String(),
         BalanceID: balance.ID,
+        State: model.StateConfirming,
         ChainName: model.ChainEthereum})
     } else {
       var (
@@ -105,6 +106,7 @@ func (repo *repo) CreateETHBlockWithTx(ctx context.Context, height int64) (*mode
         Asset: balance.Symbol,
         Amount: amountBig.String(),
         BalanceID: balance.ID,
+        State: model.StateConfirming,
         ChainName: model.ChainEthereum})
     }
   }
@@ -112,4 +114,46 @@ func (repo *repo) CreateETHBlockWithTx(ctx context.Context, height int64) (*mode
     return nil, err
   }
   return &dbBlock, nil
+}
+
+func (repo *repo) UpdateEthereumTx(ctx context.Context) {
+  txes := make([]model.Tx, 0)
+  err := repo.db.Where("chain_name = ?", model.ChainEthereum).
+    Not("state", []string{model.StateSuccess, model.StateFail}).Find(&txes).Error
+  if err != nil {
+    repo.logger.Log("UpdateEthereumTx:", err.Error())
+  }
+  bestBlockHead, err := repo.ethClient.HeaderByNumber(ctx, nil)
+  if err != nil {
+    repo.logger.Log("UpdateEthereumTx:", err.Error())
+  }
+  ts := repo.db.Begin()
+  for _, tx := range txes {
+    receipt, err := repo.QueryEthereumTxReceipt(ctx, tx.TxID)
+    if err != nil {
+      repo.logger.Log("UpdateEthereumTx:", err.Error())
+    }
+    if receipt.BlockNumber == nil {
+      // blockNumber field will be null until the transaction is included into a mined block
+      repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "To", model.StatePending)
+      ts.Model(&tx).UpdateColumn("state", model.StatePending)
+    } else if receipt.Status == 1 {
+      // Since block 4370000 (Byzantium), a status indicator has been added to receipts. 1 mean success, 0 mean fail
+      confirmations := bestBlockHead.Number.Int64() - receipt.BlockNumber.Int64() + 1
+      var state string
+      if confirmations >= DepositEthereumComfirmation {
+        state = model.StateSuccess
+      }else {
+        state = model.StateConfirming
+      }
+      repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "From", state, "ConfirmationsFrom", tx.Confirmations, "To", confirmations)
+      ts.Model(&tx).UpdateColumns(model.Tx{State: state, Confirmations: confirmations})
+    } else if (receipt.Status == 0) {
+      repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "To", model.StateFail)
+      ts.Model(&tx).UpdateColumn("state", model.StateFail)
+    }
+  }
+  if err := ts.Commit().Error; err != nil {
+    repo.logger.Log("UpdateEthereumTx:", err.Error())
+  }
 }
