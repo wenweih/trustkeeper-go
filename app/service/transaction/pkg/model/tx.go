@@ -17,13 +17,13 @@ const (
 // Tx balance related with assets for address
 type Tx struct {
   gorm.Model
-  TxID      string
+  TxID      string      `gorm:"index;not null"`
   TxType    string
   Address   string
   Asset     string
   Amount    string
-  Confirmations uint16
-  BalanceID uint
+  Confirmations int64
+  BalanceID uint        `gorm:"not null"`
   Balance   Balance
   ChainName string
   State     string
