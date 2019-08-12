@@ -106,7 +106,6 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
                       Asset: balance.Symbol,
                       Amount: strconv.FormatInt(common.Hex2int(voutScriptPubKeyHex[28:44]), 10),
                       BalanceID: balance.ID,
-                      State: model.StateConfirming,
                       ChainName: model.ChainBitcoin})
               }
             }
@@ -142,7 +141,6 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
                 Asset: balance.Symbol,
                 Amount: strconv.FormatFloat(vout.Value * btcutil.SatoshiPerBitcoin, 'f', -int(0), 64),
                 BalanceID: balance.ID,
-                State: model.StateConfirming,
                 ChainName: model.ChainBitcoin})
           }
         }
@@ -255,7 +253,7 @@ func (repo *repo) UpdateBitcoincoreTx(ctx context.Context) {
     }
     if rawtx.Confirmations >= DepositBitcoincoreComfirmation {
       repo.logger.Log("UpdateBitcoincoreTx", tx.TxID, "StateFrom", tx.State, "To", model.StateSuccess)
-      ts.Model(&tx).UpdateColumn("state", model.StateSuccess)
+      ts.Model(&tx).UpdateColumns(model.Tx{State: model.StateSuccess, Confirmations: int64(rawtx.Confirmations)})
     } else {
       repo.logger.Log("UpdateBitcoincoreTx", tx.TxID, "Confirmation", tx.Confirmations, "To", rawtx.Confirmations)
       ts.Model(&tx).UpdateColumn("confirmations", rawtx.Confirmations)
