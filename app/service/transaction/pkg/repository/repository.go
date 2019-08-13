@@ -15,6 +15,7 @@ func New(db *gorm.DB) IBiz {
   db.AutoMigrate(
     model.Balance{},
     model.Tx{},
+    model.EthBlock{},
     model.BtcUtxo{},
     model.BtcBlock{},
     model.BalanceLog{},)

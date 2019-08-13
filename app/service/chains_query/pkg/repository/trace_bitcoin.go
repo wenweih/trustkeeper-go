@@ -6,6 +6,7 @@ import (
   "strings"
   "strconv"
   "context"
+  "math/big"
   common "trustkeeper-go/library/util"
   "github.com/btcsuite/btcd/btcjson"
   "github.com/btcsuite/btcutil"
@@ -88,15 +89,20 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
                     balance model.Balance
                     txRecord model.Tx
                   )
+                  hasBalance := true
                   for _, balanceAddress := range voutOmni.ScriptPubKey.Addresses {
                     if err := ts.Where("address = ? AND identify = ?",
                       balanceAddress, strconv.FormatInt(omniPropertyID, 10)).First(&balance).Error;
                       err != nil && err.Error() == "record not found" {
+                        hasBalance = false
                         continue
                     }else if err != nil{
                       createBlockCh <- CreateBlockResult{Error: fmt.Errorf("Query subscript address from balance_t err: %s", err)}
                       return
                     }
+                  }
+                  if !hasBalance {
+                    continue
                   }
                   ts.FirstOrCreate(&txRecord,
                     model.Tx{
@@ -244,22 +250,41 @@ func (repo *repo) UpdateBitcoincoreTx(ctx context.Context) {
   if err != nil {
     repo.logger.Log("UpdateEthereumTx:", err.Error())
   }
-  ts := repo.db.Begin()
   for _, tx := range txes {
+    ts := repo.db.Begin()
     rawtx, err := repo.QueryBTCTx(ctx, tx.TxID)
     if err != nil {
       repo.logger.Log("UpdateBitcoincoreTx:", err.Error())
       continue
     }
     if rawtx.Confirmations >= DepositBitcoincoreComfirmation {
-      repo.logger.Log("UpdateBitcoincoreTx", tx.TxID, "StateFrom", tx.State, "To", model.StateSuccess)
+      transferAmount, result := new(big.Int).SetString(tx.Amount, 10)
+      if !result {
+        repo.logger.Log("Fail to extract transfer amount")
+      }
+
+      balance := model.Balance{}
+      ts.Model(&tx).Related(&balance)
+      balanceAmount, result := new(big.Int).SetString(balance.Amount, 10)
+      if !result {
+        repo.logger.Log("Fail to extract balance amount")
+      }
+      if tx.TxType == model.TxTypeDeposit {
+        balanceAmount = balanceAmount.Add(balanceAmount, transferAmount)
+      }
+      balanceAmountStr := balanceAmount.String()
+
+      ts.Create(&model.BalanceLog{TxID: tx.TxID, From: balance.Amount, To: balanceAmountStr, BalanceID: balance.ID})
+      ts.Model(&balance).UpdateColumn("amount", balanceAmountStr)
+
+      repo.logger.Log("UpdateBitcoincoreTx", tx.TxID, "StateFrom", tx.State, "To", model.StateSuccess, "ConfirmationsFrom", tx.Confirmations, "To", rawtx.Confirmations)
       ts.Model(&tx).UpdateColumns(model.Tx{State: model.StateSuccess, Confirmations: int64(rawtx.Confirmations)})
     } else {
       repo.logger.Log("UpdateBitcoincoreTx", tx.TxID, "Confirmation", tx.Confirmations, "To", rawtx.Confirmations)
       ts.Model(&tx).UpdateColumn("confirmations", rawtx.Confirmations)
     }
-  }
-  if err := ts.Commit().Error; err != nil {
-    repo.logger.Log("UpdateBitcoincoreTx:", err.Error())
+    if err := ts.Commit().Error; err != nil {
+      repo.logger.Log("UpdateBitcoincoreTx:", err.Error())
+    }
   }
 }

@@ -49,11 +49,14 @@ func EncodeETHBlock(block types.Block) ([]byte, error) {
     }
 		var txFee = new(big.Int)
 		txFee = txFee.Mul(tx.GasPrice(), big.NewInt(int64(tx.Gas())))
-    // tx.Data()
     inputeData := hexutil.Encode(ms.Data())
+    to := ""
+    if tx.To() != nil {
+      to = tx.To().Hex()
+    }
 		txes = append(txes, &ETHSimpleTx{
 			THash:     tx.Hash().String(),
-			To:        tx.To().Hex(),
+			To:        to,
 			From:      ms.From().String(),
 			HeightHex: hexutil.EncodeBig(block.Number()),
 			ValueHex:  hexutil.EncodeBig(tx.Value()),

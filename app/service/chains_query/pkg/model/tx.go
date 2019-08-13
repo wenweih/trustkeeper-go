@@ -12,6 +12,9 @@ const (
 
   ChainBitcoin string = "Bitcoincore"
   ChainEthereum string = "Ethereum"
+
+  TxTypeDeposit string = "deposit"
+  TxTypeWithdraw string = "withdraw"
 )
 
 // Tx balance related with assets for address
@@ -21,7 +24,7 @@ type Tx struct {
   TxType    string
   Address   string
   Asset     string
-  Amount    string
+  Amount    string       `gorm:"not null;default:'0'"`
   Confirmations int64
   BalanceID uint        `gorm:"not null"`
   Balance   Balance

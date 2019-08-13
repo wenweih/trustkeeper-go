@@ -75,7 +75,7 @@ func (repo *repo) CreateETHBlockWithTx(ctx context.Context, height int64) (*mode
       }
       ts.FirstOrCreate(&txRecord, model.Tx{
         TxID: tx.Txid,
-        TxType: "deposit",
+        TxType: model.TxTypeDeposit,
         Address: receiver.Hex(),
         Asset: balance.Symbol,
         Amount: amount.String(),
@@ -100,7 +100,7 @@ func (repo *repo) CreateETHBlockWithTx(ctx context.Context, height int64) (*mode
 
       ts.FirstOrCreate(&txRecord, model.Tx{
         TxID: tx.Txid,
-        TxType: "deposit",
+        TxType: model.TxTypeDeposit,
         Address: tx.To,
         Asset: balance.Symbol,
         Amount: amountBig.String(),
@@ -125,8 +125,8 @@ func (repo *repo) UpdateEthereumTx(ctx context.Context) {
   if err != nil {
     repo.logger.Log("UpdateEthereumTx:", err.Error())
   }
-  ts := repo.db.Begin()
   for _, tx := range txes {
+    ts := repo.db.Begin()
     receipt, err := repo.QueryEthereumTxReceipt(ctx, tx.TxID)
     if err != nil {
       repo.logger.Log("UpdateEthereumTx:", err.Error())
@@ -141,17 +141,33 @@ func (repo *repo) UpdateEthereumTx(ctx context.Context) {
       var state string
       if confirmations >= DepositEthereumComfirmation {
         state = model.StateSuccess
+        transferAmount, result := new(big.Int).SetString(tx.Amount, 10)
+        if !result {
+          repo.logger.Log("Fail to extract transfer amount")
+        }
+        balance := model.Balance{}
+        ts.Model(&tx).Related(&balance)
+        balanceAmount, result := new(big.Int).SetString(balance.Amount, 10)
+        if !result {
+          repo.logger.Log("Fail to extract balance amount")
+        }
+        if tx.TxType == model.TxTypeDeposit {
+          balanceAmount = balanceAmount.Add(balanceAmount, transferAmount)
+        }
+        balanceAmountStr := balanceAmount.String()
+        ts.Create(&model.BalanceLog{TxID: tx.TxID, From: balance.Amount, To: balanceAmountStr, BalanceID: balance.ID})
+        ts.Model(&balance).UpdateColumn("amount", balanceAmountStr)
       }else {
         state = model.StateConfirming
       }
-      repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "From", state, "ConfirmationsFrom", tx.Confirmations, "To", confirmations)
+      repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "To", state, "ConfirmationsFrom", tx.Confirmations, "To", confirmations)
       ts.Model(&tx).UpdateColumns(model.Tx{State: state, Confirmations: confirmations})
     } else if (receipt.Status == 0) {
       repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "To", model.StateFail)
       ts.Model(&tx).UpdateColumn("state", model.StateFail)
     }
-  }
-  if err := ts.Commit().Error; err != nil {
-    repo.logger.Log("UpdateEthereumTx:", err.Error())
+    if err := ts.Commit().Error; err != nil {
+      repo.logger.Log("UpdateEthereumTx:", err.Error())
+    }
   }
 }

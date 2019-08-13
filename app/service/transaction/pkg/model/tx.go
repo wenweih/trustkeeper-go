@@ -21,7 +21,7 @@ type Tx struct {
   TxType    string
   Address   string
   Asset     string
-  Amount    string
+  Amount    string       `gorm:"not null;default:'0'"`
   Confirmations int64
   BalanceID uint        `gorm:"not null"`
   Balance   Balance
