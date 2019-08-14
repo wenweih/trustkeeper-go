@@ -37,8 +37,15 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 			encodeERC20TokenInfoRequest, decodeERC20TokenInfoResponse, pb.ERC20TokenInfoReply{}, options...).Endpoint()
 	}
 
+	var constructTxBTCEndpoint endpoint.Endpoint
+	{
+		constructTxBTCEndpoint = grpc1.NewClient(conn, "pb.ChainsQuery", "ConstructTxBTC",
+			encodeConstructTxBTCRequest, decodeConstructTxBTCResponse, pb.ConstructTxBTCReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		BitcoincoreBlockEndpoint:  bitcoincoreBlockEndpoint,
+		ConstructTxBTCEndpoint:    constructTxBTCEndpoint,
 		ERC20TokenInfoEndpoint:    eRC20TokenInfoEndpoint,
 		QueryOmniPropertyEndpoint: queryOmniPropertyEndpoint,
 	}, nil
@@ -102,4 +109,26 @@ func decodeERC20TokenInfoResponse(_ context.Context, reply interface{}) (interfa
 		return nil, err
 	}
 	return endpoint1.ERC20TokenInfoResponse{Token: &token}, nil
+}
+
+
+// encodeConstructTxBTCRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain ConstructTxBTC request to a gRPC request.
+func encodeConstructTxBTCRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.ConstructTxBTCRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint ConstructTxBTCRequest type assertion error")
+	}
+	return &pb.ConstructTxBTCRequest{Amount: r.Amount, From: r.From, To: r.To}, nil
+}
+
+// decodeConstructTxBTCResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeConstructTxBTCResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.ConstructTxBTCReply)
+	if !ok {
+		e := fmt.Errorf("pb ConstructTxBTCReply type assertion error")
+		return endpoint1.ConstructTxBTCResponse{Err: e}, e
+	}
+	return endpoint1.ConstructTxBTCResponse{UnsignedTxHex: resp.UnsignedTxHex}, nil
 }

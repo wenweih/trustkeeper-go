@@ -9,6 +9,7 @@ service ChainsQuery {
  rpc BitcoincoreBlock  (BitcoincoreBlockRequest ) returns (BitcoincoreBlockReply );
  rpc QueryOmniProperty (QueryOmniPropertyRequest) returns (QueryOmniPropertyReply);
  rpc ERC20TokenInfo    (ERC20TokenInfoRequest   ) returns (ERC20TokenInfoReply   );
+ rpc ConstructTxBTC    (ConstructTxBTCRequest   ) returns (ConstructTxBTCReply   );
 }
 
 message BitcoincoreBlockRequest {}
@@ -39,16 +40,26 @@ message QueryOmniPropertyReply {
 }
 
 message ERC20TokenInfoRequest {
-  string TokenHex = 1;
+ string TokenHex = 1;
 }
 
 message ERC20Token {
-  string Symbol = 1;
-  string Name = 2;
-  uint64 Decimals = 3;
-  string Address = 4;
+ string Symbol   = 1;
+ string Name     = 2;
+ uint64 Decimals = 3;
+ string Address  = 4;
 }
 
 message ERC20TokenInfoReply {
-  ERC20Token ERC20Token = 1;
+ ERC20Token ERC20Token = 1;
+}
+
+message ConstructTxBTCRequest {
+  string From   = 1;
+  string To     = 2;
+  string Amount = 3;
+}
+
+message ConstructTxBTCReply {
+  string UnsignedTxHex = 1;
 }

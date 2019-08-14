@@ -21,6 +21,8 @@ type ChainsQueryService interface {
 	BitcoincoreBlock(ctx context.Context, blockHash *chainhash.Hash) (*btcjson.GetBlockVerboseResult, error)
 	QueryOmniProperty(ctx context.Context, propertyid int64) (*repository.OmniProperty, error)
 	ERC20TokenInfo(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error)
+
+	ConstructTxBTC(ctx context.Context, from, to, amount string) (unsignedTxHex string, err error)
 }
 
 type basicChainsQueryService struct {
@@ -82,4 +84,9 @@ func (b *basicChainsQueryService) QueryOmniProperty(ctx context.Context, propert
 
 func (b *basicChainsQueryService) ERC20TokenInfo(ctx context.Context, tokenHex string) (*repository.ERC20Token, error) {
 	return b.biz.ERC20TokenInfo(ctx, tokenHex)
+}
+
+func (b *basicChainsQueryService) ConstructTxBTC(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, err error) {
+	unsignedTxHex, err = b.biz.ConstructTxBTC(ctx, from, to, amount)
+	return
 }

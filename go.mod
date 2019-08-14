@@ -71,6 +71,7 @@ require (
 	github.com/syndtr/goleveldb v1.0.0
 	github.com/theplant/cldr v0.0.0-20190423050709-9f76f7ce4ee8 // indirect
 	github.com/tyler-smith/go-bip39 v1.0.0
+	github.com/ugorji/go v1.1.7 // indirect
 	github.com/wsddn/go-ecdh v0.0.0-20161211032359-48726bab9208 // indirect
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80

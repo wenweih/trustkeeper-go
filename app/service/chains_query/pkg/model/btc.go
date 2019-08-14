@@ -5,6 +5,10 @@ import(
   "github.com/qor/transition"
 )
 
+const (
+  BTCSymbol string = "BTC"
+)
+
 // BtcUtxo utxo model
 type BtcUtxo struct {
   gorm.Model

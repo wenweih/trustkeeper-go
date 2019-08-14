@@ -132,3 +132,47 @@ func (e Endpoints) ERC20TokenInfo(ctx context.Context, tokenHex string) (token *
 	}
 	return response.(ERC20TokenInfoResponse).Token, nil
 }
+
+// ConstructTxBTCRequest collects the request parameters for the ConstructTxBTC method.
+type ConstructTxBTCRequest struct {
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount string `json:"amount"`
+}
+
+// ConstructTxBTCResponse collects the response parameters for the ConstructTxBTC method.
+type ConstructTxBTCResponse struct {
+	UnsignedTxHex string `json:"unsigned_tx_hex"`
+	Err           error  `json:"err"`
+}
+
+// MakeConstructTxBTCEndpoint returns an endpoint that invokes ConstructTxBTC on the service.
+func MakeConstructTxBTCEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ConstructTxBTCRequest)
+		unsignedTxHex, err := s.ConstructTxBTC(ctx, req.From, req.To, req.Amount)
+		if err != nil {
+			return ConstructTxBTCResponse{Err: err}, err
+		}
+		return ConstructTxBTCResponse{UnsignedTxHex: unsignedTxHex}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r ConstructTxBTCResponse) Failed() error {
+	return r.Err
+}
+
+// ConstructTxBTC implements Service. Primarily useful in a client.
+func (e Endpoints) ConstructTxBTC(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, err error) {
+	request := ConstructTxBTCRequest{
+		Amount: amount,
+		From:   from,
+		To:     to,
+	}
+	response, err := e.ConstructTxBTCEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(ConstructTxBTCResponse).UnsignedTxHex, nil
+}

@@ -120,3 +120,40 @@ func (g *grpcServer) ERC20TokenInfo(ctx context1.Context, req *pb.ERC20TokenInfo
 	}
 	return rep.(*pb.ERC20TokenInfoReply), nil
 }
+
+// makeConstructTxBTCHandler creates the handler logic
+func makeConstructTxBTCHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.ConstructTxBTCEndpoint, decodeConstructTxBTCRequest, encodeConstructTxBTCResponse, options...)
+}
+
+// decodeConstructTxBTCResponse is a transport/grpc.DecodeRequestFunc that converts a
+// gRPC request to a user-domain ConstructTxBTC request.
+func decodeConstructTxBTCRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.ConstructTxBTCRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb ConstructTxBTCRequest type assersion error")
+	}
+	return endpoint.ConstructTxBTCRequest{From: req.From, To: req.To, Amount: req.Amount}, nil
+}
+
+// encodeConstructTxBTCResponse is a transport/grpc.EncodeResponseFunc that converts
+// a user-domain response to a gRPC reply.
+// TODO implement the encoder
+func encodeConstructTxBTCResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.ConstructTxBTCResponse)
+	if !ok {
+		return nil, fmt.Errorf("interface{} to endpoint ConstructTxBTCResponse type assertion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.ConstructTxBTCReply{UnsignedTxHex: resp.UnsignedTxHex}, nil
+}
+
+func (g *grpcServer) ConstructTxBTC(ctx context1.Context, req *pb.ConstructTxBTCRequest) (*pb.ConstructTxBTCReply, error) {
+	_, rep, err := g.constructTxBTC.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.ConstructTxBTCReply), nil
+}

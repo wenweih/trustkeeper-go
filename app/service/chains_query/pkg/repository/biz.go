@@ -36,4 +36,6 @@ type IBiz interface {
 
   UpdateEthereumTx(ctx context.Context)
   UpdateBitcoincoreTx(ctx context.Context)
+
+  ConstructTxBTC(ctx context.Context, from, to, amount string) (unsignedTxHex string, err error)
 }

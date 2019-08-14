@@ -46,3 +46,10 @@ func (l loggingMiddleware) ERC20TokenInfo(ctx context.Context, tokenHex string) 
 	}()
 	return l.next.ERC20TokenInfo(ctx, tokenHex)
 }
+
+func (l loggingMiddleware) ConstructTxBTC(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, err error) {
+	defer func() {
+		l.logger.Log("method", "ConstructTxBTC", "from", from, "to", to, "amount", amount, "unsignedTxHex", unsignedTxHex, "err", err)
+	}()
+	return l.next.ConstructTxBTC(ctx, from, to, amount)
+}
