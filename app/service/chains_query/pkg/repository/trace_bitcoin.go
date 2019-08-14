@@ -138,6 +138,7 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
               Amount: vout.Value,
               Height: rawBlock.Height,
               VoutIndex: vout.N,
+              BalanceID: balance.ID,
               BtcBlockID: block.ID})
             ts.FirstOrCreate(&txRecord,
               model.Tx{

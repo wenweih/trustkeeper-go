@@ -14,7 +14,8 @@ type BtcUtxo struct {
   VoutIndex             uint32    `gorm:"not null"`
   ReOrg                 bool      `gorm:"not null;default:false"`
   UsedBy                string
-  Balance               Balance   `gorm:"association_foreignkey:Address"`
+  BalanceID             uint      `gorm:"not null"`
+  Balance               Balance
   BtcBlock              BtcBlock
   BtcBlockID            uint
   transition.Transition
