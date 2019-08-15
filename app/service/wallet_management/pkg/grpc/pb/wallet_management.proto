@@ -12,6 +12,7 @@ service WalletManagement {
  rpc CreateWallet                    (CreateWalletRequest                   ) returns (CreateWalletReply                   );
  rpc GetWallets                      (GetWalletsRequest                     ) returns (GetWalletsReply                     );
  rpc QueryWalletsForGroupByChainName (QueryWalletsForGroupByChainNameRequest) returns (QueryWalletsForGroupByChainNameReply);
+ rpc QueryWalletHD                   (QueryWalletHDRequest                  ) returns (QueryWalletHDReply                  );
 }
 
 message CreateChainRequest {
@@ -80,10 +81,26 @@ message GetWalletsReply {
 }
 
 message QueryWalletsForGroupByChainNameRequest {
-  string groupid = 1;
-  string chainName = 2;
+ string groupid   = 1;
+ string chainName = 2;
 }
 
 message QueryWalletsForGroupByChainNameReply {
-  repeated Wallet Wallets   = 1;
+ repeated Wallet Wallets = 1;
+}
+
+message QueryWalletHDRequest {
+  string address = 1;
+}
+
+message WalletHD {
+  int32 CoinType =1;
+  int32 Account = 2;
+  int32 Change = 3;
+  uint32 AddressIndex = 4;
+  string MnemonicVersion = 5;
+}
+
+message QueryWalletHDReply {
+  WalletHD WalletHD = 1;
 }

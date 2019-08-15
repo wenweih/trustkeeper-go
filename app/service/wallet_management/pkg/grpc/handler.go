@@ -203,3 +203,37 @@ func (g *grpcServer) QueryWalletsForGroupByChainName(ctx context1.Context, req *
 	}
 	return rep.(*pb.QueryWalletsForGroupByChainNameReply), nil
 }
+
+func makeQueryWalletHDHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.QueryWalletHDEndpoint, decodeQueryWalletHDRequest, encodeQueryWalletHDResponse, options...)
+}
+
+func decodeQueryWalletHDRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.QueryWalletHDRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb QueryWalletHDRequest type assersion error")
+	}
+	return endpoint.QueryWalletHDRequest{Address: req.Address}, nil
+}
+
+func encodeQueryWalletHDResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.QueryWalletHDResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint QueryWalletHDResponse type assersion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	pbWalletHD := pb.WalletHD{}
+	if err := copier.Copy(&pbWalletHD, resp.Hd); err != nil {
+		return nil, err
+	}
+	return &pb.QueryWalletHDReply{WalletHD: &pbWalletHD}, nil
+}
+func (g *grpcServer) QueryWalletHD(ctx context1.Context, req *pb.QueryWalletHDRequest) (*pb.QueryWalletHDReply, error) {
+	_, rep, err := g.queryWalletHD.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.QueryWalletHDReply), nil
+}

@@ -25,6 +25,7 @@ type IBiz interface {
   CreateWallet(ctx context.Context, groupid, chainname string, bip44change int) (wallet *Wallet, err error)
   GetWallets(ctx context.Context, groupid string, page, limit, bip44change int32) (wallets []*ChainWithWallets, err error)
   QueryWalletsForGroupByChainName(ctx context.Context, groupid, chainName string) (wallets []*Wallet, err error)
+  QueryWalletHD(ctx context.Context, address string) (hd *WalletHD, err error)
 }
 
 type Bip44AccountKey struct {
@@ -271,4 +272,17 @@ func (repo *repo) GetWallets(ctx context.Context, groupid string, page, limit, b
             Wallets: wallets}
   }
   return chainWithWallets, nil
+}
+
+func (repo *repo) QueryWalletHD(ctx context.Context, address string) (hd *WalletHD, err error) {
+  var wallet model.Wallet
+  if err := repo.db.Preload("Xpub").Preload("Xpub.MnemonicVersion").Where("address = ?", address).First(&wallet).Error; err != nil {
+    return nil, fmt.Errorf("Fail to query wallet %s", err.Error())
+  }
+  return &WalletHD{
+    CoinType: int32(*wallet.Xpub.Bip44ChainID),
+    Account: int32(wallet.Xpub.Bip44Account),
+    Change: int32(wallet.Bip44Change),
+    AddressIndex: wallet.Bip44Index,
+    MnemonicVersion: wallet.Xpub.MnemonicVersion.Version}, nil
 }

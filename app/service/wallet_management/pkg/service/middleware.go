@@ -72,3 +72,10 @@ func (l loggingMiddleware) QueryWalletsForGroupByChainName(ctx context.Context, 
 	}()
 	return l.next.QueryWalletsForGroupByChainName(ctx, groupid, chainName)
 }
+
+func (l loggingMiddleware) QueryWalletHD(ctx context.Context, address string) (hd *repository.WalletHD, err error) {
+	defer func() {
+		l.logger.Log("method", "QueryWalletHD", "address", address, "hd", hd, "err", err)
+	}()
+	return l.next.QueryWalletHD(ctx, address)
+}

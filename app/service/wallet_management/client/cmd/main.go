@@ -84,4 +84,10 @@ func main()  {
   // for _, wallet := range groupidwallets {
   //   fmt.Println("wallet with groupid: ", *wallet)
   // }
+
+  walletHD, err := s.QueryWalletHD(ctxWithAuthInfo, "0x1d4ffe8F0A1CF15f5efEd57B3361675193d50d46")
+  if err != nil {
+    fmt.Println("QueryWalletHD fail:", err.Error())
+  }
+  fmt.Println("QueryWalletHD:", walletHD)
 }

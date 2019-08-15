@@ -25,6 +25,7 @@ func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 		"CreateWallet":                    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "CreateWallet", logger))},
 		"GetChains":                       {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetChains", logger))},
 		"GetWallets":                      {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GetWallets", logger))},
+		"QueryWalletHD":                   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryWalletHD", logger))},
 		"QueryWalletsForGroupByChainName": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryWalletsForGroupByChainName", logger))},
 	}
 	return options
@@ -36,12 +37,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["CreateWallet"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateWallet")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateWallet"))}
 	mw["GetWallets"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetWallets")), endpoint.InstrumentingMiddleware(duration.With("method", "GetWallets"))}
 	mw["QueryWalletsForGroupByChainName"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryWalletsForGroupByChainName")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryWalletsForGroupByChainName"))}
+	mw["QueryWalletHD"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryWalletHD")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryWalletHD"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"GetChains", "CreateChain", "AssignedXpubToGroup", "CreateWallet", "GetWallets", "QueryWalletsForGroupByChainName"}
+	methods := []string{"GetChains", "CreateChain", "AssignedXpubToGroup", "CreateWallet", "GetWallets", "QueryWalletsForGroupByChainName", "QueryWalletHD"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

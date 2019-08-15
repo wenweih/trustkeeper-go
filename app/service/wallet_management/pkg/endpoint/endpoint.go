@@ -251,7 +251,7 @@ func MakeQueryWalletsForGroupByChainNameEndpoint(s service.WalletManagementServi
 		req := request.(QueryWalletsForGroupByChainNameRequest)
 		wallets, err := s.QueryWalletsForGroupByChainName(ctx, req.Groupid, req.ChainName)
 		if err != nil {
-			return QueryWalletsForGroupByChainNameResponse {Err: err}, err
+			return QueryWalletsForGroupByChainNameResponse{Err: err}, err
 		}
 		return QueryWalletsForGroupByChainNameResponse{Wallets: wallets}, nil
 	}
@@ -273,4 +273,42 @@ func (e Endpoints) QueryWalletsForGroupByChainName(ctx context.Context, groupid 
 		return nil, err
 	}
 	return response.(QueryWalletsForGroupByChainNameResponse).Wallets, nil
+}
+
+// QueryWalletHDRequest collects the request parameters for the QueryWalletHD method.
+type QueryWalletHDRequest struct {
+	Address string `json:"address"`
+}
+
+// QueryWalletHDResponse collects the response parameters for the QueryWalletHD method.
+type QueryWalletHDResponse struct {
+	Hd  *repository.WalletHD `json:"hd"`
+	Err error                `json:"err"`
+}
+
+// MakeQueryWalletHDEndpoint returns an endpoint that invokes QueryWalletHD on the service.
+func MakeQueryWalletHDEndpoint(s service.WalletManagementService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(QueryWalletHDRequest)
+		hd, err := s.QueryWalletHD(ctx, req.Address)
+		if err != nil {
+			return QueryWalletHDResponse{Err: err}, err
+		}
+		return QueryWalletHDResponse{Hd:  hd}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r QueryWalletHDResponse) Failed() error {
+	return r.Err
+}
+
+// QueryWalletHD implements Service. Primarily useful in a client.
+func (e Endpoints) QueryWalletHD(ctx context.Context, address string) (hd *repository.WalletHD, err error) {
+	request := QueryWalletHDRequest{Address: address}
+	response, err := e.QueryWalletHDEndpoint(ctx, request)
+	if err != nil {
+		return nil, err
+	}
+	return response.(QueryWalletHDResponse).Hd, nil
 }

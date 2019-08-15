@@ -16,6 +16,7 @@ type Endpoints struct {
 	CreateWalletEndpoint                    endpoint.Endpoint
 	GetWalletsEndpoint                      endpoint.Endpoint
 	QueryWalletsForGroupByChainNameEndpoint endpoint.Endpoint
+	QueryWalletHDEndpoint                   endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -27,6 +28,7 @@ func New(s service.WalletManagementService, mdw map[string][]endpoint.Middleware
 		CreateWalletEndpoint:                    MakeCreateWalletEndpoint(s),
 		GetChainsEndpoint:                       MakeGetChainsEndpoint(s),
 		GetWalletsEndpoint:                      MakeGetWalletsEndpoint(s),
+		QueryWalletHDEndpoint:                   MakeQueryWalletHDEndpoint(s),
 		QueryWalletsForGroupByChainNameEndpoint: MakeQueryWalletsForGroupByChainNameEndpoint(s),
 	}
 	for _, m := range mdw["GetChains"] {
@@ -46,6 +48,9 @@ func New(s service.WalletManagementService, mdw map[string][]endpoint.Middleware
 	}
 	for _, m := range mdw["QueryWalletsForGroupByChainName"] {
 		eps.QueryWalletsForGroupByChainNameEndpoint = m(eps.QueryWalletsForGroupByChainNameEndpoint)
+	}
+	for _, m := range mdw["QueryWalletHD"] {
+		eps.QueryWalletHDEndpoint = m(eps.QueryWalletHDEndpoint)
 	}
 	return eps
 }

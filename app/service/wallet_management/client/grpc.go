@@ -25,27 +25,40 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 
 	var assignedXpubToGroupEndpoint endpoint.Endpoint
 	{
-		assignedXpubToGroupEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "AssignedXpubToGroup", encodeAssignedXpubToGroupRequest, decodeAssignedXpubToGroupResponse, pb.AssignedXpubToGroupReply{}, options...).Endpoint()
+		assignedXpubToGroupEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "AssignedXpubToGroup",
+			encodeAssignedXpubToGroupRequest, decodeAssignedXpubToGroupResponse, pb.AssignedXpubToGroupReply{}, options...).Endpoint()
 	}
 
 	var getChainsEndpoint endpoint.Endpoint
 	{
-		getChainsEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "GetChains", encodeGetChainsRequest, decodeGetChainsResponse, pb.GetChainsReply{}, options...).Endpoint()
+		getChainsEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "GetChains",
+			encodeGetChainsRequest, decodeGetChainsResponse, pb.GetChainsReply{}, options...).Endpoint()
 	}
 
 	var createWalletEndpoint endpoint.Endpoint
 	{
-		createWalletEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "CreateWallet", encodeCreateWalletRequest, decodeCreateWalletResponse, pb.CreateWalletReply{}, options...).Endpoint()
+		createWalletEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "CreateWallet",
+			encodeCreateWalletRequest, decodeCreateWalletResponse, pb.CreateWalletReply{}, options...).Endpoint()
 	}
 
 	var getWalletsEndpoint endpoint.Endpoint
 	{
-		getWalletsEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "GetWallets", encodeGetWalletsRequest, decodeGetWalletsResponse, pb.GetWalletsReply{}, options...).Endpoint()
+		getWalletsEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "GetWallets",
+			encodeGetWalletsRequest, decodeGetWalletsResponse, pb.GetWalletsReply{}, options...).Endpoint()
 	}
 
 	var queryWalletsForGroupByChainNameEndpoint endpoint.Endpoint
 	{
-		queryWalletsForGroupByChainNameEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "QueryWalletsForGroupByChainName", encodeQueryWalletsForGroupByChainNameRequest, decodeQueryWalletsForGroupByChainNameResponse, pb.QueryWalletsForGroupByChainNameReply{}, options...).Endpoint()
+		queryWalletsForGroupByChainNameEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "QueryWalletsForGroupByChainName",
+			encodeQueryWalletsForGroupByChainNameRequest,
+			decodeQueryWalletsForGroupByChainNameResponse,
+			pb.QueryWalletsForGroupByChainNameReply{}, options...).Endpoint()
+	}
+
+	var queryWalletHDEndpoint endpoint.Endpoint
+	{
+		queryWalletHDEndpoint = grpc1.NewClient(conn, "pb.WalletManagement", "QueryWalletHD",
+			encodeQueryWalletHDRequest, decodeQueryWalletHDResponse, pb.QueryWalletHDReply{}, options...).Endpoint()
 	}
 
 	return endpoint1.Endpoints{
@@ -54,6 +67,7 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		CreateWalletEndpoint:        createWalletEndpoint,
 		GetChainsEndpoint:           getChainsEndpoint,
 		GetWalletsEndpoint:          getWalletsEndpoint,
+		QueryWalletHDEndpoint:                   queryWalletHDEndpoint,
 		QueryWalletsForGroupByChainNameEndpoint: queryWalletsForGroupByChainNameEndpoint,
 	}, nil
 }
@@ -205,4 +219,28 @@ func decodeQueryWalletsForGroupByChainNameResponse(_ context.Context, reply inte
 		return endpoint1.QueryWalletsForGroupByChainNameResponse{Err: err}, err
 	}
 	return endpoint1.QueryWalletsForGroupByChainNameResponse{Wallets: wallets}, nil
+}
+
+// encodeQueryWalletHDRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain QueryWalletHD request to a gRPC request.
+func encodeQueryWalletHDRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.QueryWalletHDRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint QueryWalletHDRequest type assertion error")
+	}
+	return &pb.QueryWalletHDRequest{Address: r.Address}, nil
+}
+
+// decodeQueryWalletHDResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeQueryWalletHDResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.QueryWalletHDReply)
+	if !ok {
+		return nil, fmt.Errorf("pb QueryWalletHDReply type assertion error")
+	}
+	walletHD := repository.WalletHD{}
+	if err := copier.Copy(&walletHD, resp.WalletHD); err != nil {
+		return endpoint1.QueryWalletHDResponse{Err: err}, err
+	}
+	return endpoint1.QueryWalletHDResponse{Hd: &walletHD}, nil
 }

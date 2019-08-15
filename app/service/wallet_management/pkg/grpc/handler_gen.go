@@ -15,6 +15,7 @@ type grpcServer struct {
 	createWallet                    grpc.Handler
 	getWallets                      grpc.Handler
 	queryWalletsForGroupByChainName grpc.Handler
+	queryWalletHD                   grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.WalletManagementServer {
@@ -24,6 +25,7 @@ func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.Serve
 		createWallet:                    makeCreateWalletHandler(endpoints, options["CreateWallet"]),
 		getChains:                       makeGetChainsHandler(endpoints, options["GetChains"]),
 		getWallets:                      makeGetWalletsHandler(endpoints, options["GetWallets"]),
+		queryWalletHD:                   makeQueryWalletHDHandler(endpoints, options["QueryWalletHD"]),
 		queryWalletsForGroupByChainName: makeQueryWalletsForGroupByChainNameHandler(endpoints, options["QueryWalletsForGroupByChainName"]),
 	}
 }

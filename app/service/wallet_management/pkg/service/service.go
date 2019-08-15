@@ -22,6 +22,7 @@ type WalletManagementService interface {
 	GetWallets(ctx context.Context, groupid string, page, limit, bip44change int32) (wallets []*repository.ChainWithWallets, err error)
 	QueryWalletsForGroupByChainName(ctx context.Context, groupid, chainName string) (wallets []*repository.Wallet, err error)
 	Close() error
+	QueryWalletHD(ctx context.Context, address string) (hd *repository.WalletHD, err error)
 }
 
 type basicWalletManagementService struct {
@@ -111,4 +112,9 @@ func (b *basicWalletManagementService) GetWallets(
 func (b *basicWalletManagementService) QueryWalletsForGroupByChainName(
 	ctx context.Context, groupid string, chainName string) (wallets []*repository.Wallet, err error) {
 	return b.biz.QueryWalletsForGroupByChainName(ctx, groupid, chainName)
+}
+
+func (b *basicWalletManagementService) QueryWalletHD(ctx context.Context, address string) (hd *repository.WalletHD, err error) {
+	hd, err = b.biz.QueryWalletHD(ctx, address)
+	return
 }

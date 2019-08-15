@@ -34,6 +34,15 @@ type Wallet struct {
   ChainName  string  `json:"ChainName"`
 }
 
+// WalletHD wallet hd info
+type WalletHD struct {
+  CoinType        int32  `json:"CoinType"`
+  Account         int32  `json:"Account"`
+  Change          int32  `json:"Change"`
+  AddressIndex    uint32  `json:"AddressIndex"`
+  MnemonicVersion string `json:"MnemonicVersion"`
+}
+
 
 func (repo *repo) QueryWalletsForGroupByChainName(ctx context.Context, groupid, chainName string) ([]*Wallet, error) {
   chain := model.Chain{}
