@@ -3,7 +3,6 @@ package repository
 import(
   log "github.com/go-kit/kit/log"
   "github.com/jinzhu/gorm"
-  "github.com/qor/transition"
   "github.com/btcsuite/btcd/rpcclient"
   "github.com/ethereum/go-ethereum/ethclient"
   "trustkeeper-go/library/mq"
@@ -35,7 +34,6 @@ func New(
     model.Tx{},
     model.BalanceLog{},
     model.EthBlock{},
-    &transition.StateChangeLog{},
   )
   repo := repo{
     bitcoinClient: btcClient,

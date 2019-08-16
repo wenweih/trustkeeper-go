@@ -2,11 +2,14 @@ package model
 
 import(
   "github.com/jinzhu/gorm"
-  "github.com/qor/transition"
 )
 
 const (
   BTCSymbol string = "BTC"
+
+  UTXOStateLocked = "locked"
+  UTXOStateSelected = "selected"
+  UTXOStateUnSelected = "unselected"
 )
 
 // BtcUtxo utxo model
@@ -22,7 +25,7 @@ type BtcUtxo struct {
   Balance               Balance
   BtcBlock              BtcBlock
   BtcBlockID            uint
-  transition.Transition
+  State                 string    `gorm:"default:'unselected';not null"`
 }
 
 // BtcBlock notify block info
