@@ -36,7 +36,7 @@ func (m *GenerateMnemonicRequest) Reset()         { *m = GenerateMnemonicRequest
 func (m *GenerateMnemonicRequest) String() string { return proto.CompactTextString(m) }
 func (*GenerateMnemonicRequest) ProtoMessage()    {}
 func (*GenerateMnemonicRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_key_0780d30c4c594c5d, []int{0}
+	return fileDescriptor_wallet_key_689c1cbe08898849, []int{0}
 }
 func (m *GenerateMnemonicRequest) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GenerateMnemonicRequest.Unmarshal(m, b)
@@ -89,7 +89,7 @@ func (m *Bip44AccountKey) Reset()         { *m = Bip44AccountKey{} }
 func (m *Bip44AccountKey) String() string { return proto.CompactTextString(m) }
 func (*Bip44AccountKey) ProtoMessage()    {}
 func (*Bip44AccountKey) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_key_0780d30c4c594c5d, []int{1}
+	return fileDescriptor_wallet_key_689c1cbe08898849, []int{1}
 }
 func (m *Bip44AccountKey) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Bip44AccountKey.Unmarshal(m, b)
@@ -135,7 +135,7 @@ func (m *Bip44ThirdXpubsForChain) Reset()         { *m = Bip44ThirdXpubsForChain
 func (m *Bip44ThirdXpubsForChain) String() string { return proto.CompactTextString(m) }
 func (*Bip44ThirdXpubsForChain) ProtoMessage()    {}
 func (*Bip44ThirdXpubsForChain) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_key_0780d30c4c594c5d, []int{2}
+	return fileDescriptor_wallet_key_689c1cbe08898849, []int{2}
 }
 func (m *Bip44ThirdXpubsForChain) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Bip44ThirdXpubsForChain.Unmarshal(m, b)
@@ -181,7 +181,7 @@ func (m *GenerateMnemonicReply) Reset()         { *m = GenerateMnemonicReply{} }
 func (m *GenerateMnemonicReply) String() string { return proto.CompactTextString(m) }
 func (*GenerateMnemonicReply) ProtoMessage()    {}
 func (*GenerateMnemonicReply) Descriptor() ([]byte, []int) {
-	return fileDescriptor_wallet_key_0780d30c4c594c5d, []int{3}
+	return fileDescriptor_wallet_key_689c1cbe08898849, []int{3}
 }
 func (m *GenerateMnemonicReply) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_GenerateMnemonicReply.Unmarshal(m, b)
@@ -215,11 +215,176 @@ func (m *GenerateMnemonicReply) GetVersion() string {
 	return ""
 }
 
+type WalletHD struct {
+	CoinType             int32    `protobuf:"varint,1,opt,name=CoinType" json:"CoinType,omitempty"`
+	Account              int32    `protobuf:"varint,2,opt,name=Account" json:"Account,omitempty"`
+	Change               int32    `protobuf:"varint,3,opt,name=Change" json:"Change,omitempty"`
+	AddressIndex         uint32   `protobuf:"varint,4,opt,name=AddressIndex" json:"AddressIndex,omitempty"`
+	MnemonicVersion      string   `protobuf:"bytes,5,opt,name=MnemonicVersion" json:"MnemonicVersion,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *WalletHD) Reset()         { *m = WalletHD{} }
+func (m *WalletHD) String() string { return proto.CompactTextString(m) }
+func (*WalletHD) ProtoMessage()    {}
+func (*WalletHD) Descriptor() ([]byte, []int) {
+	return fileDescriptor_wallet_key_689c1cbe08898849, []int{4}
+}
+func (m *WalletHD) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_WalletHD.Unmarshal(m, b)
+}
+func (m *WalletHD) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_WalletHD.Marshal(b, m, deterministic)
+}
+func (dst *WalletHD) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_WalletHD.Merge(dst, src)
+}
+func (m *WalletHD) XXX_Size() int {
+	return xxx_messageInfo_WalletHD.Size(m)
+}
+func (m *WalletHD) XXX_DiscardUnknown() {
+	xxx_messageInfo_WalletHD.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_WalletHD proto.InternalMessageInfo
+
+func (m *WalletHD) GetCoinType() int32 {
+	if m != nil {
+		return m.CoinType
+	}
+	return 0
+}
+
+func (m *WalletHD) GetAccount() int32 {
+	if m != nil {
+		return m.Account
+	}
+	return 0
+}
+
+func (m *WalletHD) GetChange() int32 {
+	if m != nil {
+		return m.Change
+	}
+	return 0
+}
+
+func (m *WalletHD) GetAddressIndex() uint32 {
+	if m != nil {
+		return m.AddressIndex
+	}
+	return 0
+}
+
+func (m *WalletHD) GetMnemonicVersion() string {
+	if m != nil {
+		return m.MnemonicVersion
+	}
+	return ""
+}
+
+type SignedBitcoincoreTxRequest struct {
+	WalletHD             *WalletHD `protobuf:"bytes,1,opt,name=WalletHD" json:"WalletHD,omitempty"`
+	TxHex                string    `protobuf:"bytes,2,opt,name=TxHex" json:"TxHex,omitempty"`
+	VinAmount            int64     `protobuf:"varint,3,opt,name=VinAmount" json:"VinAmount,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}  `json:"-"`
+	XXX_unrecognized     []byte    `json:"-"`
+	XXX_sizecache        int32     `json:"-"`
+}
+
+func (m *SignedBitcoincoreTxRequest) Reset()         { *m = SignedBitcoincoreTxRequest{} }
+func (m *SignedBitcoincoreTxRequest) String() string { return proto.CompactTextString(m) }
+func (*SignedBitcoincoreTxRequest) ProtoMessage()    {}
+func (*SignedBitcoincoreTxRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_wallet_key_689c1cbe08898849, []int{5}
+}
+func (m *SignedBitcoincoreTxRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SignedBitcoincoreTxRequest.Unmarshal(m, b)
+}
+func (m *SignedBitcoincoreTxRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SignedBitcoincoreTxRequest.Marshal(b, m, deterministic)
+}
+func (dst *SignedBitcoincoreTxRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SignedBitcoincoreTxRequest.Merge(dst, src)
+}
+func (m *SignedBitcoincoreTxRequest) XXX_Size() int {
+	return xxx_messageInfo_SignedBitcoincoreTxRequest.Size(m)
+}
+func (m *SignedBitcoincoreTxRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_SignedBitcoincoreTxRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SignedBitcoincoreTxRequest proto.InternalMessageInfo
+
+func (m *SignedBitcoincoreTxRequest) GetWalletHD() *WalletHD {
+	if m != nil {
+		return m.WalletHD
+	}
+	return nil
+}
+
+func (m *SignedBitcoincoreTxRequest) GetTxHex() string {
+	if m != nil {
+		return m.TxHex
+	}
+	return ""
+}
+
+func (m *SignedBitcoincoreTxRequest) GetVinAmount() int64 {
+	if m != nil {
+		return m.VinAmount
+	}
+	return 0
+}
+
+type SignedBitcoincoreTxReply struct {
+	SignedTxHex          string   `protobuf:"bytes,1,opt,name=SignedTxHex" json:"SignedTxHex,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *SignedBitcoincoreTxReply) Reset()         { *m = SignedBitcoincoreTxReply{} }
+func (m *SignedBitcoincoreTxReply) String() string { return proto.CompactTextString(m) }
+func (*SignedBitcoincoreTxReply) ProtoMessage()    {}
+func (*SignedBitcoincoreTxReply) Descriptor() ([]byte, []int) {
+	return fileDescriptor_wallet_key_689c1cbe08898849, []int{6}
+}
+func (m *SignedBitcoincoreTxReply) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_SignedBitcoincoreTxReply.Unmarshal(m, b)
+}
+func (m *SignedBitcoincoreTxReply) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_SignedBitcoincoreTxReply.Marshal(b, m, deterministic)
+}
+func (dst *SignedBitcoincoreTxReply) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_SignedBitcoincoreTxReply.Merge(dst, src)
+}
+func (m *SignedBitcoincoreTxReply) XXX_Size() int {
+	return xxx_messageInfo_SignedBitcoincoreTxReply.Size(m)
+}
+func (m *SignedBitcoincoreTxReply) XXX_DiscardUnknown() {
+	xxx_messageInfo_SignedBitcoincoreTxReply.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_SignedBitcoincoreTxReply proto.InternalMessageInfo
+
+func (m *SignedBitcoincoreTxReply) GetSignedTxHex() string {
+	if m != nil {
+		return m.SignedTxHex
+	}
+	return ""
+}
+
 func init() {
 	proto.RegisterType((*GenerateMnemonicRequest)(nil), "pb.GenerateMnemonicRequest")
 	proto.RegisterType((*Bip44AccountKey)(nil), "pb.Bip44AccountKey")
 	proto.RegisterType((*Bip44ThirdXpubsForChain)(nil), "pb.Bip44ThirdXpubsForChain")
 	proto.RegisterType((*GenerateMnemonicReply)(nil), "pb.GenerateMnemonicReply")
+	proto.RegisterType((*WalletHD)(nil), "pb.WalletHD")
+	proto.RegisterType((*SignedBitcoincoreTxRequest)(nil), "pb.SignedBitcoincoreTxRequest")
+	proto.RegisterType((*SignedBitcoincoreTxReply)(nil), "pb.SignedBitcoincoreTxReply")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -235,6 +400,7 @@ const _ = grpc.SupportPackageIsVersion4
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type WalletKeyClient interface {
 	GenerateMnemonic(ctx context.Context, in *GenerateMnemonicRequest, opts ...grpc.CallOption) (*GenerateMnemonicReply, error)
+	SignedBitcoincoreTx(ctx context.Context, in *SignedBitcoincoreTxRequest, opts ...grpc.CallOption) (*SignedBitcoincoreTxReply, error)
 }
 
 type walletKeyClient struct {
@@ -254,9 +420,19 @@ func (c *walletKeyClient) GenerateMnemonic(ctx context.Context, in *GenerateMnem
 	return out, nil
 }
 
+func (c *walletKeyClient) SignedBitcoincoreTx(ctx context.Context, in *SignedBitcoincoreTxRequest, opts ...grpc.CallOption) (*SignedBitcoincoreTxReply, error) {
+	out := new(SignedBitcoincoreTxReply)
+	err := c.cc.Invoke(ctx, "/pb.WalletKey/SignedBitcoincoreTx", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WalletKeyServer is the server API for WalletKey service.
 type WalletKeyServer interface {
 	GenerateMnemonic(context.Context, *GenerateMnemonicRequest) (*GenerateMnemonicReply, error)
+	SignedBitcoincoreTx(context.Context, *SignedBitcoincoreTxRequest) (*SignedBitcoincoreTxReply, error)
 }
 
 func RegisterWalletKeyServer(s *grpc.Server, srv WalletKeyServer) {
@@ -281,6 +457,24 @@ func _WalletKey_GenerateMnemonic_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _WalletKey_SignedBitcoincoreTx_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SignedBitcoincoreTxRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WalletKeyServer).SignedBitcoincoreTx(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/pb.WalletKey/SignedBitcoincoreTx",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WalletKeyServer).SignedBitcoincoreTx(ctx, req.(*SignedBitcoincoreTxRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _WalletKey_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "pb.WalletKey",
 	HandlerType: (*WalletKeyServer)(nil),
@@ -289,32 +483,47 @@ var _WalletKey_serviceDesc = grpc.ServiceDesc{
 			MethodName: "GenerateMnemonic",
 			Handler:    _WalletKey_GenerateMnemonic_Handler,
 		},
+		{
+			MethodName: "SignedBitcoincoreTx",
+			Handler:    _WalletKey_SignedBitcoincoreTx_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "wallet_key.proto",
 }
 
-func init() { proto.RegisterFile("wallet_key.proto", fileDescriptor_wallet_key_0780d30c4c594c5d) }
+func init() { proto.RegisterFile("wallet_key.proto", fileDescriptor_wallet_key_689c1cbe08898849) }
 
-var fileDescriptor_wallet_key_0780d30c4c594c5d = []byte{
-	// 304 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x51, 0xb1, 0x4e, 0xc3, 0x30,
-	0x10, 0x55, 0x5a, 0x05, 0xe8, 0x75, 0x20, 0x32, 0xa0, 0x86, 0xb2, 0x44, 0x99, 0x02, 0x43, 0x86,
-	0xd2, 0xb5, 0x03, 0x20, 0x81, 0x04, 0x62, 0x31, 0x48, 0x45, 0x2c, 0xc8, 0x49, 0x4e, 0xaa, 0xd5,
-	0xd4, 0x36, 0x71, 0x02, 0x84, 0x95, 0x1f, 0x47, 0x76, 0xd2, 0xaa, 0x6a, 0x60, 0xbb, 0xf7, 0xfc,
-	0xfc, 0xee, 0xdd, 0x1d, 0x78, 0x9f, 0x2c, 0xcf, 0xb1, 0x7c, 0x5b, 0x62, 0x1d, 0xab, 0x42, 0x96,
-	0x92, 0xf4, 0x54, 0x12, 0xfe, 0x38, 0x30, 0xba, 0x43, 0x81, 0x05, 0x2b, 0xf1, 0x51, 0xe0, 0x4a,
-	0x0a, 0x9e, 0x52, 0x7c, 0xaf, 0x50, 0x97, 0x24, 0x80, 0xa1, 0x60, 0x2b, 0xd4, 0x8a, 0xa5, 0xc8,
-	0x33, 0xdf, 0x09, 0x9c, 0x68, 0x40, 0xb7, 0x29, 0x32, 0x86, 0x83, 0x84, 0xab, 0xe9, 0x94, 0x67,
-	0xda, 0xef, 0x05, 0xfd, 0xc8, 0xa5, 0x1b, 0x4c, 0x2e, 0xc0, 0xb3, 0x35, 0x4b, 0x53, 0x59, 0x89,
-	0xf2, 0x89, 0x7f, 0xa3, 0xdf, 0x0f, 0x9c, 0xc8, 0xa5, 0x1d, 0x3e, 0x9c, 0xc1, 0xe1, 0xb5, 0xe1,
-	0xae, 0x1a, 0xee, 0x01, 0x6b, 0xe2, 0xc3, 0x7e, 0xab, 0xb0, 0x8d, 0x5d, 0xba, 0x86, 0xc4, 0x83,
-	0xfe, 0x12, 0x6b, 0xbf, 0x67, 0xe3, 0x98, 0x32, 0x7c, 0x85, 0x91, 0xfd, 0xfe, 0xbc, 0xe0, 0x45,
-	0xf6, 0xa2, 0xaa, 0x44, 0xdf, 0xca, 0xe2, 0x66, 0xc1, 0xb8, 0x20, 0xc7, 0xe0, 0xa6, 0xa6, 0x68,
-	0x4d, 0x1a, 0x40, 0xce, 0xc1, 0xfd, 0x32, 0x32, 0x1b, 0x7a, 0x38, 0x39, 0x8a, 0x55, 0x12, 0xef,
-	0x04, 0xa0, 0x8d, 0x22, 0x54, 0x70, 0xd2, 0xdd, 0x8f, 0xca, 0x6b, 0x32, 0x83, 0xa1, 0x35, 0xd3,
-	0x8d, 0x93, 0x63, 0x9d, 0xce, 0x36, 0x4e, 0xdd, 0x2c, 0x74, 0x5b, 0x6f, 0xe6, 0xfb, 0xc0, 0x42,
-	0x73, 0x29, 0xda, 0x49, 0xd6, 0x70, 0x32, 0x87, 0xc1, 0xdc, 0x9e, 0xca, 0xac, 0xe1, 0x1e, 0xbc,
-	0xdd, 0xf6, 0xc4, 0x36, 0xf9, 0xe7, 0x68, 0xe3, 0xd3, 0xbf, 0x1f, 0x55, 0x5e, 0x27, 0x7b, 0xf6,
-	0xec, 0x97, 0xbf, 0x01, 0x00, 0x00, 0xff, 0xff, 0x22, 0xdd, 0xa2, 0x3f, 0x0a, 0x02, 0x00, 0x00,
+var fileDescriptor_wallet_key_689c1cbe08898849 = []byte{
+	// 477 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x74, 0x53, 0x4d, 0x6f, 0xd3, 0x40,
+	0x10, 0x95, 0x13, 0x5c, 0x9a, 0x71, 0x51, 0xa3, 0x6d, 0xa1, 0x26, 0x54, 0xc8, 0xf2, 0xc9, 0x70,
+	0xc8, 0x21, 0xf4, 0x48, 0x0f, 0x69, 0x10, 0x14, 0x10, 0x97, 0x4d, 0x54, 0x10, 0x17, 0xe4, 0x8f,
+	0x51, 0xb3, 0x6a, 0xb2, 0xbb, 0xd8, 0x0e, 0xd8, 0xbd, 0xf2, 0x5f, 0x38, 0xf1, 0x23, 0xd1, 0x7e,
+	0x38, 0x49, 0xf3, 0x71, 0xdb, 0xf7, 0x76, 0xfc, 0xe6, 0xbd, 0x99, 0x35, 0x74, 0x7f, 0xc7, 0xb3,
+	0x19, 0x96, 0x3f, 0xee, 0xb0, 0xee, 0xcb, 0x5c, 0x94, 0x82, 0xb4, 0x64, 0x12, 0xfe, 0x71, 0xe0,
+	0xec, 0x03, 0x72, 0xcc, 0xe3, 0x12, 0xbf, 0x70, 0x9c, 0x0b, 0xce, 0x52, 0x8a, 0x3f, 0x17, 0x58,
+	0x94, 0x24, 0x00, 0x8f, 0xc7, 0x73, 0x2c, 0x64, 0x9c, 0x22, 0xcb, 0x7c, 0x27, 0x70, 0xa2, 0x0e,
+	0x5d, 0xa7, 0x48, 0x0f, 0x0e, 0x13, 0x26, 0x2f, 0x2e, 0x58, 0x56, 0xf8, 0xad, 0xa0, 0x1d, 0xb9,
+	0x74, 0x89, 0xc9, 0x6b, 0xe8, 0xea, 0x73, 0x9c, 0xa6, 0x62, 0xc1, 0xcb, 0x31, 0xbb, 0x47, 0xbf,
+	0x1d, 0x38, 0x91, 0x4b, 0xb7, 0xf8, 0xf0, 0x12, 0x8e, 0xaf, 0x14, 0x37, 0x34, 0xdc, 0x67, 0xac,
+	0x89, 0x0f, 0x8f, 0x6d, 0x85, 0x6e, 0xec, 0xd2, 0x06, 0x92, 0x2e, 0xb4, 0xef, 0xb0, 0xf6, 0x5b,
+	0xda, 0x8e, 0x3a, 0x86, 0xdf, 0xe1, 0x4c, 0x7f, 0x3e, 0x99, 0xb2, 0x3c, 0xfb, 0x26, 0x17, 0x49,
+	0xf1, 0x5e, 0xe4, 0xa3, 0x69, 0xcc, 0x38, 0x39, 0x05, 0x37, 0x55, 0x07, 0x2b, 0x62, 0x00, 0x79,
+	0x05, 0x6e, 0xa5, 0xca, 0xb4, 0x69, 0x6f, 0x70, 0xd2, 0x97, 0x49, 0x7f, 0xc3, 0x00, 0x35, 0x15,
+	0xa1, 0x84, 0xa7, 0xdb, 0xf3, 0x91, 0xb3, 0x9a, 0x5c, 0x82, 0xa7, 0xc5, 0x0a, 0xa3, 0xe4, 0x68,
+	0xa5, 0x17, 0x4b, 0xa5, 0x6d, 0x2f, 0x74, 0xbd, 0x5e, 0xe5, 0xfb, 0x85, 0x79, 0xc1, 0x04, 0xb7,
+	0x49, 0x1a, 0x18, 0xfe, 0x75, 0xe0, 0xf0, 0xab, 0xde, 0xd5, 0xf5, 0x3b, 0x35, 0xe1, 0x91, 0x60,
+	0x7c, 0x52, 0x4b, 0xb4, 0x11, 0x96, 0x58, 0x49, 0x58, 0xbf, 0x5a, 0xc2, 0xa5, 0x0d, 0x24, 0xcf,
+	0xe0, 0x60, 0x34, 0x8d, 0xf9, 0x6d, 0x33, 0x71, 0x8b, 0x48, 0x08, 0x47, 0xc3, 0x2c, 0xcb, 0xb1,
+	0x28, 0x3e, 0xf2, 0x0c, 0x2b, 0xff, 0x51, 0xe0, 0x44, 0x4f, 0xe8, 0x03, 0x8e, 0x44, 0x70, 0xdc,
+	0x04, 0xbd, 0xb1, 0x06, 0x5d, 0x6d, 0x70, 0x93, 0x0e, 0xef, 0xa1, 0x37, 0x66, 0xb7, 0x1c, 0xb3,
+	0x2b, 0x56, 0xa6, 0x82, 0xf1, 0x54, 0xe4, 0x38, 0xa9, 0x9a, 0xd7, 0x13, 0xad, 0x52, 0x68, 0xe7,
+	0xde, 0xe0, 0x48, 0x0d, 0xa7, 0xe1, 0xe8, 0x2a, 0xe3, 0x29, 0xb8, 0x93, 0xea, 0x1a, 0x2b, 0x3b,
+	0x08, 0x03, 0xc8, 0x39, 0x74, 0x6e, 0x18, 0x1f, 0xce, 0x75, 0x3e, 0x15, 0xa3, 0x4d, 0x57, 0x44,
+	0xf8, 0x16, 0xfc, 0x9d, 0xbd, 0xd5, 0x66, 0x02, 0xf0, 0xcc, 0x9d, 0x51, 0xb5, 0xef, 0x76, 0x8d,
+	0x1a, 0xfc, 0x73, 0xa0, 0x63, 0xda, 0xab, 0xa7, 0xf6, 0x09, 0xba, 0x9b, 0x2b, 0x26, 0x7a, 0x91,
+	0x7b, 0x7e, 0x8c, 0xde, 0xf3, 0xdd, 0x97, 0xaa, 0xf7, 0x18, 0x4e, 0x76, 0xf8, 0x22, 0x2f, 0xd5,
+	0x17, 0xfb, 0x87, 0xd5, 0x3b, 0xdf, 0x7b, 0x2f, 0x67, 0x75, 0x72, 0xa0, 0xff, 0xd7, 0x37, 0xff,
+	0x03, 0x00, 0x00, 0xff, 0xff, 0xbd, 0xca, 0x0b, 0x35, 0xc3, 0x03, 0x00, 0x00,
 }

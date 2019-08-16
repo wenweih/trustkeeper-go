@@ -44,6 +44,13 @@ func New(consulAddr string, logger log.Logger) (service.WalletKeyService, error)
     retry := lb.Retry(retryMax, retryTimeout, balancer)
     endpoints.GenerateMnemonicEndpoint = retry
   }
+  {
+    factory := factoryFor(walletKeyEndpoint.MakeSignedBitcoincoreTxEndpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.SignedBitcoincoreTxEndpoint = retry
+  }
   return endpoints, nil
 }
 

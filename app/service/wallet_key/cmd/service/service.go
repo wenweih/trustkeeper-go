@@ -12,8 +12,11 @@ import (
 	grpc "trustkeeper-go/app/service/wallet_key/pkg/grpc"
 	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/wallet_key/pkg/service"
-	"trustkeeper-go/library/util"
+	common "trustkeeper-go/library/util"
 
+	"trustkeeper-go/library/consul"
+
+	"github.com/caarlos0/env"
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
@@ -22,11 +25,9 @@ import (
 	zipkingoopentracing "github.com/openzipkin/zipkin-go-opentracing"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	grpc1 "google.golang.org/grpc"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	appdash "sourcegraph.com/sourcegraph/appdash"
 	opentracing "sourcegraph.com/sourcegraph/appdash/opentracing"
-	"github.com/caarlos0/env"
-	"trustkeeper-go/library/consul"
-	"google.golang.org/grpc/health/grpc_health_v1"
 )
 
 var tracer opentracinggo.Tracer
@@ -91,7 +92,7 @@ func Run() {
 }
 func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	type config struct {
-		ConsulAddress		string	`env:"consuladdr"`
+		ConsulAddress string `env:"consuladdr"`
 	}
 	cfg := config{}
 	if err := env.Parse(&cfg); err != nil {
@@ -102,7 +103,7 @@ func initGRPCHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	// Add your GRPC options here
 
 	grpcServer := grpc.NewGRPCServer(endpoints, options)
-	grpcListener, err := net.Listen("tcp", common.LocalIP() + ":0")
+	grpcListener, err := net.Listen("tcp", common.LocalIP()+":0")
 	if err != nil {
 		logger.Log("transport", "gRPC", "during", "Listen", "err", err)
 	}

@@ -1,12 +1,14 @@
 package client
 
 import (
+  "fmt"
   "errors"
   "context"
   pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
 	endpoint "github.com/go-kit/kit/endpoint"
 	grpc1 "github.com/go-kit/kit/transport/grpc"
 	grpc "google.golang.org/grpc"
+  "github.com/jinzhu/copier"
 	endpoint1 "trustkeeper-go/app/service/wallet_key/pkg/endpoint"
 	service "trustkeeper-go/app/service/wallet_key/pkg/service"
 )
@@ -18,10 +20,20 @@ import (
 func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service.WalletKeyService, error) {
 	var generateMnemonicEndpoint endpoint.Endpoint
 	{
-		generateMnemonicEndpoint = grpc1.NewClient(conn, "pb.WalletKey", "GenerateMnemonic", encodeGenerateMnemonicRequest, decodeGenerateMnemonicResponse, pb.GenerateMnemonicReply{}, options...).Endpoint()
+		generateMnemonicEndpoint = grpc1.NewClient(conn, "pb.WalletKey", "GenerateMnemonic",
+      encodeGenerateMnemonicRequest, decodeGenerateMnemonicResponse, pb.GenerateMnemonicReply{}, options...).Endpoint()
 	}
 
-	return endpoint1.Endpoints{GenerateMnemonicEndpoint: generateMnemonicEndpoint}, nil
+  var signedBitcoincoreTxEndpoint endpoint.Endpoint
+	{
+		signedBitcoincoreTxEndpoint = grpc1.NewClient(conn, "pb.WalletKey", "SignedBitcoincoreTx",
+      encodeSignedBitcoincoreTxRequest, decodeSignedBitcoincoreTxResponse, pb.SignedBitcoincoreTxReply{}, options...).Endpoint()
+	}
+
+	return endpoint1.Endpoints{
+    GenerateMnemonicEndpoint: generateMnemonicEndpoint,
+    SignedBitcoincoreTxEndpoint: signedBitcoincoreTxEndpoint,
+  }, nil
 }
 
 // encodeGenerateMnemonicRequest is a transport/grpc.EncodeRequestFunc that converts a
@@ -50,4 +62,29 @@ func decodeGenerateMnemonicResponse(_ context.Context, reply interface{}) (inter
     xpubs = append(xpubs, &service.Bip44ThirdXpubsForChain{Chain: uint(chainwithxpubs.Chain), Xpubs: bip44AccountKeys})
   }
   return endpoint1.GenerateMnemonicResponse{ChainsXpubs: xpubs, Version: r.Version}, nil
+}
+
+// encodeSignedBitcoincoreTxRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain SignedBitcoincoreTx request to a gRPC request.
+func encodeSignedBitcoincoreTxRequest(_ context.Context, request interface{}) (interface{}, error) {
+  r, ok := request.(endpoint1.SignedBitcoincoreTxRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint SignedBitcoincoreTxRequest type assertion error")
+	}
+  walletHD := pb.WalletHD{}
+	if err := copier.Copy(&walletHD, r.WalletHD); err != nil {
+		return nil, err
+	}
+  return &pb.SignedBitcoincoreTxRequest{TxHex: r.TxHex, VinAmount: r.VinAmount, WalletHD: &walletHD}, nil
+}
+
+// decodeSignedBitcoincoreTxResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeSignedBitcoincoreTxResponse(_ context.Context, reply interface{}) (interface{}, error) {
+  resp, ok := reply.(*pb.SignedBitcoincoreTxReply)
+	if !ok {
+		e := fmt.Errorf("pb SignedBitcoincoreTxReply type assertion error")
+    return endpoint1.SignedBitcoincoreTxResponse{Err: e}, e
+	}
+  return endpoint1.SignedBitcoincoreTxResponse{SignedTxHex: resp.SignedTxHex}, nil
 }

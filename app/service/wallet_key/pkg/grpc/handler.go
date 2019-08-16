@@ -2,28 +2,24 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 	endpoint "trustkeeper-go/app/service/wallet_key/pkg/endpoint"
 	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
-
+	"github.com/jinzhu/copier"
 	grpc "github.com/go-kit/kit/transport/grpc"
 	context1 "golang.org/x/net/context"
+	"trustkeeper-go/app/service/wallet_key/pkg/repository"
 )
 
-// makeGenerateMnemonicHandler creates the handler logic
 func makeGenerateMnemonicHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
 	return grpc.NewServer(endpoints.GenerateMnemonicEndpoint, decodeGenerateMnemonicRequest, encodeGenerateMnemonicResponse, options...)
 }
 
-// decodeGenerateMnemonicResponse is a transport/grpc.DecodeRequestFunc that converts a
-// gRPC request to a user-domain GenerateMnemonic request.
-// TODO implement the decoder
 func decodeGenerateMnemonicRequest(_ context.Context, r interface{}) (interface{}, error) {
 	req := r.(*pb.GenerateMnemonicRequest)
 	return endpoint.GenerateMnemonicRequest{Namespaceid: req.Namespaceid, Bip44ids: req.Bip44Ids, Bip44accountSize: int(req.Bip44AccountSize)}, nil
 }
 
-// encodeGenerateMnemonicResponse is a transport/grpc.EncodeResponseFunc that converts
-// a user-domain response to a gRPC reply.
 func encodeGenerateMnemonicResponse(_ context.Context, r interface{}) (interface{}, error) {
 	resp := r.(endpoint.GenerateMnemonicResponse)
 	if resp.Err != nil {
@@ -46,4 +42,38 @@ func (g *grpcServer) GenerateMnemonic(ctx context1.Context, req *pb.GenerateMnem
 		return nil, err
 	}
 	return rep.(*pb.GenerateMnemonicReply), nil
+}
+
+func makeSignedBitcoincoreTxHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.SignedBitcoincoreTxEndpoint, decodeSignedBitcoincoreTxRequest, encodeSignedBitcoincoreTxResponse, options...)
+}
+
+func decodeSignedBitcoincoreTxRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.SignedBitcoincoreTxRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb SignedBitcoincoreTxRequest type assersion error")
+	}
+	walletHD := repository.WalletHD{}
+	if err := copier.Copy(&walletHD, req.WalletHD); err != nil {
+		return nil, err
+	}
+	return endpoint.SignedBitcoincoreTxRequest{WalletHD: walletHD, VinAmount: req.VinAmount, TxHex: req.TxHex}, nil
+}
+
+func encodeSignedBitcoincoreTxResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.SignedBitcoincoreTxResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint SignedBitcoincoreTxResponse type assertion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.SignedBitcoincoreTxReply{SignedTxHex: resp.SignedTxHex}, nil
+}
+func (g *grpcServer) SignedBitcoincoreTx(ctx context1.Context, req *pb.SignedBitcoincoreTxRequest) (*pb.SignedBitcoincoreTxReply, error) {
+	_, rep, err := g.signedBitcoincoreTx.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.SignedBitcoincoreTxReply), nil
 }

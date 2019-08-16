@@ -2,39 +2,42 @@ package service
 
 import (
 	"context"
-	bip39 "github.com/tyler-smith/go-bip39"
-	"github.com/btcsuite/btcutil/hdkeychain"
-	"github.com/btcsuite/btcd/chaincfg"
 	"trustkeeper-go/app/service/wallet_key/pkg/repository"
+
+	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcutil/hdkeychain"
+	bip39 "github.com/tyler-smith/go-bip39"
 )
 
 type Bip44AccountKey struct {
-	Account int     `json:"account"`
-	Key     string  `json:"key"`
+	Account int    `json:"account"`
+	Key     string `json:"key"`
 }
 
 type Bip44ThirdXpubsForChain struct {
-	Chain  uint           `json:"chain"`
-	Xpubs   []*Bip44AccountKey	`json:"xpubs"`
+	Chain uint               `json:"chain"`
+	Xpubs []*Bip44AccountKey `json:"xpubs"`
 }
 
 // WalletKeyService describes the service.
 type WalletKeyService interface {
-	GenerateMnemonic(ctx context.Context, namespaceID string, bip44ids []int32, bip44accountSize int) (chainsWithXpubs []*Bip44ThirdXpubsForChain, version string, err error)
+	GenerateMnemonic(ctx context.Context,
+		namespaceID string, bip44ids []int32, bip44accountSize int) (chainsWithXpubs []*Bip44ThirdXpubsForChain, version string, err error)
 	Close() error
+	SignedBitcoincoreTx(ctx context.Context, walletHD repository.WalletHD, txHex string, vinAmount int64) (signedTxHex string, err error)
 }
 
-type basicWalletKeyService struct{
-	biz  repository.IBiz
+type basicWalletKeyService struct {
+	biz repository.IBiz
 }
 
-
-func (b *basicWalletKeyService) Close() error{
+func (b *basicWalletKeyService) Close() error {
 	return b.biz.Close()
 }
 
 // GenerateMnemonic return chainsWithXpubs is slice of Bip44ThirdXpubsForChain pointer
-func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, namespaceID string, bip44ids []int32, bip44accountSize int) (chainsWithXpubs []*Bip44ThirdXpubsForChain, version string, err error) {
+func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context,
+	namespaceID string, bip44ids []int32, bip44accountSize int) (chainsWithXpubs []*Bip44ThirdXpubsForChain, version string, err error) {
 	// https://matthewdowney.github.io/extract-xpub-ethereum-bitcoin-ledger-nano-s.html
 	// Generate a mnemonic for memorization or user-friendly seeds
 	entropy, err := bip39.NewEntropy(192)
@@ -70,7 +73,7 @@ func (b *basicWalletKeyService) GenerateMnemonic(ctx context.Context, namespaceI
 			return nil, "", err
 		}
 		xpubs := make([]*Bip44AccountKey, bip44accountSize)
-		for account := 0;account < bip44accountSize;account++ {
+		for account := 0; account < bip44accountSize; account++ {
 			// m / 44' / coin_type' / account'
 			accountH, err := coinTypeH.Child(hdkeychain.HardenedKeyStart + uint32(account))
 			if err != nil {
@@ -104,13 +107,24 @@ func newBasicWalletKeyService() (WalletKeyService, error) {
 
 // New returns a WalletKeyService with all of the expected middleware wired in.
 func New(middleware []Middleware) (WalletKeyService, error) {
-	 ws, err := newBasicWalletKeyService()
-	 if err != nil {
-		 return nil, err
-	 }
-	 var svc WalletKeyService = ws
+	ws, err := newBasicWalletKeyService()
+	if err != nil {
+		return nil, err
+	}
+	var svc WalletKeyService = ws
 	for _, m := range middleware {
 		svc = m(svc)
 	}
 	return svc, nil
+}
+
+// NewBasicWalletKeyService returns a naive, stateless implementation of WalletKeyService.
+func NewBasicWalletKeyService() WalletKeyService {
+	return &basicWalletKeyService{}
+}
+
+func (b *basicWalletKeyService) SignedBitcoincoreTx(ctx context.Context,
+	walletHD repository.WalletHD, txHex string, vinAmount int64) (signedTxHex string, err error) {
+	signedTxHex, err = b.biz.SignedBitcoincoreTx(ctx, walletHD, txHex, vinAmount)
+	return
 }

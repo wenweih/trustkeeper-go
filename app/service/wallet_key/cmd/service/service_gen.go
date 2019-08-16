@@ -19,17 +19,21 @@ func createService(endpoints endpoint.Endpoints) (g *group.Group) {
 	return g
 }
 func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[string][]grpc.ServerOption {
-	options := map[string][]grpc.ServerOption{"GenerateMnemonic": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GenerateMnemonic", logger))}}
+	options := map[string][]grpc.ServerOption{
+		"GenerateMnemonic":    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "GenerateMnemonic", logger))},
+		"SignedBitcoincoreTx": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "SignedBitcoincoreTx", logger))},
+	}
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
 	mw["GenerateMnemonic"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GenerateMnemonic")), endpoint.InstrumentingMiddleware(duration.With("method", "GenerateMnemonic"))}
+	mw["SignedBitcoincoreTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SignedBitcoincoreTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SignedBitcoincoreTx"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"GenerateMnemonic"}
+	methods := []string{"GenerateMnemonic", "SignedBitcoincoreTx"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

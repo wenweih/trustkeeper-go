@@ -4,12 +4,23 @@ import (
   "fmt"
   "time"
   "strings"
+  "context"
 )
 
 // IBiz repository bussiness logic
 type IBiz interface {
   SaveMnemonic(namespaceID string, mnemonic []byte) (version string, err error)
   Close() error
+  SignedBitcoincoreTx(ctx context.Context, walletHD WalletHD, txHex string, vinAmount int64) (signedTxHex string, err error)
+}
+
+// WalletHD wallet hd info
+type WalletHD struct {
+  CoinType        int32  `json:"CoinType"`
+  Account         int32  `json:"Account"`
+  Change          int32  `json:"Change"`
+  AddressIndex    uint32  `json:"AddressIndex"`
+  MnemonicVersion string `json:"MnemonicVersion"`
 }
 
 func (repo *repo) Close() error{

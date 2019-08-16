@@ -9,9 +9,13 @@ import (
 
 // NewGRPCServer makes a set of endpoints available as a gRPC AddServer
 type grpcServer struct {
-	generateMnemonic grpc.Handler
+	generateMnemonic    grpc.Handler
+	signedBitcoincoreTx grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.WalletKeyServer {
-	return &grpcServer{generateMnemonic: makeGenerateMnemonicHandler(endpoints, options["GenerateMnemonic"])}
+	return &grpcServer{
+		generateMnemonic:    makeGenerateMnemonicHandler(endpoints, options["GenerateMnemonic"]),
+		signedBitcoincoreTx: makeSignedBitcoincoreTxHandler(endpoints, options["SignedBitcoincoreTx"]),
+	}
 }
