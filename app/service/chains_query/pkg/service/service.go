@@ -22,7 +22,7 @@ type ChainsQueryService interface {
 	QueryOmniProperty(ctx context.Context, propertyid int64) (*repository.OmniProperty, error)
 	ERC20TokenInfo(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error)
 
-	ConstructTxBTC(ctx context.Context, from, to, amount string) (unsignedTxHex string, err error)
+	ConstructTxBTC(ctx context.Context, from, to, amount string) (unsignedTxHex string, vinAmount int64, err error)
 }
 
 type basicChainsQueryService struct {
@@ -86,7 +86,7 @@ func (b *basicChainsQueryService) ERC20TokenInfo(ctx context.Context, tokenHex s
 	return b.biz.ERC20TokenInfo(ctx, tokenHex)
 }
 
-func (b *basicChainsQueryService) ConstructTxBTC(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, err error) {
-	unsignedTxHex, err = b.biz.ConstructTxBTC(ctx, from, to, amount)
+func (b *basicChainsQueryService) ConstructTxBTC(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, vinAmount int64, err error) {
+	unsignedTxHex, vinAmount, err = b.biz.ConstructTxBTC(ctx, from, to, amount)
 	return
 }

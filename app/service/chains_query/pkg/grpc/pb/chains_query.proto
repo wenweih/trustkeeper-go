@@ -62,4 +62,5 @@ message ConstructTxBTCRequest {
 
 message ConstructTxBTCReply {
   string UnsignedTxHex = 1;
+  int64  VinAmount = 2;
 }

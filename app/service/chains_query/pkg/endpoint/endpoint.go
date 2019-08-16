@@ -143,6 +143,7 @@ type ConstructTxBTCRequest struct {
 // ConstructTxBTCResponse collects the response parameters for the ConstructTxBTC method.
 type ConstructTxBTCResponse struct {
 	UnsignedTxHex string `json:"unsigned_tx_hex"`
+	VinAmount     int64  `json:"vin_amount"`
 	Err           error  `json:"err"`
 }
 
@@ -150,11 +151,11 @@ type ConstructTxBTCResponse struct {
 func MakeConstructTxBTCEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ConstructTxBTCRequest)
-		unsignedTxHex, err := s.ConstructTxBTC(ctx, req.From, req.To, req.Amount)
+		unsignedTxHex, vinAmount, err := s.ConstructTxBTC(ctx, req.From, req.To, req.Amount)
 		if err != nil {
 			return ConstructTxBTCResponse{Err: err}, err
 		}
-		return ConstructTxBTCResponse{UnsignedTxHex: unsignedTxHex}, nil
+		return ConstructTxBTCResponse{UnsignedTxHex: unsignedTxHex, VinAmount: vinAmount}, nil
 	}
 }
 
@@ -164,7 +165,7 @@ func (r ConstructTxBTCResponse) Failed() error {
 }
 
 // ConstructTxBTC implements Service. Primarily useful in a client.
-func (e Endpoints) ConstructTxBTC(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, err error) {
+func (e Endpoints) ConstructTxBTC(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, vinAmount int64, err error) {
 	request := ConstructTxBTCRequest{
 		Amount: amount,
 		From:   from,
@@ -172,7 +173,7 @@ func (e Endpoints) ConstructTxBTC(ctx context.Context, from string, to string, a
 	}
 	response, err := e.ConstructTxBTCEndpoint(ctx, request)
 	if err != nil {
-		return "", err
+		return "", 0, err
 	}
-	return response.(ConstructTxBTCResponse).UnsignedTxHex, nil
+	return response.(ConstructTxBTCResponse).UnsignedTxHex, response.(ConstructTxBTCResponse).VinAmount, nil
 }

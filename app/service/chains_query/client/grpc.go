@@ -130,5 +130,5 @@ func decodeConstructTxBTCResponse(_ context.Context, reply interface{}) (interfa
 		e := fmt.Errorf("pb ConstructTxBTCReply type assertion error")
 		return endpoint1.ConstructTxBTCResponse{Err: e}, e
 	}
-	return endpoint1.ConstructTxBTCResponse{UnsignedTxHex: resp.UnsignedTxHex}, nil
+	return endpoint1.ConstructTxBTCResponse{UnsignedTxHex: resp.UnsignedTxHex, VinAmount: resp.VinAmount}, nil
 }

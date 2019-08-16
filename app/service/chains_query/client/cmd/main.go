@@ -47,9 +47,9 @@ func main()  {
   }
   fmt.Println("token:", token)
 
-  rawTxHex, err := s.ConstructTxBTC(ctxWithAuthInfo, "mne28j3A5ht5yp8LtptHwuFRQfzhDS1YiH", "mjDh2U12TioqP7hUXU2vBagU6Z5R4y9Pbj", "0.1")
+  rawTxHex, vinAmount, err := s.ConstructTxBTC(ctxWithAuthInfo, "mne28j3A5ht5yp8LtptHwuFRQfzhDS1YiH", "mjDh2U12TioqP7hUXU2vBagU6Z5R4y9Pbj", "0.1")
   if err != nil {
     fmt.Println("ConstructTxBTC:", err.Error())
   }
-  fmt.Println("ConstructTxBTC:", rawTxHex)
+  fmt.Println("ConstructTxBTC:", rawTxHex, vinAmount)
 }

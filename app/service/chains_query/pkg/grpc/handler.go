@@ -147,7 +147,7 @@ func encodeConstructTxBTCResponse(_ context.Context, r interface{}) (interface{}
 	if resp.Err != nil {
 		return nil, resp.Err
 	}
-	return &pb.ConstructTxBTCReply{UnsignedTxHex: resp.UnsignedTxHex}, nil
+	return &pb.ConstructTxBTCReply{UnsignedTxHex: resp.UnsignedTxHex, VinAmount: resp.VinAmount}, nil
 }
 
 func (g *grpcServer) ConstructTxBTC(ctx context1.Context, req *pb.ConstructTxBTCRequest) (*pb.ConstructTxBTCReply, error) {
