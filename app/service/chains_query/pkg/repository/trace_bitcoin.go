@@ -107,7 +107,7 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
                   ts.FirstOrCreate(&txRecord,
                     model.Tx{
                       TxID: tx.Txid,
-                      TxType: "deposit",
+                      TxType: model.TxTypeDeposit,
                       Address: balance.Address,
                       Asset: balance.Symbol,
                       Amount: strconv.FormatInt(common.Hex2int(voutScriptPubKeyHex[28:44]), 10),
@@ -139,16 +139,18 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
               Height: rawBlock.Height,
               VoutIndex: vout.N,
               BalanceID: balance.ID,
-              BtcBlockID: block.ID})
+              BtcBlockID: block.ID,
+            })
             ts.FirstOrCreate(&txRecord,
               model.Tx{
                 TxID: tx.Txid,
-                TxType: "deposit",
+                TxType: model.TxTypeDeposit,
                 Address: balance.Address,
                 Asset: balance.Symbol,
                 Amount: strconv.FormatFloat(vout.Value * btcutil.SatoshiPerBitcoin, 'f', -int(0), 64),
                 BalanceID: balance.ID,
-                ChainName: model.ChainBitcoin})
+                ChainName: model.ChainBitcoin,
+            })
           }
         }
       }
@@ -272,13 +274,16 @@ func (repo *repo) UpdateBitcoincoreTx(ctx context.Context) {
       }
       if tx.TxType == model.TxTypeDeposit {
         balanceAmount = balanceAmount.Add(balanceAmount, transferAmount)
+      } else if tx.TxType == model.TxTypeWithdraw {
+        balanceAmount = balanceAmount.Sub(balanceAmount, transferAmount)
       }
       balanceAmountStr := balanceAmount.String()
 
       ts.Create(&model.BalanceLog{TxID: tx.TxID, From: balance.Amount, To: balanceAmountStr, BalanceID: balance.ID})
       ts.Model(&balance).UpdateColumn("amount", balanceAmountStr)
 
-      repo.logger.Log("UpdateBitcoincoreTx", tx.TxID, "StateFrom", tx.State, "To", model.StateSuccess, "ConfirmationsFrom", tx.Confirmations, "To", rawtx.Confirmations)
+      repo.logger.Log("UpdateBitcoincoreTx", tx.TxID,
+        "StateFrom", tx.State, "To", model.StateSuccess, "ConfirmationsFrom", tx.Confirmations, "To", rawtx.Confirmations)
       ts.Model(&tx).UpdateColumns(model.Tx{State: model.StateSuccess, Confirmations: int64(rawtx.Confirmations)})
     } else {
       repo.logger.Log("UpdateBitcoincoreTx", tx.TxID, "Confirmation", tx.Confirmations, "To", rawtx.Confirmations)

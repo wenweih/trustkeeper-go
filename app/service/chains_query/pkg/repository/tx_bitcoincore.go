@@ -66,7 +66,8 @@ func (repo *repo) ConstructTxBTC(ctx context.Context, from, to, amount string) (
       return "", 0, fmt.Errorf("Fail to query comfirmations btc tx:" + err.Error())
     }
   var matureUTXOs []model.BtcUtxo
-  if err := repo.db.Where("txid IN (?) AND balance_id = ?", txids, balance.ID).Find(&matureUTXOs).Error; err != nil{
+  if err := repo.db.Where("txid IN (?) AND balance_id = ? AND re_org = ? AND state = ?",
+    txids, balance.ID, false, model.UTXOStateUnSelected).Find(&matureUTXOs).Error; err != nil{
     return "", 0, fmt.Errorf("fail to query mature utxos:" + err.Error())
   }
 
@@ -115,29 +116,63 @@ func (repo *repo) ConstructTxBTC(ctx context.Context, from, to, amount string) (
     selectedutxos = append(selectedutxos, selectedutxoForFee...)
   }
 
+  utxoids := make([]uint, len(selectedutxos))
+  for i, selectedUTXO := range selectedutxos {
+    utxoids[i] = selectedUTXO.ID
+  }
+
+  if err := repo.db.Table("btc_utxos").Where("id IN (?)", utxoids).UpdateColumn("state", model.UTXOStateLocked).Error; err != nil {
+    return "", 0, fmt.Errorf("Fail to update selected utxo state %s", err.Error())
+  }
+
   buf := bytes.NewBuffer(make([]byte, 0, msgTx.SerializeSize()))
   msgTx.Serialize(buf)
   rawTxHex := hex.EncodeToString(buf.Bytes())
-  // c.Wallet.SelectedUTXO = selectedutxos
-
   return rawTxHex, vinAmount, nil
 }
 
-func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error) {
+func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (string, error) {
 	txByte, err := hex.DecodeString(signedTxHex)
 	if err != nil {
 		return "", fmt.Errorf("Fail to decode tx hex %s", err.Error())
 	}
-
 	var msgTx wire.MsgTx
 	if err := msgTx.Deserialize(bytes.NewReader(txByte)); err != nil {
 		return "", fmt.Errorf("fail to deserialize tx %s", err.Error())
 	}
 	tx := btcutil.NewTx(&msgTx)
-
   txHash, err := repo.bitcoinClient.SendRawTransaction(tx.MsgTx(), false)
   if err != nil {
     return "", fmt.Errorf("Bitcoin SendRawTransaction %s", err)
   }
-  return txHash.String(), nil
+  txid := txHash.String()
+  ts := repo.db.Begin()
+  for _, vin := range tx.MsgTx().TxIn {
+    utxo := model.BtcUtxo{}
+    txRecord := model.Tx{}
+    if err := ts.Preload("Balance").Where("txid = ? AND vout_index = ?", vin.PreviousOutPoint.Hash.String(), vin.PreviousOutPoint.Index).First(&utxo).
+    UpdateColumns(model.BtcUtxo{UsedBy: txid, State: model.UTXOStateSelected}).Error; err != nil {
+      ts.Rollback()
+      return "", fmt.Errorf("Fail to update utxo state when send tx %s", err.Error())
+    }
+    if len(utxo.Balance.Address) < 1 {
+      ts.Rollback()
+      return "", fmt.Errorf("Fail to extract balance record from utxo relationship")
+    }
+    ts.FirstOrCreate(&txRecord,
+      model.Tx{
+        TxID: txid,
+        TxType: model.TxTypeWithdraw,
+        Address: utxo.Balance.Address,
+        Asset: utxo.Balance.Symbol,
+        Amount: strconv.FormatFloat(utxo.Amount * btcutil.SatoshiPerBitcoin, 'f', -int(0), 64),
+        BalanceID: utxo.Balance.ID,
+        ChainName: model.ChainBitcoin,
+    })
+  }
+  if err := ts.Commit().Error; err != nil {
+    ts.Rollback()
+    return "", fmt.Errorf("Fail to operate db when send bitcoincore tx %s", err.Error())
+  }
+  return txid, nil
 }
