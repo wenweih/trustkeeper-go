@@ -52,4 +52,10 @@ func main()  {
     fmt.Println("ConstructTxBTC:", err.Error())
   }
   fmt.Println("ConstructTxBTC:", rawTxHex, vinAmount)
+
+  txid, err := s.SendBTCTx(ctxWithAuthInfo, "01000000016ba0feb402a9ac1cb1c65c58d6da59815130abdbfbc211512014ff46ff4f1de7010000006b483045022100d67a745e16ff4b53774dd6018af1d686f840c4d4264064a172fd00aa6b03919202206eea904106d0cc448a255572e416b49323a74cbaf5b448c3593d8bef6ec285a3012102b6ca80a3a74bbe371c816fda2fbd3ee31962418660ac7014a8e0a3813e1f4de4ffffffff0280969800000000001976a9144e1eff3ae7f5d38921b238469137c4f4f6f14f0488ac50d55c05000000001976a9144e1eff3ae7f5d38921b238469137c4f4f6f14f0488ac00000000")
+  if err != nil {
+    fmt.Println("SendBTCTx err:", err.Error())
+  }
+  fmt.Println("SendBTCTx:", txid)
 }

@@ -177,3 +177,41 @@ func (e Endpoints) ConstructTxBTC(ctx context.Context, from string, to string, a
 	}
 	return response.(ConstructTxBTCResponse).UnsignedTxHex, response.(ConstructTxBTCResponse).VinAmount, nil
 }
+
+// SendBTCTxRequest collects the request parameters for the SendBTCTx method.
+type SendBTCTxRequest struct {
+	SignedTxHex string `json:"signed_tx_hex"`
+}
+
+// SendBTCTxResponse collects the response parameters for the SendBTCTx method.
+type SendBTCTxResponse struct {
+	TxID string `json:"tx_id"`
+	Err  error  `json:"err"`
+}
+
+// MakeSendBTCTxEndpoint returns an endpoint that invokes SendBTCTx on the service.
+func MakeSendBTCTxEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SendBTCTxRequest)
+		txID, err := s.SendBTCTx(ctx, req.SignedTxHex)
+		if err != nil {
+			return SendBTCTxResponse{Err: err}, err
+		}
+		return SendBTCTxResponse{TxID: txID}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r SendBTCTxResponse) Failed() error {
+	return r.Err
+}
+
+// SendBTCTx implements Service. Primarily useful in a client.
+func (e Endpoints) SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error) {
+	request := SendBTCTxRequest{SignedTxHex: signedTxHex}
+	response, err := e.SendBTCTxEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(SendBTCTxResponse).TxID, nil
+}

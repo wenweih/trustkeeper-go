@@ -157,3 +157,40 @@ func (g *grpcServer) ConstructTxBTC(ctx context1.Context, req *pb.ConstructTxBTC
 	}
 	return rep.(*pb.ConstructTxBTCReply), nil
 }
+
+// makeSendBTCTxHandler creates the handler logic
+func makeSendBTCTxHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.SendBTCTxEndpoint, decodeSendBTCTxRequest, encodeSendBTCTxResponse, options...)
+}
+
+// decodeSendBTCTxResponse is a transport/grpc.DecodeRequestFunc that converts a
+// gRPC request to a user-domain SendBTCTx request.
+// TODO implement the decoder
+func decodeSendBTCTxRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.SendBTCTxRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb SendBTCTxRequest type assersion error")
+	}
+	return endpoint.SendBTCTxRequest{SignedTxHex: req.SignedTxHex}, nil
+}
+
+// encodeSendBTCTxResponse is a transport/grpc.EncodeResponseFunc that converts
+// a user-domain response to a gRPC reply.
+// TODO implement the encoder
+func encodeSendBTCTxResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.SendBTCTxResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint SendBTCTxResponse type assersion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.SendBTCTxReply{TxID: resp.TxID}, nil
+}
+func (g *grpcServer) SendBTCTx(ctx context1.Context, req *pb.SendBTCTxRequest) (*pb.SendBTCTxReply, error) {
+	_, rep, err := g.sendBTCTx.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.SendBTCTxReply), nil
+}

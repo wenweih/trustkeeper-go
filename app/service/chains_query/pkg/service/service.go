@@ -23,6 +23,7 @@ type ChainsQueryService interface {
 	ERC20TokenInfo(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error)
 
 	ConstructTxBTC(ctx context.Context, from, to, amount string) (unsignedTxHex string, vinAmount int64, err error)
+	SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error)
 }
 
 type basicChainsQueryService struct {
@@ -86,7 +87,13 @@ func (b *basicChainsQueryService) ERC20TokenInfo(ctx context.Context, tokenHex s
 	return b.biz.ERC20TokenInfo(ctx, tokenHex)
 }
 
-func (b *basicChainsQueryService) ConstructTxBTC(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, vinAmount int64, err error) {
+func (b *basicChainsQueryService) ConstructTxBTC(ctx context.Context,
+	from string, to string, amount string) (unsignedTxHex string, vinAmount int64, err error) {
 	unsignedTxHex, vinAmount, err = b.biz.ConstructTxBTC(ctx, from, to, amount)
+	return
+}
+
+func (b *basicChainsQueryService) SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error) {
+	txID, err = b.biz.SendBTCTx(ctx, signedTxHex)
 	return
 }

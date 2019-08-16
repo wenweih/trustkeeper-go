@@ -53,3 +53,10 @@ func (l loggingMiddleware) ConstructTxBTC(ctx context.Context, from string, to s
 	}()
 	return l.next.ConstructTxBTC(ctx, from, to, amount)
 }
+
+func (l loggingMiddleware) SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error) {
+	defer func() {
+		l.logger.Log("method", "SendBTCTx", "signedTxHex", signedTxHex, "txID", txID, "err", err)
+	}()
+	return l.next.SendBTCTx(ctx, signedTxHex)
+}

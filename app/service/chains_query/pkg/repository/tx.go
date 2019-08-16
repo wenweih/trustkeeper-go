@@ -27,7 +27,7 @@ func (repo *repo) ConstructTxBTC(ctx context.Context, from, to, amount string) (
     return "", 0, err
   }
 
-  toAddress, err := btcutil.DecodeAddress(from, &chaincfg.RegressionNetParams)
+  toAddress, err := btcutil.DecodeAddress(to, &chaincfg.RegressionNetParams)
   if err != nil {
     return "", 0, fmt.Errorf("Invalid To address:" + err.Error())
   }
@@ -121,4 +121,23 @@ func (repo *repo) ConstructTxBTC(ctx context.Context, from, to, amount string) (
   // c.Wallet.SelectedUTXO = selectedutxos
 
   return rawTxHex, vinAmount, nil
+}
+
+func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error) {
+	txByte, err := hex.DecodeString(signedTxHex)
+	if err != nil {
+		return "", fmt.Errorf("Fail to decode tx hex %s", err.Error())
+	}
+
+	var msgTx wire.MsgTx
+	if err := msgTx.Deserialize(bytes.NewReader(txByte)); err != nil {
+		return "", fmt.Errorf("fail to deserialize tx %s", err.Error())
+	}
+	tx := btcutil.NewTx(&msgTx)
+
+  txHash, err := repo.bitcoinClient.SendRawTransaction(tx.MsgTx(), false)
+  if err != nil {
+    return "", fmt.Errorf("Bitcoin SendRawTransaction %s", err)
+  }
+  return txHash.String(), nil
 }
