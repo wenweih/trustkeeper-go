@@ -26,5 +26,6 @@ func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]http.Serv
 	makeQueryOmniPropertyHandler(m, endpoints, options["QueryOmniProperty"])
 	makeEthTokenHandler(m, endpoints, options["EthToken"])
 	makeCreateTokenHandler(m, endpoints, options["CreateToken"])
+	makeSendBTCTxHandler(m, endpoints, options["SendBTCTx"])
 	return m
 }

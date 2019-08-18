@@ -25,6 +25,7 @@ type Endpoints struct {
 	QueryOmniPropertyEndpoint endpoint.Endpoint
 	EthTokenEndpoint          endpoint.Endpoint
 	CreateTokenEndpoint       endpoint.Endpoint
+	SendBTCTxEndpoint         endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -41,6 +42,7 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 		GetRolesEndpoint:          MakeGetRolesEndpoint(s),
 		GetWalletsEndpoint:        MakeGetWalletsEndpoint(s),
 		QueryOmniPropertyEndpoint: MakeQueryOmniPropertyEndpoint(s),
+		SendBTCTxEndpoint:         MakeSendBTCTxEndpoint(s),
 		SigninEndpoint:            MakeSigninEndpoint(s),
 		SignoutEndpoint:           MakeSignoutEndpoint(s),
 		SignupEndpoint:            MakeSignupEndpoint(s),
@@ -91,6 +93,9 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 	}
 	for _, m := range mdw["CreateToken"] {
 		eps.CreateTokenEndpoint = m(eps.CreateTokenEndpoint)
+	}
+	for _, m := range mdw["SendBTCTx"] {
+		eps.SendBTCTxEndpoint = m(eps.SendBTCTxEndpoint)
 	}
 	return eps
 }

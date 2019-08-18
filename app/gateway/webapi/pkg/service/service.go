@@ -20,6 +20,10 @@ import (
 	walletManagementGrpcClient "trustkeeper-go/app/service/wallet_management/client"
 	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
 
+	walletKeyGrpcClient "trustkeeper-go/app/service/wallet_key/client"
+	walletKeyService "trustkeeper-go/app/service/wallet_key/pkg/service"
+	walletKeyRepository "trustkeeper-go/app/service/wallet_key/pkg/repository"
+
 	txGrpcClient "trustkeeper-go/app/service/transaction/client"
 	txRepository "trustkeeper-go/app/service/transaction/pkg/repository"
 	txService "trustkeeper-go/app/service/transaction/pkg/service"
@@ -49,6 +53,7 @@ type WebapiService interface {
 	QueryOmniProperty(ctx context.Context, identify string) (asset *repository.SimpleAsset, err error)
 	EthToken(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error)
 	CreateToken(ctx context.Context, groupid, chainid, symbol, identify, decimal, chainName string) (asset *repository.SimpleAsset, err error)
+	SendBTCTx(ctx context.Context, from, to, amount string) (txid string, err error)
 }
 
 // Credentials Signup Signin params
@@ -64,6 +69,7 @@ type basicWebapiService struct {
 	WalletSrv      walletManagementService.WalletManagementService
 	txSrv          txService.TransactionService
 	chainsQuerySrv chainsqueryService.ChainsQueryService
+	KeySrv walletKeyService.WalletKeyService
 }
 
 func makeError(ctx context.Context, err error) error {
@@ -174,12 +180,18 @@ func NewBasicWebapiService(logger log.Logger) (WebapiService, error) {
 		return nil, fmt.Errorf("txGrpcClient: %s", err.Error())
 	}
 
+	wkClient, err := walletKeyGrpcClient.New(cfg.ConsulAddr, logger)
+	if err != nil {
+		return nil, fmt.Errorf("walletKeyGrpcClient: %s", err.Error())
+	}
+
 	return &basicWebapiService{
 		accountSrv:     accountClient,
 		dashboardSrv:   dashboardClient,
 		WalletSrv:      wmClient,
 		txSrv:          txClient,
 		chainsQuerySrv: chainsqueryClient,
+		KeySrv: wkClient,
 	}, nil
 }
 
@@ -378,7 +390,6 @@ func (b *basicWebapiService) QueryOmniProperty(ctx context.Context, identify str
 		Decimal:  100000000}, err
 }
 
-
 func (b *basicWebapiService) EthToken(ctx context.Context, tokenHex string) (*repository.ERC20Token, error) {
 	uid, nid, roles, err := b.auth(ctx)
 	if err != nil {
@@ -434,4 +445,33 @@ func (b *basicWebapiService) CreateToken(
 		return nil, err
 	}
 	return &respAsset, nil
+}
+
+func (b *basicWebapiService) SendBTCTx(ctx context.Context, from string, to string, amount string) (string, error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return "", err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	unsignedTxHex, vinAmount, err := b.chainsQuerySrv.ConstructTxBTC(ctxWithAuthInfo, from, to, amount)
+	if err != nil {
+		return "", err
+	}
+	hd, err := b.WalletSrv.QueryWalletHD(ctxWithAuthInfo, from)
+	if err != nil {
+		return "", err
+	}
+	walletHD := walletKeyRepository.WalletHD{}
+	if err := copier.Copy(&walletHD, hd); err != nil {
+		return "", err
+	}
+	signedTxHex, err := b.KeySrv.SignedBitcoincoreTx(ctxWithAuthInfo, walletHD, unsignedTxHex, vinAmount)
+	if err != nil {
+		return "", err
+	}
+	txid, err := b.chainsQuerySrv.SendBTCTx(ctxWithAuthInfo, signedTxHex)
+	if err != nil {
+		return "", err
+	}
+	return txid, err
 }

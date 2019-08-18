@@ -150,7 +150,8 @@ func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (string, er
   for _, vin := range tx.MsgTx().TxIn {
     utxo := model.BtcUtxo{}
     txRecord := model.Tx{}
-    if err := ts.Preload("Balance").Where("txid = ? AND vout_index = ?", vin.PreviousOutPoint.Hash.String(), vin.PreviousOutPoint.Index).First(&utxo).
+    if err := ts.Preload("Balance").
+    Where("txid = ? AND vout_index = ?", vin.PreviousOutPoint.Hash.String(), vin.PreviousOutPoint.Index).First(&utxo).
     UpdateColumns(model.BtcUtxo{UsedBy: txid, State: model.UTXOStateSelected}).Error; err != nil {
       ts.Rollback()
       return "", fmt.Errorf("Fail to update utxo state when send tx %s", err.Error())

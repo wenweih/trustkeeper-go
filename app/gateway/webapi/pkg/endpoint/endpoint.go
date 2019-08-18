@@ -643,3 +643,47 @@ func (e Endpoints) EthToken(ctx context.Context, tokenHex string) (token *reposi
 	}
 	return response.(EthTokenResponse).Token, response.(EthTokenResponse).Err
 }
+
+// SendBTCTxRequest collects the request parameters for the SendBTCTx method.
+type SendBTCTxRequest struct {
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount string `json:"amount"`
+}
+
+// SendBTCTxResponse collects the response parameters for the SendBTCTx method.
+type SendBTCTxResponse struct {
+	Txid string `json:"txid"`
+	Err  error  `json:"err"`
+}
+
+// MakeSendBTCTxEndpoint returns an endpoint that invokes SendBTCTx on the service.
+func MakeSendBTCTxEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SendBTCTxRequest)
+		txid, err := s.SendBTCTx(ctx, req.From, req.To, req.Amount)
+		if err != nil {
+			return SendBTCTxResponse{Err: err}, err
+		}
+		return SendBTCTxResponse{Txid: txid}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r SendBTCTxResponse) Failed() error {
+	return r.Err
+}
+
+// SendBTCTx implements Service. Primarily useful in a client.
+func (e Endpoints) SendBTCTx(ctx context.Context, from string, to string, amount string) (txid string, err error) {
+	request := SendBTCTxRequest{
+		Amount: amount,
+		From:   from,
+		To:     to,
+	}
+	response, err := e.SendBTCTxEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(SendBTCTxResponse).Txid, nil
+}

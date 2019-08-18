@@ -126,3 +126,10 @@ func (l loggingMiddleware) EthToken(ctx context.Context, tokenHex string) (token
 	}()
 	return l.next.EthToken(ctx, tokenHex)
 }
+
+func (l loggingMiddleware) SendBTCTx(ctx context.Context, from string, to string, amount string) (txid string, err error) {
+	defer func() {
+		l.logger.Log("method", "SendBTCTx", "from", from, "to", to, "amount", amount, "txid", txid, "err", err)
+	}()
+	return l.next.SendBTCTx(ctx, from, to, amount)
+}
