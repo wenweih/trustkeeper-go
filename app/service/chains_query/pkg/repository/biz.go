@@ -39,4 +39,6 @@ type IBiz interface {
 
   ConstructTxBTC(ctx context.Context, from, to, amount string) (unsignedTxHex string, vinAmount int64, err error)
   SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error)
+
+  QueryBalance(ctx context.Context, symbol, address string) (balance string, err error)
 }

@@ -133,3 +133,10 @@ func (l loggingMiddleware) SendBTCTx(ctx context.Context, from string, to string
 	}()
 	return l.next.SendBTCTx(ctx, from, to, amount)
 }
+
+func (l loggingMiddleware) QueryBalance(ctx context.Context, symbol string, address string) (balance string, err error) {
+	defer func() {
+		l.logger.Log("method", "QueryBalance", "symbol", symbol, "address", address, "balance", balance, "err", err)
+	}()
+	return l.next.QueryBalance(ctx, symbol, address)
+}

@@ -21,8 +21,8 @@ import (
 	walletManagementService "trustkeeper-go/app/service/wallet_management/pkg/service"
 
 	walletKeyGrpcClient "trustkeeper-go/app/service/wallet_key/client"
-	walletKeyService "trustkeeper-go/app/service/wallet_key/pkg/service"
 	walletKeyRepository "trustkeeper-go/app/service/wallet_key/pkg/repository"
+	walletKeyService "trustkeeper-go/app/service/wallet_key/pkg/service"
 
 	txGrpcClient "trustkeeper-go/app/service/transaction/client"
 	txRepository "trustkeeper-go/app/service/transaction/pkg/repository"
@@ -54,6 +54,7 @@ type WebapiService interface {
 	EthToken(ctx context.Context, tokenHex string) (token *repository.ERC20Token, err error)
 	CreateToken(ctx context.Context, groupid, chainid, symbol, identify, decimal, chainName string) (asset *repository.SimpleAsset, err error)
 	SendBTCTx(ctx context.Context, from, to, amount string) (txid string, err error)
+	QueryBalance(ctx context.Context, symbol, address string) (balance string, err error)
 }
 
 // Credentials Signup Signin params
@@ -69,7 +70,7 @@ type basicWebapiService struct {
 	WalletSrv      walletManagementService.WalletManagementService
 	txSrv          txService.TransactionService
 	chainsQuerySrv chainsqueryService.ChainsQueryService
-	KeySrv walletKeyService.WalletKeyService
+	KeySrv         walletKeyService.WalletKeyService
 }
 
 func makeError(ctx context.Context, err error) error {
@@ -191,7 +192,7 @@ func NewBasicWebapiService(logger log.Logger) (WebapiService, error) {
 		WalletSrv:      wmClient,
 		txSrv:          txClient,
 		chainsQuerySrv: chainsqueryClient,
-		KeySrv: wkClient,
+		KeySrv:         wkClient,
 	}, nil
 }
 
@@ -474,4 +475,14 @@ func (b *basicWebapiService) SendBTCTx(ctx context.Context, from string, to stri
 		return "", err
 	}
 	return txid, err
+}
+
+func (b *basicWebapiService) QueryBalance(ctx context.Context, symbol string, address string) (balance string, err error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return "", err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	balance, err = b.chainsQuerySrv.QueryBalance(ctxWithAuthInfo, symbol, address)
+	return
 }

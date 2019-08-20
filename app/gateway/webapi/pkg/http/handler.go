@@ -107,8 +107,8 @@ func err2code(err error) int {
 	case strings.Contains(err.Error(), "context deadline exceeded"):
 		return http.StatusRequestTimeout
 	case strings.Contains(err.Error(), "does not exist") ||
-		strings.Contains(err.Error(), "no contract code at given address"):
-
+		strings.Contains(err.Error(), "no contract code at given address") ||
+		strings.Contains(err.Error(), "record not found"):
 		return http.StatusNotFound
 	case strings.Contains(err.Error(), "duplicate key value"):
 		return http.StatusConflict
@@ -454,6 +454,31 @@ func decodeSendBTCTxRequest(_ context.Context, r *http.Request) (interface{}, er
 // encodeSendBTCTxResponse is a transport/http.EncodeResponseFunc that encodes
 // the response as JSON to the response writer
 func encodeSendBTCTxResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
+
+// makeQueryBalanceHandler creates the handler logic
+func makeQueryBalanceHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/query-balance", http1.NewServer(endpoints.QueryBalanceEndpoint, decodeQueryBalanceRequest, encodeQueryBalanceResponse, options...))
+}
+
+// decodeQueryBalanceRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeQueryBalanceRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	req := endpoint.QueryBalanceRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeQueryBalanceResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeQueryBalanceResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
 	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
 		ErrorEncoder(ctx, f.Failed(), w)
 		return nil

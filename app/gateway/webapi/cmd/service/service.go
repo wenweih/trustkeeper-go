@@ -115,6 +115,7 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options["CreateToken"] = append(options["CreateToken"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["EthToken"] = append(options["EthToken"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["SendBTCTx"] = append(options["SendBTCTx"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
+	options["QueryBalance"] = append(options["QueryBalance"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	httpHandler := http.NewHTTPHandler(endpoints, options)
 	httpListener, err := net.Listen("tcp", *httpAddr)
 	if err != nil {

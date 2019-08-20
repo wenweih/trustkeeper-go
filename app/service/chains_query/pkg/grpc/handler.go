@@ -194,3 +194,40 @@ func (g *grpcServer) SendBTCTx(ctx context1.Context, req *pb.SendBTCTxRequest) (
 	}
 	return rep.(*pb.SendBTCTxReply), nil
 }
+
+// makeQueryBalanceHandler creates the handler logic
+func makeQueryBalanceHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.QueryBalanceEndpoint, decodeQueryBalanceRequest, encodeQueryBalanceResponse, options...)
+}
+
+// decodeQueryBalanceResponse is a transport/grpc.DecodeRequestFunc that converts a
+// gRPC request to a user-domain QueryBalance request.
+// TODO implement the decoder
+func decodeQueryBalanceRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.QueryBalanceRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb QueryBalanceRequest type assersion error")
+	}
+	return endpoint.QueryBalanceRequest{Symbol: req.Symbol, Address: req.Address}, nil
+}
+
+// encodeQueryBalanceResponse is a transport/grpc.EncodeResponseFunc that converts
+// a user-domain response to a gRPC reply.
+// TODO implement the encoder
+func encodeQueryBalanceResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.QueryBalanceResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint QueryBalanceResponse type assersion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.QueryBalanceReply{Balance: resp.Balance}, nil
+}
+func (g *grpcServer) QueryBalance(ctx context1.Context, req *pb.QueryBalanceRequest) (*pb.QueryBalanceReply, error) {
+	_, rep, err := g.queryBalance.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.QueryBalanceReply), nil
+}

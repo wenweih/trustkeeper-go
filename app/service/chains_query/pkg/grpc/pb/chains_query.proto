@@ -11,6 +11,7 @@ service ChainsQuery {
  rpc ERC20TokenInfo    (ERC20TokenInfoRequest   ) returns (ERC20TokenInfoReply   );
  rpc ConstructTxBTC    (ConstructTxBTCRequest   ) returns (ConstructTxBTCReply   );
  rpc SendBTCTx         (SendBTCTxRequest        ) returns (SendBTCTxReply        );
+ rpc QueryBalance      (QueryBalanceRequest     ) returns (QueryBalanceReply     );
 }
 
 message BitcoincoreBlockRequest {}
@@ -67,9 +68,18 @@ message ConstructTxBTCReply {
 }
 
 message SendBTCTxRequest {
-  string SignedTxHex = 1;
+ string SignedTxHex = 1;
 }
 
 message SendBTCTxReply {
-  string TxID = 1;
+ string TxID = 1;
+}
+
+message QueryBalanceRequest {
+  string symbol = 1;
+  string address = 2;
+}
+
+message QueryBalanceReply {
+  string balance = 1;
 }

@@ -687,3 +687,47 @@ func (e Endpoints) SendBTCTx(ctx context.Context, from string, to string, amount
 	}
 	return response.(SendBTCTxResponse).Txid, nil
 }
+
+// QueryBalanceRequest collects the request parameters for the QueryBalance method.
+type QueryBalanceRequest struct {
+	Symbol  string `json:"symbol"`
+	Address string `json:"address"`
+}
+
+// QueryBalanceResponse collects the response parameters for the QueryBalance method.
+type QueryBalanceResponse struct {
+	Balance string `json:"balance"`
+	Err     error  `json:"err"`
+}
+
+// MakeQueryBalanceEndpoint returns an endpoint that invokes QueryBalance on the service.
+func MakeQueryBalanceEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(QueryBalanceRequest)
+		balance, err := s.QueryBalance(ctx, req.Symbol, req.Address)
+		if err != nil {
+			return QueryBalanceResponse{Err: err}, err
+		}
+		return QueryBalanceResponse{
+			Balance: balance,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r QueryBalanceResponse) Failed() error {
+	return r.Err
+}
+
+// QueryBalance implements Service. Primarily useful in a client.
+func (e Endpoints) QueryBalance(ctx context.Context, symbol string, address string) (balance string, err error) {
+	request := QueryBalanceRequest{
+		Address: address,
+		Symbol:  symbol,
+	}
+	response, err := e.QueryBalanceEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(QueryBalanceResponse).Balance, nil
+}

@@ -23,6 +23,7 @@ func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 		"BitcoincoreBlock":  {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "BitcoincoreBlock", logger))},
 		"ConstructTxBTC":    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "ConstructTxBTC", logger))},
 		"ERC20TokenInfo":    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "ERC20TokenInfo", logger))},
+		"QueryBalance":      {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryBalance", logger))},
 		"QueryOmniProperty": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryOmniProperty", logger))},
 		"SendBTCTx":         {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "SendBTCTx", logger))},
 	}
@@ -34,12 +35,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["ERC20TokenInfo"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ERC20TokenInfo")), endpoint.InstrumentingMiddleware(duration.With("method", "ERC20TokenInfo"))}
 	mw["ConstructTxBTC"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxBTC")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxBTC"))}
 	mw["SendBTCTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendBTCTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendBTCTx"))}
+	mw["QueryBalance"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryBalance")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryBalance"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"BitcoincoreBlock", "QueryOmniProperty", "ERC20TokenInfo", "ConstructTxBTC", "SendBTCTx"}
+	methods := []string{"BitcoincoreBlock", "QueryOmniProperty", "ERC20TokenInfo", "ConstructTxBTC", "SendBTCTx", "QueryBalance"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

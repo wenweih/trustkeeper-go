@@ -49,10 +49,17 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 			encodeSendBTCTxRequest, decodeSendBTCTxResponse, pb.SendBTCTxReply{}, options...).Endpoint()
 	}
 
+	var queryBalanceEndpoint endpoint.Endpoint
+	{
+		queryBalanceEndpoint = grpc1.NewClient(conn, "pb.ChainsQuery", "QueryBalance",
+			encodeQueryBalanceRequest, decodeQueryBalanceResponse, pb.QueryBalanceReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		BitcoincoreBlockEndpoint:  bitcoincoreBlockEndpoint,
 		ConstructTxBTCEndpoint:    constructTxBTCEndpoint,
 		ERC20TokenInfoEndpoint:    eRC20TokenInfoEndpoint,
+		QueryBalanceEndpoint:      queryBalanceEndpoint,
 		QueryOmniPropertyEndpoint: queryOmniPropertyEndpoint,
 		SendBTCTxEndpoint:         sendBTCTxEndpoint,
 	}, nil
@@ -118,7 +125,6 @@ func decodeERC20TokenInfoResponse(_ context.Context, reply interface{}) (interfa
 	return endpoint1.ERC20TokenInfoResponse{Token: &token}, nil
 }
 
-
 // encodeConstructTxBTCRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain ConstructTxBTC request to a gRPC request.
 func encodeConstructTxBTCRequest(_ context.Context, request interface{}) (interface{}, error) {
@@ -159,4 +165,25 @@ func decodeSendBTCTxResponse(_ context.Context, reply interface{}) (interface{},
 		return endpoint1.SendBTCTxResponse{Err: e}, e
 	}
 	return endpoint1.SendBTCTxResponse{TxID: resp.TxID}, nil
+}
+
+// encodeQueryBalanceRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain QueryBalance request to a gRPC request.
+func encodeQueryBalanceRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.QueryBalanceRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint QueryBalanceRequest type assertion error")
+	}
+	return &pb.QueryBalanceRequest{Symbol: r.Symbol, Address: r.Address}, nil
+}
+
+// decodeQueryBalanceResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeQueryBalanceResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.QueryBalanceReply)
+	if !ok {
+		e := fmt.Errorf("pb QueryBalanceReply type assertion error")
+		return endpoint1.QueryBalanceResponse{Err: e}, e
+	}
+	return endpoint1.QueryBalanceResponse{Balance: resp.Balance}, nil
 }
