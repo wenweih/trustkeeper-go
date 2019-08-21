@@ -26,6 +26,7 @@ type ChainsQueryService interface {
 	SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error)
 
 	QueryBalance(ctx context.Context, symbol, address string) (balance string, err error)
+	WalletValidate(ctx context.Context, chainName, address string) (err error)
 }
 
 type basicChainsQueryService struct {
@@ -102,5 +103,10 @@ func (b *basicChainsQueryService) SendBTCTx(ctx context.Context, signedTxHex str
 
 func (b *basicChainsQueryService) QueryBalance(ctx context.Context, symbol string, address string) (balance string, err error) {
 	balance, err = b.biz.QueryBalance(ctx, symbol, address)
-	return 
+	return
+}
+
+func (b *basicChainsQueryService) WalletValidate(ctx context.Context, chainName string, address string) (err error) {
+	err = b.biz.WalletValidate(ctx, chainName, address)
+	return
 }

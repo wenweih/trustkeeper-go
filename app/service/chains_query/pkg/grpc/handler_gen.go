@@ -15,6 +15,7 @@ type grpcServer struct {
 	constructTxBTC    grpc.Handler
 	sendBTCTx         grpc.Handler
 	queryBalance      grpc.Handler
+	walletValidate    grpc.Handler
 }
 
 func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.ServerOption) pb.ChainsQueryServer {
@@ -25,5 +26,6 @@ func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.Serve
 		queryBalance:      makeQueryBalanceHandler(endpoints, options["QueryBalance"]),
 		queryOmniProperty: makeQueryOmniPropertyHandler(endpoints, options["QueryOmniProperty"]),
 		sendBTCTx:         makeSendBTCTxHandler(endpoints, options["SendBTCTx"]),
+		walletValidate:    makeWalletValidateHandler(endpoints, options["WalletValidate"]),
 	}
 }

@@ -67,3 +67,10 @@ func (l loggingMiddleware) QueryBalance(ctx context.Context, symbol string, addr
 	}()
 	return l.next.QueryBalance(ctx, symbol, address)
 }
+
+func (l loggingMiddleware) WalletValidate(ctx context.Context, chainName string, address string) (err error) {
+	defer func() {
+		l.logger.Log("method", "WalletValidate", "chainName", chainName, "address", address, "err", err)
+	}()
+	return l.next.WalletValidate(ctx, chainName, address)
+}

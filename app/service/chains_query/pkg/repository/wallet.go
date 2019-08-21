@@ -5,7 +5,10 @@ import (
   "strconv"
   "context"
   "math/big"
+  "github.com/btcsuite/btcutil"
   "github.com/shopspring/decimal"
+  "github.com/btcsuite/btcd/chaincfg"
+  "github.com/ethereum/go-ethereum/common"
   "trustkeeper-go/app/service/chains_query/pkg/model"
 )
 
@@ -23,4 +26,22 @@ func (repo *repo) QueryBalance(ctx context.Context, symbol, address string) (bal
     return "", fmt.Errorf("Fail to convert decimal")
   }
   return balanceDecimal.Div(decimal.NewFromBigInt(decimalBig, 0)).String(), nil
+}
+
+func (repo *repo) WalletValidate(ctx context.Context, chainName, address string) (err error) {
+  switch chainName {
+  case ChainNameBitcoincore:
+    _, err := btcutil.DecodeAddress(address, &chaincfg.RegressionNetParams)
+    if err != nil {
+      return fmt.Errorf("Invalid address: %s", err.Error())
+    }
+    return nil
+  case ChainNameEthereum:
+    if !common.IsHexAddress(address) {
+      return fmt.Errorf("Invalid address: %s", address)
+    }
+    return nil
+  default:
+    return fmt.Errorf("Unsupport Blockchain address")
+  }
 }

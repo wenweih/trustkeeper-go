@@ -38,6 +38,7 @@ func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 		"Signup":            {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signup", logger))},
 		"UpdateGroup":       {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "UpdateGroup", logger))},
 		"UserInfo":          {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "UserInfo", logger))},
+		"WalletValidate":    {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "WalletValidate", logger))},
 	}
 	return options
 }
@@ -59,12 +60,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["CreateToken"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateToken")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateToken"))}
 	mw["SendBTCTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendBTCTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendBTCTx"))}
 	mw["QueryBalance"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryBalance")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryBalance"))}
+	mw["WalletValidate"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "WalletValidate")), endpoint.InstrumentingMiddleware(duration.With("method", "WalletValidate"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"Signup", "Signin", "Signout", "GetRoles", "UserInfo", "GetGroups", "CreateGroup", "UpdateGroup", "GetGroupAssets", "ChangeGroupAssets", "CreateWallet", "GetWallets", "QueryOmniProperty", "EthToken", "CreateToken", "SendBTCTx", "QueryBalance"}
+	methods := []string{"Signup", "Signin", "Signout", "GetRoles", "UserInfo", "GetGroups", "CreateGroup", "UpdateGroup", "GetGroupAssets", "ChangeGroupAssets", "CreateWallet", "GetWallets", "QueryOmniProperty", "EthToken", "CreateToken", "SendBTCTx", "QueryBalance", "WalletValidate"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

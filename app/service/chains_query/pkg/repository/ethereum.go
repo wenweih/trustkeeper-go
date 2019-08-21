@@ -14,6 +14,8 @@ import (
 const (
   // DepositEthereumComfirmation more than DepositEthereumComfirmation mean deposit successfully
   DepositEthereumComfirmation int64 = 12
+
+  ChainNameEthereum string = "Ethereum"
 )
 
 // ERC20Token Ethereum erc20 token info

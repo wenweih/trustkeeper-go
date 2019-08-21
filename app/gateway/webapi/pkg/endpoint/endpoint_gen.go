@@ -27,6 +27,7 @@ type Endpoints struct {
 	CreateTokenEndpoint       endpoint.Endpoint
 	SendBTCTxEndpoint         endpoint.Endpoint
 	QueryBalanceEndpoint      endpoint.Endpoint
+	WalletValidateEndpoint    endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -50,6 +51,7 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 		SignupEndpoint:            MakeSignupEndpoint(s),
 		UpdateGroupEndpoint:       MakeUpdateGroupEndpoint(s),
 		UserInfoEndpoint:          MakeUserInfoEndpoint(s),
+		WalletValidateEndpoint:    MakeWalletValidateEndpoint(s),
 	}
 	for _, m := range mdw["Signup"] {
 		eps.SignupEndpoint = m(eps.SignupEndpoint)
@@ -101,6 +103,9 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 	}
 	for _, m := range mdw["QueryBalance"] {
 		eps.QueryBalanceEndpoint = m(eps.QueryBalanceEndpoint)
+	}
+	for _, m := range mdw["WalletValidate"] {
+		eps.WalletValidateEndpoint = m(eps.WalletValidateEndpoint)
 	}
 	return eps
 }

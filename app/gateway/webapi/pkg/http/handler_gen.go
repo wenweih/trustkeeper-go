@@ -28,5 +28,6 @@ func NewHTTPHandler(endpoints endpoint.Endpoints, options map[string][]http.Serv
 	makeCreateTokenHandler(m, endpoints, options["CreateToken"])
 	makeSendBTCTxHandler(m, endpoints, options["SendBTCTx"])
 	makeQueryBalanceHandler(m, endpoints, options["QueryBalance"])
+	makeWalletValidateHandler(m, endpoints, options["WalletValidate"])
 	return m
 }

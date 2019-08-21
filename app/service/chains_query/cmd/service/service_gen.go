@@ -26,6 +26,7 @@ func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 		"QueryBalance":      {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryBalance", logger))},
 		"QueryOmniProperty": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryOmniProperty", logger))},
 		"SendBTCTx":         {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "SendBTCTx", logger))},
+		"WalletValidate":    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "WalletValidate", logger))},
 	}
 	return options
 }
@@ -36,12 +37,13 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["ConstructTxBTC"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxBTC")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxBTC"))}
 	mw["SendBTCTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendBTCTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendBTCTx"))}
 	mw["QueryBalance"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryBalance")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryBalance"))}
+	mw["WalletValidate"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "WalletValidate")), endpoint.InstrumentingMiddleware(duration.With("method", "WalletValidate"))}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"BitcoincoreBlock", "QueryOmniProperty", "ERC20TokenInfo", "ConstructTxBTC", "SendBTCTx", "QueryBalance"}
+	methods := []string{"BitcoincoreBlock", "QueryOmniProperty", "ERC20TokenInfo", "ConstructTxBTC", "SendBTCTx", "QueryBalance", "WalletValidate"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

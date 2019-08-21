@@ -261,3 +261,41 @@ func (e Endpoints) QueryBalance(ctx context.Context, symbol string, address stri
 	}
 	return response.(QueryBalanceResponse).Balance, nil
 }
+
+// WalletValidateRequest collects the request parameters for the WalletValidate method.
+type WalletValidateRequest struct {
+	ChainName string `json:"chain_name"`
+	Address   string `json:"address"`
+}
+
+// WalletValidateResponse collects the response parameters for the WalletValidate method.
+type WalletValidateResponse struct {
+	Err error `json:"err"`
+}
+
+// MakeWalletValidateEndpoint returns an endpoint that invokes WalletValidate on the service.
+func MakeWalletValidateEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(WalletValidateRequest)
+		err := s.WalletValidate(ctx, req.ChainName, req.Address)
+		return WalletValidateResponse{Err: err}, err
+	}
+}
+
+// Failed implements Failer.
+func (r WalletValidateResponse) Failed() error {
+	return r.Err
+}
+
+// WalletValidate implements Service. Primarily useful in a client.
+func (e Endpoints) WalletValidate(ctx context.Context, chainName string, address string) (err error) {
+	request := WalletValidateRequest{
+		Address:   address,
+		ChainName: chainName,
+	}
+	response, err := e.WalletValidateEndpoint(ctx, request)
+	if err != nil {
+		return err
+	}
+	return response.(WalletValidateResponse).Err
+}

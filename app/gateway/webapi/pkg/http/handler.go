@@ -100,6 +100,8 @@ func ErrorDecoder(r *http.Response) error {
 // https://github.com/go-kit/kit/blob/master/examples/addsvc/pkg/addtransport/http.go#L133
 func err2code(err error) int {
 	switch {
+	case strings.Contains(err.Error(), "Invalid address"):
+		return http.StatusBadRequest
 	case strings.HasPrefix(err.Error(), "Fields exist"):
 		return http.StatusBadRequest
 	case strings.Contains(err.Error(), "token is expired"):
@@ -479,6 +481,31 @@ func decodeQueryBalanceRequest(_ context.Context, r *http.Request) (interface{},
 // encodeQueryBalanceResponse is a transport/http.EncodeResponseFunc that encodes
 // the response as JSON to the response writer
 func encodeQueryBalanceResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}
+
+// makeWalletValidateHandler creates the handler logic
+func makeWalletValidateHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/wallet-validate", http1.NewServer(endpoints.WalletValidateEndpoint, decodeWalletValidateRequest, encodeWalletValidateResponse, options...))
+}
+
+// decodeWalletValidateRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeWalletValidateRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	req := endpoint.WalletValidateRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeWalletValidateResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeWalletValidateResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
 	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
 		ErrorEncoder(ctx, f.Failed(), w)
 		return nil

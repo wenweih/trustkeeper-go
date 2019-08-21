@@ -55,6 +55,12 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 			encodeQueryBalanceRequest, decodeQueryBalanceResponse, pb.QueryBalanceReply{}, options...).Endpoint()
 	}
 
+	var walletValidateEndpoint endpoint.Endpoint
+	{
+		walletValidateEndpoint = grpc1.NewClient(conn, "pb.ChainsQuery", "WalletValidate",
+			encodeWalletValidateRequest, decodeWalletValidateResponse, pb.WalletValidateReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		BitcoincoreBlockEndpoint:  bitcoincoreBlockEndpoint,
 		ConstructTxBTCEndpoint:    constructTxBTCEndpoint,
@@ -62,6 +68,7 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		QueryBalanceEndpoint:      queryBalanceEndpoint,
 		QueryOmniPropertyEndpoint: queryOmniPropertyEndpoint,
 		SendBTCTxEndpoint:         sendBTCTxEndpoint,
+		WalletValidateEndpoint:    walletValidateEndpoint,
 	}, nil
 }
 
@@ -186,4 +193,25 @@ func decodeQueryBalanceResponse(_ context.Context, reply interface{}) (interface
 		return endpoint1.QueryBalanceResponse{Err: e}, e
 	}
 	return endpoint1.QueryBalanceResponse{Balance: resp.Balance}, nil
+}
+
+// encodeWalletValidateRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain WalletValidate request to a gRPC request.
+func encodeWalletValidateRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.WalletValidateRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint WalletValidateRequest type assertion error")
+	}
+	return &pb.WalletValidateRequest{Address: r.Address, ChainName: r.ChainName}, nil
+}
+
+// decodeWalletValidateResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeWalletValidateResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	_, ok := reply.(*pb.WalletValidateReply)
+	if !ok {
+		e := fmt.Errorf("pb WalletValidateReply type assertion error")
+		return endpoint1.WalletValidateResponse{Err: e}, e
+	}
+	return endpoint1.WalletValidateResponse{}, nil
 }

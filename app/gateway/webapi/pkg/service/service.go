@@ -55,6 +55,7 @@ type WebapiService interface {
 	CreateToken(ctx context.Context, groupid, chainid, symbol, identify, decimal, chainName string) (asset *repository.SimpleAsset, err error)
 	SendBTCTx(ctx context.Context, from, to, amount string) (txid string, err error)
 	QueryBalance(ctx context.Context, symbol, address string) (balance string, err error)
+	WalletValidate(ctx context.Context, chainName, address string) (err error)
 }
 
 // Credentials Signup Signin params
@@ -485,4 +486,13 @@ func (b *basicWebapiService) QueryBalance(ctx context.Context, symbol string, ad
 	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
 	balance, err = b.chainsQuerySrv.QueryBalance(ctxWithAuthInfo, symbol, address)
 	return
+}
+
+func (b *basicWebapiService) WalletValidate(ctx context.Context, chainName string, address string) (err error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	return b.chainsQuerySrv.WalletValidate(ctxWithAuthInfo, chainName, address)
 }

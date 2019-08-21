@@ -9,6 +9,8 @@ import (
 const (
   // DepositBitcoincoreComfirmation more than DepositBitcoincoreComfirmation mean deposit successfully
   DepositBitcoincoreComfirmation uint64 = 6
+
+  ChainNameBitcoincore string = "Bitcoincore"
 )
 
 func (repo *repo) QueryBitcoincoreBlock (

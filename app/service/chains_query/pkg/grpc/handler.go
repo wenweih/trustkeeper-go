@@ -231,3 +231,40 @@ func (g *grpcServer) QueryBalance(ctx context1.Context, req *pb.QueryBalanceRequ
 	}
 	return rep.(*pb.QueryBalanceReply), nil
 }
+
+// makeWalletValidateHandler creates the handler logic
+func makeWalletValidateHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.WalletValidateEndpoint, decodeWalletValidateRequest, encodeWalletValidateResponse, options...)
+}
+
+// decodeWalletValidateResponse is a transport/grpc.DecodeRequestFunc that converts a
+// gRPC request to a user-domain WalletValidate request.
+// TODO implement the decoder
+func decodeWalletValidateRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.WalletValidateRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb WalletValidateRequest type assersion error")
+	}
+	return endpoint.WalletValidateRequest{Address: req.Address, ChainName: req.ChainName}, nil
+}
+
+// encodeWalletValidateResponse is a transport/grpc.EncodeResponseFunc that converts
+// a user-domain response to a gRPC reply.
+// TODO implement the encoder
+func encodeWalletValidateResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.WalletValidateResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint WalletValidateResponse type assersion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.WalletValidateReply{}, nil
+}
+func (g *grpcServer) WalletValidate(ctx context1.Context, req *pb.WalletValidateRequest) (*pb.WalletValidateReply, error) {
+	_, rep, err := g.walletValidate.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.WalletValidateReply), nil
+}
