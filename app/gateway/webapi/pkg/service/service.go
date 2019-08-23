@@ -455,11 +455,11 @@ func (b *basicWebapiService) SendBTCTx(ctx context.Context, from string, to stri
 		return "", err
 	}
 	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
-	unsignedTxHex, vinAmount, err := b.chainsQuerySrv.ConstructTxBTC(ctxWithAuthInfo, from, to, amount)
+	hd, err := b.WalletSrv.QueryWalletHD(ctxWithAuthInfo, from)
 	if err != nil {
 		return "", err
 	}
-	hd, err := b.WalletSrv.QueryWalletHD(ctxWithAuthInfo, from)
+	unsignedTxHex, vinAmount, err := b.chainsQuerySrv.ConstructTxBTC(ctxWithAuthInfo, from, to, amount)
 	if err != nil {
 		return "", err
 	}
@@ -484,6 +484,9 @@ func (b *basicWebapiService) QueryBalance(ctx context.Context, symbol string, ad
 		return "", err
 	}
 	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	if _, err := b.WalletSrv.QueryWalletHD(ctxWithAuthInfo, address); err != nil {
+		return "", err
+	}
 	balance, err = b.chainsQuerySrv.QueryBalance(ctxWithAuthInfo, symbol, address)
 	return
 }

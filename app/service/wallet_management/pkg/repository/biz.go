@@ -201,10 +201,13 @@ func (repo *repo) CreateWallet(ctx context.Context, groupid, chainname string, b
     Address: address,
     Bip44Index: bip44index,
     XpubUID: xpubs[0].ID,
-    Status: true}
+    Status: true,
+  }
   if err := repo.db.Create(&mWallet).Error; err != nil {
     return nil, err
   }
+  repo.iCasbinRepo.AddActionForRoleInDomain(uid, groupid, strconv.FormatUint(uint64(mWallet.ID), 10), "read")
+  repo.iCasbinRepo.AddActionForRoleInDomain(uid, groupid, strconv.FormatUint(uint64(mWallet.ID), 10), "write")
   return &Wallet{
     ID: strconv.FormatUint(uint64(mWallet.ID), 10),
     Address: mWallet.Address,
@@ -259,7 +262,7 @@ func (repo *repo) GetWallets(ctx context.Context, groupid string, page, limit, b
       Related(&filterData, "Wallets").
       Error; err != nil {
         return nil, err
-      }
+    }
 
     wallets :=[]*Wallet{}
   	if err := copier.Copy(&wallets, &filterData); err != nil {
@@ -269,15 +272,24 @@ func (repo *repo) GetWallets(ctx context.Context, groupid string, page, limit, b
     chainWithWallets[i] = &ChainWithWallets{
             ChainName: xpub.Chain.Name,
             TotalSize: int32(len(xpubWallets)),
-            Wallets: wallets}
+            Wallets: wallets,
+    }
   }
   return chainWithWallets, nil
 }
 
 func (repo *repo) QueryWalletHD(ctx context.Context, address string) (hd *WalletHD, err error) {
+  uid, _, _, err := libctx.ExtractAuthInfoFromContext(ctx)
+  if err != nil {
+    return nil, err
+  }
+
   var wallet model.Wallet
   if err := repo.db.Preload("Xpub").Preload("Xpub.MnemonicVersion").Where("address = ?", address).First(&wallet).Error; err != nil {
     return nil, fmt.Errorf("Fail to query wallet %s", err.Error())
+  }
+  if !repo.iCasbinRepo.HasPolicy([]string{uid, wallet.Xpub.GroupID, strconv.FormatUint(uint64(wallet.ID), 10), "write"}) {
+    return nil, fmt.Errorf("not allow")
   }
   return &WalletHD{
     CoinType: int32(*wallet.Xpub.Bip44ChainID),

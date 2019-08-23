@@ -19,7 +19,6 @@ func (repo *CasbinRepo) AddResoucreCreatePolicyForRole(role, domain string, reso
 
 func (repo *CasbinRepo) AddActionForRoleInDomain (uid, domain, resourceID, action string) {
   repo.Enforcer.AddPolicy(uid, domain, resourceID, action)
-  // repo.Enforcer.AddPolicy(uid, domain, resourceID, "write")
 }
 
 func (repo *CasbinRepo) HasPolicy(policy []string) bool {

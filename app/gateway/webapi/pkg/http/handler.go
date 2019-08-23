@@ -114,6 +114,8 @@ func err2code(err error) int {
 		return http.StatusNotFound
 	case strings.Contains(err.Error(), "duplicate key value"):
 		return http.StatusConflict
+	case strings.Contains(err.Error(), "not allow"):
+		return http.StatusForbidden
 	default:
 		return http.StatusInternalServerError
 	}
