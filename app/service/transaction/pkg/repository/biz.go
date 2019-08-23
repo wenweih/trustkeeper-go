@@ -22,14 +22,15 @@ func (repo *repo) CreateBalancesForAsset(ctx context.Context, wallets []*Wallet,
   valueStrings := []string{}
   valueArgs := []interface{}{}
   for _, w := range wallets {
-    valueStrings = append(valueStrings, "(?, ?, ?, ?)")
+    valueStrings = append(valueStrings, "(?, ?, ?, ?, ?)")
 
     valueArgs = append(valueArgs, w.Address)
     valueArgs = append(valueArgs, asset.Symbol)
     valueArgs = append(valueArgs, asset.Identify)
     valueArgs = append(valueArgs, asset.Decimal)
+    valueArgs = append(valueArgs, "0")
   }
-  smt := `INSERT INTO balances(address, symbol, identify, decimal)
+  smt := `INSERT INTO balances(address, symbol, identify, decimal, amount)
     VALUES %s ON CONFLICT (address, symbol) DO UPDATE SET address=excluded.address,symbol=excluded.symbol`
   smt = fmt.Sprintf(smt, strings.Join(valueStrings, ","))
   tx := repo.db.Begin()
@@ -52,7 +53,9 @@ func (repo *repo) AssignAssetsToWallet(ctx context.Context, address string, asse
       Address: address,
       Symbol: asset.Symbol,
       Identify: asset.Identify,
-      Decimal: asset.Decimal}
+      Decimal: asset.Decimal,
+      Amount: "0",
+    }
     tx.Create(&balance)
   }
   return tx.Commit().Error
