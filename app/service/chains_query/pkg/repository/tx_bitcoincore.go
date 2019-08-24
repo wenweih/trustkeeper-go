@@ -3,6 +3,7 @@ package repository
 
 import (
   "fmt"
+  "sync"
   "bytes"
   "strconv"
   "math/big"
@@ -13,7 +14,8 @@ import (
   "github.com/btcsuite/btcutil/coinset"
   "github.com/btcsuite/btcd/wire"
   "github.com/btcsuite/btcd/txscript"
-  "github.com/btcsuite/btcd/mempool"
+  "github.com/btcsuite/btcd/chaincfg/chainhash"
+  "github.com/shopspring/decimal"
   "trustkeeper-go/app/service/chains_query/pkg/model"
 )
 
@@ -53,6 +55,14 @@ func (repo *repo) ConstructTxBTC(ctx context.Context, from, to, amount string) (
   if err != nil {
     return "", 0, fmt.Errorf("Transfer amount %s", err.Error())
   }
+
+  withdrawLockAmount, result := new(big.Int).SetString(balance.WithdrawLock, 10)
+  if !result {
+    return "", 0, fmt.Errorf("fail to extract withdrawLock from balance")
+  }
+  balanceAmount = balanceAmount.Sub(balanceAmount, withdrawLockAmount)
+
+
   transferAmountBig := big.NewInt(int64(transferAmount))
   if balanceAmount.Cmp(transferAmountBig) <= 0 {
     return "", 0, fmt.Errorf("Insufficient balance")
@@ -64,7 +74,7 @@ func (repo *repo) ConstructTxBTC(ctx context.Context, from, to, amount string) (
     Asset: model.BTCSymbol}).Pluck("tx_id", &txids).Error;
     err != nil {
       return "", 0, fmt.Errorf("Fail to query comfirmations btc tx:" + err.Error())
-    }
+  }
   var matureUTXOs []model.BtcUtxo
   if err := repo.db.Where("txid IN (?) AND balance_id = ? AND re_org = ? AND state = ?",
     txids, balance.ID, false, model.UTXOStateUnSelected).Find(&matureUTXOs).Error; err != nil{
@@ -75,16 +85,11 @@ func (repo *repo) ConstructTxBTC(ctx context.Context, from, to, amount string) (
   if err != nil {
     return "", 0, err
   }
-  feeKB, err := repo.bitcoinClient.EstimateSmartFee(int64(6))
+
+  estimateFeeResult, err := repo.bitcoinClient.EstimateSmartFee(6)
   if err != nil {
-    return "", 0, err
+    return "", 0, fmt.Errorf("EstimateSmartFee %s", err.Error())
   }
-  feeRate := mempool.SatoshiPerByte(feeKB.FeeRate)
-
-  if feeKB.FeeRate <= 0 {
-    feeRate = mempool.SatoshiPerByte(100)
-  }
-
   selectedutxos, unselectedutxos, selectedCoins, err := CoinSelect(int64(ledgerInfo.Headers), btcutil.Amount(transferAmountBig.Int64()), matureUTXOs)
   if err != nil {
     return "", 0, fmt.Errorf("fail to select UTXO %s", err.Error())
@@ -99,29 +104,52 @@ func (repo *repo) ConstructTxBTC(ctx context.Context, from, to, amount string) (
 
   // recharge
   // 181, 34: https://bitcoin.stackexchange.com/questions/1195/how-to-calculate-transaction-size-before-sending-legacy-non-segwit-p2pkh-p2sh
-  fee := feeRate.Fee(uint32(msgTx.SerializeSize() + 181 + 34))
-  if (vinAmount - transferAmountBig.Int64() - int64(fee)) > 0 {
+  txSize := msgTx.SerializeSize() + 181 + 34
+  txSizeDecimal := decimal.New(int64(txSize), 0)
+  feeRateDecimal := decimal.NewFromFloat(estimateFeeResult.FeeRate).Div(decimal.New(1000, 0))
+  fee := feeRateDecimal.Mul(txSizeDecimal).Mul(decimal.New(100000000, 0)).IntPart()
+  if !result {
+    return "", 0, fmt.Errorf("Fail to extract fee")
+  }
+  if (vinAmount - transferAmountBig.Int64() - fee) > 0 {
     txOutReCharge := wire.NewTxOut((vinAmount - transferAmountBig.Int64() - int64(fee)), fromPkScript)
     msgTx.AddTxOut(txOutReCharge)
   }else {
-    selectedutxoForFee, _, selectedCoinsForFee, err := CoinSelect(int64(ledgerInfo.Headers), fee, unselectedutxos)
+    selectedutxoForFee, _, selectedCoinsForFee, err := CoinSelect(int64(ledgerInfo.Headers), btcutil.Amount(fee), unselectedutxos)
     if err != nil {
       return "", 0, fmt.Errorf("Select UTXO for fee %s", err)
     }
     for _, coin := range selectedCoinsForFee.Coins() {
       vinAmount += int64(coin.Value())
     }
+    for _, feeUTXO := range selectedutxoForFee {
+      txHash, err := chainhash.NewHashFromStr(feeUTXO.Txid)
+      if err != nil {
+        return "", 0, fmt.Errorf("Fail to construct fee vin %s", err.Error())
+      }
+      prevOut := wire.NewOutPoint(txHash, feeUTXO.VoutIndex)
+      msgTx.AddTxIn(wire.NewTxIn(prevOut, []byte{txscript.OP_0, txscript.OP_0}, nil))
+    }
     txOutReCharge := wire.NewTxOut((vinAmount - transferAmountBig.Int64() - int64(fee)), fromPkScript)
     msgTx.AddTxOut(txOutReCharge)
     selectedutxos = append(selectedutxos, selectedutxoForFee...)
   }
-
   utxoids := make([]uint, len(selectedutxos))
+  utxoAmountDecimal := decimal.NewFromFloat(0)
   for i, selectedUTXO := range selectedutxos {
+    selectedDecimal := decimal.NewFromFloat(selectedUTXO.Amount)
+    utxoAmountDecimal = utxoAmountDecimal.Add(selectedDecimal)
     utxoids[i] = selectedUTXO.ID
   }
-
-  if err := repo.db.Table("btc_utxos").Where("id IN (?)", utxoids).UpdateColumn("state", model.UTXOStateLocked).Error; err != nil {
+  balanceDecimalBig, result := new(big.Int).SetString(strconv.FormatUint(balance.Decimal, 10), 10)
+  if !result {
+    return "", 0, fmt.Errorf("Fail to convert decimal")
+  }
+  utxoAmountDecimal = utxoAmountDecimal.Mul(decimal.NewFromBigInt(balanceDecimalBig, 0))
+  ts := repo.db.Begin()
+  ts.Model(&balance).UpdateColumn("withdraw_lock", utxoAmountDecimal.String())
+  ts.Table("btc_utxos").Where("id IN (?)", utxoids).UpdateColumn("state", model.UTXOStateLocked)
+  if err := ts.Commit().Error; err != nil {
     return "", 0, fmt.Errorf("Fail to update selected utxo state %s", err.Error())
   }
 
@@ -143,8 +171,45 @@ func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (string, er
 	tx := btcutil.NewTx(&msgTx)
   txHash, err := repo.bitcoinClient.SendRawTransaction(tx.MsgTx(), false)
   if err != nil {
+    // rollback utxo and balance withdrawLock row
+    ts := repo.db.Begin()
+    var balanceWithdrawLock = struct{
+      sync.RWMutex
+      m map[uint]decimal.Decimal
+    }{m: make(map[uint]decimal.Decimal)}
+    for _, vin := range tx.MsgTx().TxIn {
+      utxo := model.BtcUtxo{}
+      ts.Preload("Balance").
+      Where("txid = ? AND vout_index = ?", vin.PreviousOutPoint.Hash.String(), vin.PreviousOutPoint.Index).
+      First(&utxo).UpdateColumn("state", model.UTXOStateUnSelected)
+      utxoAmountDecimal := decimal.NewFromFloat(utxo.Amount)
+      balanceDecimalBig, result := new(big.Int).SetString(strconv.FormatUint(utxo.Balance.Decimal, 10), 10)
+      if !result {
+        return "", fmt.Errorf("Fail to convert decimal")
+      }
+
+      // construct balanceWithdrawLock by balance
+      utxoAmountDecimal = utxoAmountDecimal.Mul(decimal.NewFromBigInt(balanceDecimalBig, 0))
+      balanceWithdrawLock.Lock()
+      balanceWithdrawLock.m[utxo.Balance.ID] = balanceWithdrawLock.m[utxo.Balance.ID].Add(utxoAmountDecimal)
+      balanceWithdrawLock.Unlock()
+    }
+    for k, v := range balanceWithdrawLock.m {
+      balance := model.Balance{}
+      ts.First(&balance, k)
+      vinWithdrawLock, err := decimal.NewFromString(balance.WithdrawLock)
+      if err != nil {
+        ts.Rollback()
+        return "", fmt.Errorf("Extract originWithdrawLock error %s", err.Error())
+      }
+      ts.Model(&balance).UpdateColumn("withdraw_lock", vinWithdrawLock.Sub(v).String())
+    }
+    if err := ts.Commit().Error; err != nil {
+      return "", fmt.Errorf("Fail to rollback utxo and balance withdrawLock row %s", err.Error())
+    }
     return "", fmt.Errorf("Bitcoin SendRawTransaction %s", err)
   }
+
   txid := txHash.String()
   ts := repo.db.Begin()
   for _, vin := range tx.MsgTx().TxIn {
