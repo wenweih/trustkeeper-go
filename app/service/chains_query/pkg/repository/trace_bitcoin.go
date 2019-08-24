@@ -10,6 +10,7 @@ import (
   common "trustkeeper-go/library/util"
   "github.com/btcsuite/btcd/btcjson"
   "github.com/btcsuite/btcutil"
+  "github.com/shopspring/decimal"
   "trustkeeper-go/app/service/chains_query/pkg/model"
 )
 
@@ -272,15 +273,34 @@ func (repo *repo) UpdateBitcoincoreTx(ctx context.Context) {
       if !result {
         repo.logger.Log("Fail to extract balance amount")
       }
+      withdrawLock, result := new(big.Int).SetString(balance.WithdrawLock, 10)
+      if !result {
+        repo.logger.Log("Fail to extract withdrawLock")
+      }
+      withdrawLockDecimal := decimal.NewFromBigInt(withdrawLock, 0)
       if tx.TxType == model.TxTypeDeposit {
         balanceAmount = balanceAmount.Add(balanceAmount, transferAmount)
       } else if tx.TxType == model.TxTypeWithdraw {
+        rawTx, err := repo.QueryBTCTx(ctx, tx.TxID)
+        if err != nil {
+          repo.logger.Log("FailToQueryTxWhenWithdrawSuccess:", err.Error())
+          continue
+        }
+        for _, vin := range rawTx.Vin {
+          utxo := model.BtcUtxo{}
+          ts.Preload("Balance").
+          Where("txid = ? AND vout_index = ?", vin.Txid, vin.Vout).First(&utxo)
+          utxoAmountDecimal := decimal.NewFromFloat(utxo.Amount).Mul(decimal.New(int64(utxo.Balance.Decimal), 0))
+          withdrawLockDecimal = withdrawLockDecimal.Sub(utxoAmountDecimal)
+        }
         balanceAmount = balanceAmount.Sub(balanceAmount, transferAmount)
       }
+
       balanceAmountStr := balanceAmount.String()
+      withdrawLockStr := withdrawLockDecimal.String()
 
       ts.Create(&model.BalanceLog{TxID: tx.TxID, From: balance.Amount, To: balanceAmountStr, BalanceID: balance.ID})
-      ts.Model(&balance).UpdateColumn("amount", balanceAmountStr)
+      ts.Model(&balance).UpdateColumns(model.Balance{Amount: balanceAmountStr, WithdrawLock: withdrawLockStr})
 
       repo.logger.Log("UpdateBitcoincoreTx", tx.TxID,
         "StateFrom", tx.State, "To", model.StateSuccess, "ConfirmationsFrom", tx.Confirmations, "To", rawtx.Confirmations)
