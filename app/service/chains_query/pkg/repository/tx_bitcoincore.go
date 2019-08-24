@@ -215,10 +215,13 @@ func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (string, er
   }
 
   txid := txHash.String()
+  var balanceWithdrawTx = struct{
+    sync.RWMutex
+    m map[uint]decimal.Decimal
+  }{m: make(map[uint]decimal.Decimal)}
   ts := repo.db.Begin()
   for _, vin := range tx.MsgTx().TxIn {
     utxo := model.BtcUtxo{}
-    txRecord := model.Tx{}
     if err := ts.Preload("Balance").
     Where("txid = ? AND vout_index = ?", vin.PreviousOutPoint.Hash.String(), vin.PreviousOutPoint.Index).First(&utxo).
     UpdateColumns(model.BtcUtxo{UsedBy: txid, State: model.UTXOStateSelected}).Error; err != nil {
@@ -229,20 +232,38 @@ func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (string, er
       ts.Rollback()
       return "", fmt.Errorf("Fail to extract balance record from utxo relationship")
     }
+
+    utxoAmountDecimal := decimal.NewFromFloat(utxo.Amount)
+    balanceDecimalBig, result := new(big.Int).SetString(strconv.FormatUint(utxo.Balance.Decimal, 10), 10)
+    if !result {
+      return "", fmt.Errorf("Fail to convert decimal")
+    }
+
+    // construct balanceWithdrawTx by balance and utxo
+    utxoAmountDecimal = utxoAmountDecimal.Mul(decimal.NewFromBigInt(balanceDecimalBig, 0))
+    balanceWithdrawTx.Lock()
+    balanceWithdrawTx.m[utxo.Balance.ID] = balanceWithdrawTx.m[utxo.Balance.ID].Add(utxoAmountDecimal)
+    balanceWithdrawTx.Unlock()
+  }
+
+  for k, v := range balanceWithdrawTx.m {
+    balance := model.Balance{}
+    txRecord := model.Tx{}
+    ts.First(&balance, k)
     ts.FirstOrCreate(&txRecord,
       model.Tx{
         TxID: txid,
         TxType: model.TxTypeWithdraw,
-        Address: utxo.Balance.Address,
-        Asset: utxo.Balance.Symbol,
-        Amount: strconv.FormatFloat(utxo.Amount * btcutil.SatoshiPerBitcoin, 'f', -int(0), 64),
-        BalanceID: utxo.Balance.ID,
+        Address: balance.Address,
+        Asset: balance.Symbol,
+        Amount: v.String(),
+        BalanceID: balance.ID,
         ChainName: model.ChainBitcoin,
     })
   }
   if err := ts.Commit().Error; err != nil {
     ts.Rollback()
-    return "", fmt.Errorf("Fail to operate db when send bitcoincore tx %s", err.Error())
+    return "", fmt.Errorf("Fail to add withdraw tx for balance record %s", err.Error())
   }
   return txid, nil
 }
