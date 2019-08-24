@@ -147,7 +147,11 @@ func (repo *repo) ConstructTxBTC(ctx context.Context, from, to, amount string) (
   }
   utxoAmountDecimal = utxoAmountDecimal.Mul(decimal.NewFromBigInt(balanceDecimalBig, 0))
   ts := repo.db.Begin()
-  ts.Model(&balance).UpdateColumn("withdraw_lock", utxoAmountDecimal.String())
+  balanceWithdrawLockDecimal, err := decimal.NewFromString(balance.WithdrawLock)
+  if err != nil {
+    return "", 0, fmt.Errorf("Fail to extract balance withdrawLock to decimal")
+  }
+  ts.Model(&balance).UpdateColumn("withdraw_lock", balanceWithdrawLockDecimal.Add(utxoAmountDecimal).String())
   ts.Table("btc_utxos").Where("id IN (?)", utxoids).UpdateColumn("state", model.UTXOStateLocked)
   if err := ts.Commit().Error; err != nil {
     return "", 0, fmt.Errorf("Fail to update selected utxo state %s", err.Error())
