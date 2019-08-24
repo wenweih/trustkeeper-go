@@ -26,7 +26,7 @@ func New(consulAddr string, logger log.Logger) (service.WalletManagementService,
   var (
     consulTags = []string{"wallet"}
     passingOnly = true
-    retryMax = 3
+    retryMax = 1
     retryTimeout = 500 * time.Millisecond
   )
 

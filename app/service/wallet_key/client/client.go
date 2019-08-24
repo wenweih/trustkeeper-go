@@ -22,7 +22,7 @@ func New(consulAddr string, logger log.Logger) (service.WalletKeyService, error)
   var (
     consulTags = []string{"key"}
     passingOnly = true
-    retryMax = 3
+    retryMax = 1
     retryTimeout = 500 * time.Millisecond
   )
 

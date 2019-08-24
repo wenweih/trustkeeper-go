@@ -24,7 +24,7 @@ func New(consulAddr string, logger log.Logger) (service.TransactionService, erro
   var (
     consulTags = []string{"transaction"}
     passingOnly = true
-    retryMax = 3
+    retryMax = 1
     retryTimeout = 500 * time.Millisecond
   )
 
