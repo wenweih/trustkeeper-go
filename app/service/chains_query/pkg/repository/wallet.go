@@ -21,6 +21,12 @@ func (repo *repo) QueryBalance(ctx context.Context, symbol, address string) (bal
   if err != nil {
     return "", err
   }
+  withdrawLockDecimal, err := decimal.NewFromString(bal.WithdrawLock)
+  if err != nil {
+    return "", err
+  }
+  balanceDecimal = balanceDecimal.Sub(withdrawLockDecimal)
+
   decimalBig, result := new(big.Int).SetString(strconv.FormatUint(bal.Decimal, 10), 10)
   if !result {
     return "", fmt.Errorf("Fail to convert decimal")
