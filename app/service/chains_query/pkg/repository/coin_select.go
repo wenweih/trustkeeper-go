@@ -2,6 +2,7 @@ package repository
 
 import (
   "fmt"
+  "sync"
   "github.com/btcsuite/btcutil"
   "github.com/btcsuite/btcutil/coinset"
   "github.com/btcsuite/btcd/chaincfg/chainhash"
@@ -57,14 +58,32 @@ func CoinSelect(chainHeader int64, txAmount btcutil.Amount, utxos []model.BtcUtx
 	scoins := selectedCoins.Coins()
 
 	var selectedUTXOs, unSelectedUTXOs []model.BtcUtxo
+  var selectedUTXOMap = struct{
+    sync.RWMutex
+    m map[uint]model.BtcUtxo
+  }{m: make(map[uint]model.BtcUtxo)}
+
 	for _, coin := range scoins {
 		for _, utxo := range utxos {
 			if coin.Hash().String() == utxo.Txid && coin.Index() == utxo.VoutIndex {
-				selectedUTXOs = append(selectedUTXOs, utxo)
-			} else {
-        unSelectedUTXOs = append(unSelectedUTXOs, utxo)
-      }
+        selectedUTXOMap.Lock()
+        selectedUTXOMap.m[utxo.ID] = utxo
+        selectedUTXOMap.Unlock()
+			}
 		}
 	}
+  // selectedUTXO
+  for _, v := range selectedUTXOMap.m {
+    utxo := v
+    selectedUTXOs = append(selectedUTXOs, utxo)
+  }
+
+  // unSelectedUTXOs
+  for _, utxo := range utxos {
+    _, found := selectedUTXOMap.m[utxo.ID]
+    if !found {
+      unSelectedUTXOs = append(unSelectedUTXOs, utxo)
+    }
+  }
 	return selectedUTXOs, unSelectedUTXOs, selectedCoins, nil
 }
