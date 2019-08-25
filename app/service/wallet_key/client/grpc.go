@@ -30,9 +30,16 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
       encodeSignedBitcoincoreTxRequest, decodeSignedBitcoincoreTxResponse, pb.SignedBitcoincoreTxReply{}, options...).Endpoint()
 	}
 
+  var signedEthereumTxEndpoint endpoint.Endpoint
+	{
+		signedEthereumTxEndpoint = grpc1.NewClient(conn, "pb.WalletKey", "SignedEthereumTx",
+      encodeSignedEthereumTxRequest, decodeSignedEthereumTxResponse, pb.SignedEthereumTxReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
     GenerateMnemonicEndpoint: generateMnemonicEndpoint,
     SignedBitcoincoreTxEndpoint: signedBitcoincoreTxEndpoint,
+    SignedEthereumTxEndpoint:    signedEthereumTxEndpoint,
   }, nil
 }
 
@@ -87,4 +94,29 @@ func decodeSignedBitcoincoreTxResponse(_ context.Context, reply interface{}) (in
     return endpoint1.SignedBitcoincoreTxResponse{Err: e}, e
 	}
   return endpoint1.SignedBitcoincoreTxResponse{SignedTxHex: resp.SignedTxHex}, nil
+}
+
+// encodeSignedEthereumTxRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain SignedEthereumTx request to a gRPC request.
+func encodeSignedEthereumTxRequest(_ context.Context, request interface{}) (interface{}, error) {
+  r, ok := request.(endpoint1.SignedEthereumTxRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint SignedEthereumTxRequest type assertion error")
+	}
+  walletHD := pb.WalletHD{}
+	if err := copier.Copy(&walletHD, r.WalletHD); err != nil {
+		return nil, err
+	}
+  return &pb.SignedEthereumTxRequest{ChainID: r.ChainID, TxHex: r.TxHex, WalletHD: &walletHD}, nil
+}
+
+// decodeSignedEthereumTxResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeSignedEthereumTxResponse(_ context.Context, reply interface{}) (interface{}, error) {
+  resp, ok := reply.(*pb.SignedEthereumTxReply)
+	if !ok {
+		e := fmt.Errorf("pb SignedEthereumTxReply type assertion error")
+    return endpoint1.SignedEthereumTxResponse{Err: e}, e
+	}
+  return endpoint1.SignedEthereumTxResponse{SignedTxHex: resp.SignedTxHex}, nil
 }

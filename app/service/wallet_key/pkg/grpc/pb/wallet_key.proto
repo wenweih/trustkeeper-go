@@ -8,6 +8,7 @@ package pb;
 service WalletKey {
  rpc GenerateMnemonic    (GenerateMnemonicRequest   ) returns (GenerateMnemonicReply   );
  rpc SignedBitcoincoreTx (SignedBitcoincoreTxRequest) returns (SignedBitcoincoreTxReply);
+ rpc SignedEthereumTx    (SignedEthereumTxRequest   ) returns (SignedEthereumTxReply   );
 }
 
 message GenerateMnemonicRequest {
@@ -40,11 +41,21 @@ message WalletHD {
 }
 
 message SignedBitcoincoreTxRequest {
- WalletHD WalletHD = 1;
- string   TxHex    = 2;
+ WalletHD WalletHD  = 1;
+ string   TxHex     = 2;
  int64    VinAmount = 3;
 }
 
 message SignedBitcoincoreTxReply {
  string SignedTxHex = 1;
+}
+
+message SignedEthereumTxRequest {
+  string TxHex = 1;
+  string ChainID = 2;
+  WalletHD WalletHD  = 3;
+}
+
+message SignedEthereumTxReply {
+  string SignedTxHex = 1;
 }

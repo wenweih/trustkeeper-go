@@ -1,14 +1,15 @@
 package grpc
 
 import (
-	"context"
 	"fmt"
+	"context"
 	endpoint "trustkeeper-go/app/service/wallet_key/pkg/endpoint"
 	pb "trustkeeper-go/app/service/wallet_key/pkg/grpc/pb"
-	"github.com/jinzhu/copier"
-	grpc "github.com/go-kit/kit/transport/grpc"
-	context1 "golang.org/x/net/context"
 	"trustkeeper-go/app/service/wallet_key/pkg/repository"
+
+	grpc "github.com/go-kit/kit/transport/grpc"
+	"github.com/jinzhu/copier"
+	context1 "golang.org/x/net/context"
 )
 
 func makeGenerateMnemonicHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
@@ -76,4 +77,38 @@ func (g *grpcServer) SignedBitcoincoreTx(ctx context1.Context, req *pb.SignedBit
 		return nil, err
 	}
 	return rep.(*pb.SignedBitcoincoreTxReply), nil
+}
+
+func makeSignedEthereumTxHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.SignedEthereumTxEndpoint, decodeSignedEthereumTxRequest, encodeSignedEthereumTxResponse, options...)
+}
+
+func decodeSignedEthereumTxRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.SignedEthereumTxRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb SignedEthereumTxRequest type assersion error")
+	}
+	walletHD := repository.WalletHD{}
+	if err := copier.Copy(&walletHD, req.WalletHD); err != nil {
+		return nil, err
+	}
+	return endpoint.SignedEthereumTxRequest{WalletHD: walletHD, ChainID: req.ChainID, TxHex: req.TxHex}, nil
+}
+
+func encodeSignedEthereumTxResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.SignedEthereumTxResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint SignedEthereumTxResponse type assertion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.SignedEthereumTxReply{SignedTxHex: resp.SignedTxHex}, nil
+}
+func (g *grpcServer) SignedEthereumTx(ctx context1.Context, req *pb.SignedEthereumTxRequest) (*pb.SignedEthereumTxReply, error) {
+	_, rep, err := g.signedEthereumTx.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.SignedEthereumTxReply), nil
 }

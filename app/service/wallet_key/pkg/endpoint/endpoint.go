@@ -60,9 +60,9 @@ func (e Endpoints) Close() error {
 }
 
 type SignedBitcoincoreTxRequest struct {
-	WalletHD repository.WalletHD `json:"wallet_hd"`
-	VinAmount   int64  `json:"vin_amount"`
-	TxHex    string              `json:"tx_hex"`
+	WalletHD  repository.WalletHD `json:"wallet_hd"`
+	VinAmount int64               `json:"vin_amount"`
+	TxHex     string              `json:"tx_hex"`
 }
 
 type SignedBitcoincoreTxResponse struct {
@@ -88,13 +88,61 @@ func (r SignedBitcoincoreTxResponse) Failed() error {
 func (e Endpoints) SignedBitcoincoreTx(ctx context.Context,
 	walletHD repository.WalletHD, txHex string, vinAmount int64) (signedTxHex string, err error) {
 	request := SignedBitcoincoreTxRequest{
-		TxHex:    txHex,
+		TxHex:     txHex,
 		VinAmount: vinAmount,
-		WalletHD: walletHD,
+		WalletHD:  walletHD,
 	}
 	response, err := e.SignedBitcoincoreTxEndpoint(ctx, request)
 	if err != nil {
 		return "", err
 	}
 	return response.(SignedBitcoincoreTxResponse).SignedTxHex, nil
+}
+
+// SignedEthereumTxRequest collects the request parameters for the SignedEthereumTx method.
+type SignedEthereumTxRequest struct {
+	WalletHD repository.WalletHD `json:"wallet_hd"`
+	TxHex    string              `json:"tx_hex"`
+	ChainID  string              `json:"chain_id"`
+}
+
+// SignedEthereumTxResponse collects the response parameters for the SignedEthereumTx method.
+type SignedEthereumTxResponse struct {
+	SignedTxHex string `json:"signed_tx_hex"`
+	Err         error  `json:"err"`
+}
+
+// MakeSignedEthereumTxEndpoint returns an endpoint that invokes SignedEthereumTx on the service.
+func MakeSignedEthereumTxEndpoint(s service.WalletKeyService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SignedEthereumTxRequest)
+		signedTxHex, err := s.SignedEthereumTx(ctx, req.WalletHD, req.TxHex, req.ChainID)
+		if err != nil {
+			return SignedEthereumTxResponse{
+				Err:         err,
+			}, err
+		}
+		return SignedEthereumTxResponse{
+			SignedTxHex: signedTxHex,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r SignedEthereumTxResponse) Failed() error {
+	return r.Err
+}
+
+// SignedEthereumTx implements Service. Primarily useful in a client.
+func (e Endpoints) SignedEthereumTx(ctx context.Context, walletHD repository.WalletHD, txHex string, chainID string) (signedTxHex string, err error) {
+	request := SignedEthereumTxRequest{
+		ChainID:  chainID,
+		TxHex:    txHex,
+		WalletHD: walletHD,
+	}
+	response, err := e.SignedEthereumTxEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(SignedEthereumTxResponse).SignedTxHex, nil
 }

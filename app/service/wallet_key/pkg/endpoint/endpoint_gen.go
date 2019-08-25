@@ -12,6 +12,7 @@ import (
 type Endpoints struct {
 	GenerateMnemonicEndpoint    endpoint.Endpoint
 	SignedBitcoincoreTxEndpoint endpoint.Endpoint
+	SignedEthereumTxEndpoint    endpoint.Endpoint
 }
 
 // New returns a Endpoints struct that wraps the provided service, and wires in all of the
@@ -20,12 +21,16 @@ func New(s service.WalletKeyService, mdw map[string][]endpoint.Middleware) Endpo
 	eps := Endpoints{
 		GenerateMnemonicEndpoint:    MakeGenerateMnemonicEndpoint(s),
 		SignedBitcoincoreTxEndpoint: MakeSignedBitcoincoreTxEndpoint(s),
+		SignedEthereumTxEndpoint:    MakeSignedEthereumTxEndpoint(s),
 	}
 	for _, m := range mdw["GenerateMnemonic"] {
 		eps.GenerateMnemonicEndpoint = m(eps.GenerateMnemonicEndpoint)
 	}
 	for _, m := range mdw["SignedBitcoincoreTx"] {
 		eps.SignedBitcoincoreTxEndpoint = m(eps.SignedBitcoincoreTxEndpoint)
+	}
+	for _, m := range mdw["SignedEthereumTx"] {
+		eps.SignedEthereumTxEndpoint = m(eps.SignedEthereumTxEndpoint)
 	}
 	return eps
 }

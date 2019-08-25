@@ -47,17 +47,22 @@ func main()  {
   //   }
   // }
   walletHD := repository.WalletHD{
-    CoinType: 0,
+    CoinType: 60,
     Account: 0,
     Change: 0,
-    AddressIndex: 46,
+    AddressIndex: 17,
     MnemonicVersion: "471192264474624001/2019-07-23 15:27:51.530679",
   }
-  signedTxHex, err := s.SignedBitcoincoreTx(context.Background(), walletHD,
-    "01000000023428ed5680af8b5766573665a45b1af0b9dfa91837ca9024dd6c8b6c2e9458390100000000ffffffff7d41315bfca7eca7ac8be2c3dbd1ef315c8b11baa1b85fb585f7faf0defd1def0000000000ffffffff0280d1f008000000001976a914289cafa2615c1bc74369e86ea5d08427a063abcf88ac9cb9c304000000001976a9144e1eff3ae7f5d38921b238469137c4f4f6f14f0488ac00000000",
-    100000000)
+  // signedTxHex, err := s.SignedBitcoincoreTx(context.Background(), walletHD,
+  //   "01000000023428ed5680af8b5766573665a45b1af0b9dfa91837ca9024dd6c8b6c2e9458390100000000ffffffff7d41315bfca7eca7ac8be2c3dbd1ef315c8b11baa1b85fb585f7faf0defd1def0000000000ffffffff0280d1f008000000001976a914289cafa2615c1bc74369e86ea5d08427a063abcf88ac9cb9c304000000001976a9144e1eff3ae7f5d38921b238469137c4f4f6f14f0488ac00000000",
+  //   100000000)
+  // if err != nil {
+  //   fmt.Println("SignedBitcoincoreTx error:", err.Error())
+  // }
+  // fmt.Println("SignedBitcoincoreTx:", signedTxHex)
+  signedETHTXHex, err := s.SignedEthereumTx(context.Background(), walletHD, "0xe78001825208942cf0bbc1244f7957627c3df49d5b9e79f7b95e9688016345785d8a000080808080", "1337")
   if err != nil {
-    fmt.Println("SignedBitcoincoreTx error:", err.Error())
+    fmt.Println("SignedEthereumTx error:", err.Error())
   }
-  fmt.Println("SignedBitcoincoreTx:", signedTxHex)
+  fmt.Println("SignedEthereumTx:", signedETHTXHex)
 }

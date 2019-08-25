@@ -40,3 +40,10 @@ func (l loggingMiddleware) SignedBitcoincoreTx(ctx context.Context, walletHD rep
 	}()
 	return l.next.SignedBitcoincoreTx(ctx, walletHD, txHex, vinAmount)
 }
+
+func (l loggingMiddleware) SignedEthereumTx(ctx context.Context, walletHD repository.WalletHD, txHex string, chainID string) (signedTxHex string, err error) {
+	defer func() {
+		l.logger.Log("method", "SignedEthereumTx", "walletHD", walletHD, "txHex", txHex, "chainID", chainID, "signedTxHex", signedTxHex, "err", err)
+	}()
+	return l.next.SignedEthereumTx(ctx, walletHD, txHex, chainID)
+}

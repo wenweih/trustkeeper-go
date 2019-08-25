@@ -12,6 +12,7 @@ type IBiz interface {
   SaveMnemonic(namespaceID string, mnemonic []byte) (version string, err error)
   Close() error
   SignedBitcoincoreTx(ctx context.Context, walletHD WalletHD, txHex string, vinAmount int64) (signedTxHex string, err error)
+  SignedEthereumTx(ctx context.Context, walletHD WalletHD, txHex string, chainID string) (string, error)
 }
 
 // WalletHD wallet hd info

@@ -25,6 +25,7 @@ type WalletKeyService interface {
 		namespaceID string, bip44ids []int32, bip44accountSize int) (chainsWithXpubs []*Bip44ThirdXpubsForChain, version string, err error)
 	Close() error
 	SignedBitcoincoreTx(ctx context.Context, walletHD repository.WalletHD, txHex string, vinAmount int64) (signedTxHex string, err error)
+	SignedEthereumTx(ctx context.Context, walletHD repository.WalletHD, txHex string, chainID string) (signedTxHex string, err error)
 }
 
 type basicWalletKeyService struct {
@@ -127,4 +128,8 @@ func (b *basicWalletKeyService) SignedBitcoincoreTx(ctx context.Context,
 	walletHD repository.WalletHD, txHex string, vinAmount int64) (signedTxHex string, err error) {
 	signedTxHex, err = b.biz.SignedBitcoincoreTx(ctx, walletHD, txHex, vinAmount)
 	return
+}
+
+func (b *basicWalletKeyService) SignedEthereumTx(ctx context.Context, walletHD repository.WalletHD, txHex string, chainID string) (string, error) {
+	return b.biz.SignedEthereumTx(ctx, walletHD, txHex, chainID)
 }
