@@ -14,6 +14,7 @@ service ChainsQuery {
  rpc QueryBalance      (QueryBalanceRequest     ) returns (QueryBalanceReply     );
  rpc WalletValidate    (WalletValidateRequest   ) returns (WalletValidateReply   );
  rpc ConstructTxETH    (ConstructTxETHRequest   ) returns (ConstructTxETHReply   );
+ rpc SendETHTx         (SendETHTxRequest        ) returns (SendETHTxReply        );
 }
 
 message BitcoincoreBlockRequest {}
@@ -94,12 +95,20 @@ message WalletValidateRequest {
 message WalletValidateReply {}
 
 message ConstructTxETHRequest {
-  string From   = 1;
-  string To     = 2;
-  string Amount = 3;
+ string From   = 1;
+ string To     = 2;
+ string Amount = 3;
 }
 
 message ConstructTxETHReply {
-  string UnsignedTxHex = 1;
-  string ChainID = 2;
+ string UnsignedTxHex = 1;
+ string ChainID       = 2;
+}
+
+message SendETHTxRequest {
+  string SignedTxHex = 1;
+}
+
+message SendETHTxReply {
+  string TxID = 1;
 }

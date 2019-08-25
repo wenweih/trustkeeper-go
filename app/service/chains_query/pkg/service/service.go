@@ -26,6 +26,7 @@ type ChainsQueryService interface {
 	SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error)
 
 	ConstructTxETH(ctx context.Context, from, to, amount string) (unsignedTxHex, chainID string, err error)
+	SendETHTx(ctx context.Context, signedTxHex string) (txID string, err error)
 
 	QueryBalance(ctx context.Context, symbol, address string) (balance string, err error)
 	WalletValidate(ctx context.Context, chainName, address string) (err error)
@@ -115,4 +116,8 @@ func (b *basicChainsQueryService) WalletValidate(ctx context.Context, chainName 
 
 func (b *basicChainsQueryService) ConstructTxETH(ctx context.Context, from string, to string, amount string) (string, string, error) {
 	return b.biz.ConstructTxETH(ctx, from, to, amount)
+}
+
+func (b *basicChainsQueryService) SendETHTx(ctx context.Context, signedTxHex string) (string, error) {
+	return b.biz.SendETHTx(ctx, signedTxHex)
 }

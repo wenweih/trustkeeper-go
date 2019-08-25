@@ -142,3 +142,57 @@ func (repo *repo) ConstructTxETH(ctx context.Context, from, to, amount string) (
   }
   return rawTxHex, chainID.String(), nil
 }
+
+func (repo *repo) SendETHTx(ctx context.Context, signedTxHex string) (txID string, err error) {
+  tx, err := model.DecodeETHTx(signedTxHex)
+  if err != nil {
+    return "", fmt.Errorf("Fail to SendETHTx %s", err)
+  }
+  ms, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
+  if err != nil {
+    return "", fmt.Errorf("Fail to extract tx ms %s", err.Error())
+  }
+  if err := repo.ethClient.SendTransaction(ctx, tx); err != nil {
+    e := repo.rollbackETHTx(ms)
+    repo.logger.Log("Fail to rollbackETHTx", e.Error())
+    return "", fmt.Errorf("Fail to SendETHTx %s", err)
+  }
+  // ts := repo.db.Begin()
+  sender := ms.From().String()
+  balance := model.Balance{}
+  txRecord := model.Tx{}
+  if err := repo.db.Where("address = ? AND symbol = ?", sender, model.ETHSymbol).First(&balance).Error; err != nil {
+    return "", fmt.Errorf("Fail to find sender address in balance table %s", err.Error())
+  }
+  if err := repo.db.FirstOrCreate(&txRecord,
+    model.Tx{
+      TxID: tx.Hash().String(),
+      TxType: model.TxTypeWithdraw,
+      Address: balance.Address,
+      Asset: balance.Symbol,
+      Amount: tx.Value().String(),
+      BalanceID: balance.ID,
+      ChainName: model.ChainEthereum,
+  }).Error; err != nil {
+    return "", fmt.Errorf("Fail to create withdraw tx record %s", err.Error())
+  }
+  return tx.Hash().String(), nil
+}
+
+func (repo *repo) rollbackETHTx(ms types.Message) error {
+  sender := ms.From().String()
+  balance := model.Balance{}
+  if err := repo.db.Where("address = ? AND symbol = ?", sender, model.ETHSymbol).First(&balance).Error; err != nil {
+    return fmt.Errorf("Fail to find sender address in balance table %s", err.Error())
+  }
+  withdrawLockDecimal, err := decimal.NewFromString(balance.WithdrawLock)
+  if err != nil {
+    return fmt.Errorf("Extract originWithdrawLock error %s", err.Error())
+  }
+  if err := repo.db.Model(&balance).UpdateColumn("withdraw_lock",
+    withdrawLockDecimal.Sub(decimal.NewFromBigInt(ms.Value(), 0)).String()).Error;
+  err != nil {
+    return fmt.Errorf("Fail to update withdrawLock row %s", err.Error())
+  }
+  return nil
+}

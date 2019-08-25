@@ -67,6 +67,12 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 			encodeConstructTxETHRequest, decodeConstructTxETHResponse, pb.ConstructTxETHReply{}, options...).Endpoint()
 	}
 
+	var sendETHTxEndpoint endpoint.Endpoint
+	{
+		sendETHTxEndpoint = grpc1.NewClient(conn, "pb.ChainsQuery", "SendETHTx",
+			encodeSendETHTxRequest, decodeSendETHTxResponse, pb.SendETHTxReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		BitcoincoreBlockEndpoint:  bitcoincoreBlockEndpoint,
 		ConstructTxBTCEndpoint:    constructTxBTCEndpoint,
@@ -75,6 +81,7 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 		QueryBalanceEndpoint:      queryBalanceEndpoint,
 		QueryOmniPropertyEndpoint: queryOmniPropertyEndpoint,
 		SendBTCTxEndpoint:         sendBTCTxEndpoint,
+		SendETHTxEndpoint:         sendETHTxEndpoint,
 		WalletValidateEndpoint:    walletValidateEndpoint,
 	}, nil
 }
@@ -179,6 +186,27 @@ func decodeSendBTCTxResponse(_ context.Context, reply interface{}) (interface{},
 		return endpoint1.SendBTCTxResponse{Err: e}, e
 	}
 	return endpoint1.SendBTCTxResponse{TxID: resp.TxID}, nil
+}
+
+// encodeSendETHTxRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain SendETHTx request to a gRPC request.
+func encodeSendETHTxRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.SendETHTxRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint SendETHTxRequest type assertion error")
+	}
+	return &pb.SendETHTxRequest{SignedTxHex: r.SignedTxHex}, nil
+}
+
+// decodeSendETHTxResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeSendETHTxResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.SendETHTxReply)
+	if !ok {
+		e := fmt.Errorf("pb SendETHTxReply type assertion error")
+		return endpoint1.SendETHTxResponse{Err: e}, e
+	}
+	return endpoint1.SendETHTxResponse{TxID: resp.TxID}, nil
 }
 
 // encodeQueryBalanceRequest is a transport/grpc.EncodeRequestFunc that converts a

@@ -58,9 +58,14 @@ func main()  {
   //   fmt.Println("SendBTCTx err:", err.Error())
   // }
   // fmt.Println("SendBTCTx:", txid)
-  ethUnsignedTxHex, chainID, err := s.ConstructTxETH(ctxWithAuthInfo, "0x034e335B7BcfEadD9f4d6fC3AA3A2fEc7E8364E0", "0x2CF0Bbc1244f7957627c3dF49D5B9e79F7b95E96", "0.1")
+  // ethUnsignedTxHex, chainID, err := s.ConstructTxETH(ctxWithAuthInfo, "0x034e335B7BcfEadD9f4d6fC3AA3A2fEc7E8364E0", "0x2CF0Bbc1244f7957627c3dF49D5B9e79F7b95E96", "0.1")
+  // if err != nil {
+  //   fmt.Println("ConstructTxETH err: ", err.Error())
+  // }
+  // fmt.Println("ConstructTxETH:", ethUnsignedTxHex, chainID)
+  ethTxID, err := s.SendETHTx(ctxWithAuthInfo, "0xf8698001825208942cf0bbc1244f7957627c3df49d5b9e79f7b95e9688016345785d8a000080820a96a0f4c0aa937a137bb5cb1beaee0eb80f30b7c8f71458a25d5a11b47cd6df6c83eca07fb577604e08a4c204df6352efbcfebcdb585875d022276400a965f408ad85b6")
   if err != nil {
-    fmt.Println("ConstructTxETH err: ", err.Error())
+    fmt.Println("SendETHTx error:", err.Error())
   }
-  fmt.Println("ConstructTxETH:", ethUnsignedTxHex, chainID)
+  fmt.Println("SendETHTx:", ethTxID)
 }

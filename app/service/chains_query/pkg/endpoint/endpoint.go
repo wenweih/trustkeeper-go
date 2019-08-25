@@ -310,7 +310,7 @@ type ConstructTxETHRequest struct {
 // ConstructTxETHResponse collects the response parameters for the ConstructTxETH method.
 type ConstructTxETHResponse struct {
 	UnsignedTxHex string `json:"unsigned_tx_hex"`
-	ChainID string `json:"chain_id"`
+	ChainID       string `json:"chain_id"`
 	Err           error  `json:"err"`
 }
 
@@ -321,12 +321,12 @@ func MakeConstructTxETHEndpoint(s service.ChainsQueryService) endpoint.Endpoint 
 		unsignedTxHex, chainID, err := s.ConstructTxETH(ctx, req.From, req.To, req.Amount)
 		if err != nil {
 			return ConstructTxETHResponse{
-				Err:           err,
+				Err: err,
 			}, err
 		}
 		return ConstructTxETHResponse{
 			UnsignedTxHex: unsignedTxHex,
-			ChainID: chainID,
+			ChainID:       chainID,
 		}, nil
 	}
 }
@@ -350,4 +350,46 @@ func (e Endpoints) ConstructTxETH(ctx context.Context, from string, to string, a
 	return response.(ConstructTxETHResponse).UnsignedTxHex,
 		response.(ConstructTxETHResponse).ChainID,
 		nil
+}
+
+// SendETHTxRequest collects the request parameters for the SendETHTx method.
+type SendETHTxRequest struct {
+	SignedTxHex string `json:"signed_tx_hex"`
+}
+
+// SendETHTxResponse collects the response parameters for the SendETHTx method.
+type SendETHTxResponse struct {
+	TxID string `json:"tx_id"`
+	Err  error  `json:"err"`
+}
+
+// MakeSendETHTxEndpoint returns an endpoint that invokes SendETHTx on the service.
+func MakeSendETHTxEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SendETHTxRequest)
+		txID, err := s.SendETHTx(ctx, req.SignedTxHex)
+		if err != nil {
+			return SendETHTxResponse{
+				Err:  err,
+			}, err
+		}
+		return SendETHTxResponse{
+			TxID: txID,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r SendETHTxResponse) Failed() error {
+	return r.Err
+}
+
+// SendETHTx implements Service. Primarily useful in a client.
+func (e Endpoints) SendETHTx(ctx context.Context, signedTxHex string) (txID string, err error) {
+	request := SendETHTxRequest{SignedTxHex: signedTxHex}
+	response, err := e.SendETHTxEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(SendETHTxResponse).TxID, nil
 }

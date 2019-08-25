@@ -164,7 +164,6 @@ func makeSendBTCTxHandler(endpoints endpoint.Endpoints, options []grpc.ServerOpt
 
 // decodeSendBTCTxResponse is a transport/grpc.DecodeRequestFunc that converts a
 // gRPC request to a user-domain SendBTCTx request.
-// TODO implement the decoder
 func decodeSendBTCTxRequest(_ context.Context, r interface{}) (interface{}, error) {
 	req, ok := r.(*pb.SendBTCTxRequest)
 	if !ok {
@@ -175,7 +174,6 @@ func decodeSendBTCTxRequest(_ context.Context, r interface{}) (interface{}, erro
 
 // encodeSendBTCTxResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeSendBTCTxResponse(_ context.Context, r interface{}) (interface{}, error) {
 	resp, ok := r.(endpoint.SendBTCTxResponse)
 	if !ok {
@@ -302,4 +300,40 @@ func (g *grpcServer) ConstructTxETH(ctx context1.Context, req *pb.ConstructTxETH
 		return nil, err
 	}
 	return rep.(*pb.ConstructTxETHReply), nil
+}
+
+// makeSendETHTxHandler creates the handler logic
+func makeSendETHTxHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.SendETHTxEndpoint, decodeSendETHTxRequest, encodeSendETHTxResponse, options...)
+}
+
+// decodeSendETHTxResponse is a transport/grpc.DecodeRequestFunc that converts a
+// gRPC request to a user-domain SendETHTx request.
+func decodeSendETHTxRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.SendETHTxRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb SendETHTxRequest type assersion error")
+	}
+	return endpoint.SendETHTxRequest{SignedTxHex: req.SignedTxHex}, nil
+}
+
+// encodeSendETHTxResponse is a transport/grpc.EncodeResponseFunc that converts
+// a user-domain response to a gRPC reply.
+// TODO implement the encoder
+func encodeSendETHTxResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.SendETHTxResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint SendETHTxResponse type assersion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.SendETHTxReply{TxID: resp.TxID}, nil
+}
+func (g *grpcServer) SendETHTx(ctx context1.Context, req *pb.SendETHTxRequest) (*pb.SendETHTxReply, error) {
+	_, rep, err := g.sendETHTx.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.SendETHTxReply), nil
 }
