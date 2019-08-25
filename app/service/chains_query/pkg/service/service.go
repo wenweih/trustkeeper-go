@@ -25,6 +25,8 @@ type ChainsQueryService interface {
 	ConstructTxBTC(ctx context.Context, from, to, amount string) (unsignedTxHex string, vinAmount int64, err error)
 	SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error)
 
+	ConstructTxETH(ctx context.Context, from, to, amount string) (unsignedTxHex, chainID string, err error)
+
 	QueryBalance(ctx context.Context, symbol, address string) (balance string, err error)
 	WalletValidate(ctx context.Context, chainName, address string) (err error)
 }
@@ -45,7 +47,7 @@ func NewBasicChainsQueryService(conf configure.Conf, logger log.Logger) (*basicC
 		return nil, errors.New(strings.Join([]string{"omni rpcclient error", err.Error()}, ":"))
 	}
 
-	ethereumClient, err := ethclient.Dial(conf.ETHRPC)
+	ethereumClient, err := ethclient.Dial(conf.ETHWS)
 	if err != nil {
 		return nil, errors.New(strings.Join([]string{"Ethereum client error", err.Error()}, ":"))
 	}
@@ -60,7 +62,7 @@ func NewBasicChainsQueryService(conf configure.Conf, logger log.Logger) (*basicC
 		return nil, err
 	}
 	return &basicChainsQueryService{
-		biz: repository.New(btcclient, omniClient, ethereumClient, messageClient, db, logger),
+		biz: repository.New(btcclient, omniClient, ethereumClient, messageClient, db, logger, conf),
 	}, nil
 }
 
@@ -109,4 +111,8 @@ func (b *basicChainsQueryService) QueryBalance(ctx context.Context, symbol strin
 func (b *basicChainsQueryService) WalletValidate(ctx context.Context, chainName string, address string) (err error) {
 	err = b.biz.WalletValidate(ctx, chainName, address)
 	return
+}
+
+func (b *basicChainsQueryService) ConstructTxETH(ctx context.Context, from string, to string, amount string) (string, string, error) {
+	return b.biz.ConstructTxETH(ctx, from, to, amount)
 }

@@ -5,9 +5,16 @@ import(
   "bytes"
   "math/big"
   "encoding/gob"
+  "math"
+  "github.com/ethereum/go-ethereum/rlp"
+  "github.com/shopspring/decimal"
   "github.com/ethereum/go-ethereum/common/hexutil"
   "github.com/ethereum/go-ethereum/common"
   "github.com/ethereum/go-ethereum/core/types"
+)
+
+const (
+  ETHSymbol string = "ETH"
 )
 
 // EthBlock notify block info
@@ -35,6 +42,12 @@ type EthereumBlock struct {
   Hash   common.Hash
   Header *types.Header
   Tx     []*ETHSimpleTx
+}
+
+// TxPoolInspect ethereum transaction pool datatype
+type TxPoolInspect struct {
+  Pending map[string]map[uint64]string  `json:"pending"`
+  Queued  map[string]map[uint64]string  `json:"queued"`
 }
 
 func EncodeETHBlock(block types.Block) ([]byte, error) {
@@ -76,4 +89,57 @@ func EncodeETHBlock(block types.Block) ([]byte, error) {
     return nil, err
   }
   return buf.Bytes(), nil
+}
+
+func ToEther(balance *big.Int) *big.Float {
+	fbalance := new(big.Float)
+	fbalance.SetString(balance.String())
+	ethValue := new(big.Float).Quo(fbalance, big.NewFloat(math.Pow10(18)))
+	return ethValue
+}
+
+func ToWei(iamount interface{}, decimals int) *big.Int {
+    amount := decimal.NewFromFloat(0)
+    switch v := iamount.(type) {
+    case string:
+        amount, _ = decimal.NewFromString(v)
+    case float64:
+        amount = decimal.NewFromFloat(v)
+    case int64:
+        amount = decimal.NewFromFloat(float64(v))
+    case decimal.Decimal:
+        amount = v
+    case *decimal.Decimal:
+        amount = *v
+    }
+    mul := decimal.NewFromFloat(float64(10)).Pow(decimal.NewFromFloat(float64(decimals)))
+    result := amount.Mul(mul)
+    wei := new(big.Int)
+    wei.SetString(result.String(), 10)
+    return wei
+}
+
+// EncodeETHTx encode eth tx
+func EncodeETHTx(tx *types.Transaction) (string, error) {
+	txb, err := rlp.EncodeToBytes(tx)
+	if err != nil {
+		return "", err
+	}
+	txHex := hexutil.Encode(txb)
+	return txHex, nil
+}
+
+// DecodeETHTx ethereum transaction hex
+func DecodeETHTx(txHex string) (*types.Transaction, error) {
+	txc, err := hexutil.Decode(txHex)
+	if err != nil {
+		return nil, err
+	}
+
+	var txde types.Transaction
+	t, err := &txde, rlp.Decode(bytes.NewReader(txc), &txde)
+	if err != nil {
+		return nil, err
+	}
+	return t, nil
 }

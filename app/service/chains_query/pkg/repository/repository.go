@@ -7,6 +7,8 @@ import(
   "github.com/ethereum/go-ethereum/ethclient"
   "trustkeeper-go/library/mq"
   "trustkeeper-go/app/service/chains_query/pkg/model"
+  "trustkeeper-go/app/service/chains_query/pkg/configure"
+
 )
 
 // Repo repo obj
@@ -17,6 +19,7 @@ type repo struct {
   MQ            *mq.MessagingClient
   db            *gorm.DB
   logger        log.Logger
+  conf          configure.Conf
 }
 
 // New new repo
@@ -26,7 +29,8 @@ func New(
   ethClient *ethclient.Client,
   mq *mq.MessagingClient,
   db *gorm.DB,
-  logger log.Logger) IBiz {
+  logger log.Logger,
+  conf configure.Conf) IBiz {
   db.AutoMigrate(
     model.BtcUtxo{},
     model.BtcBlock{},
@@ -41,7 +45,9 @@ func New(
     ethClient: ethClient,
     MQ: mq,
     db: db,
-    logger: logger}
+    logger: logger,
+    conf: conf,
+  }
   repo.DeclareExChange(ExchangeNameForBitcoincoreBestBlock, "fanout")
   repo.DeclareExChange(ExchangeNameForEthereumBestBlock, "fanout")
   repo.DeclareQueue(QueueNameForBitcoincoreTraceTx)

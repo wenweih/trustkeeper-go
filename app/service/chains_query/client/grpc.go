@@ -61,9 +61,16 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 			encodeWalletValidateRequest, decodeWalletValidateResponse, pb.WalletValidateReply{}, options...).Endpoint()
 	}
 
+	var constructTxETHEndpoint endpoint.Endpoint
+	{
+		constructTxETHEndpoint = grpc1.NewClient(conn, "pb.ChainsQuery", "ConstructTxETH",
+			encodeConstructTxETHRequest, decodeConstructTxETHResponse, pb.ConstructTxETHReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		BitcoincoreBlockEndpoint:  bitcoincoreBlockEndpoint,
 		ConstructTxBTCEndpoint:    constructTxBTCEndpoint,
+		ConstructTxETHEndpoint:    constructTxETHEndpoint,
 		ERC20TokenInfoEndpoint:    eRC20TokenInfoEndpoint,
 		QueryBalanceEndpoint:      queryBalanceEndpoint,
 		QueryOmniPropertyEndpoint: queryOmniPropertyEndpoint,
@@ -214,4 +221,25 @@ func decodeWalletValidateResponse(_ context.Context, reply interface{}) (interfa
 		return endpoint1.WalletValidateResponse{Err: e}, e
 	}
 	return endpoint1.WalletValidateResponse{}, nil
+}
+
+// encodeConstructTxETHRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain ConstructTxETH request to a gRPC request.
+func encodeConstructTxETHRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.ConstructTxETHRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint ConstructTxETHRequest type assertion error")
+	}
+	return &pb.ConstructTxETHRequest{Amount: r.Amount, From: r.From, To: r.To}, nil
+}
+
+// decodeConstructTxETHResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeConstructTxETHResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.ConstructTxETHReply)
+	if !ok {
+		e := fmt.Errorf("pb ConstructTxETHReply type assertion error")
+		return endpoint1.ConstructTxETHResponse{Err: e}, e
+	}
+	return endpoint1.ConstructTxETHResponse{UnsignedTxHex: resp.UnsignedTxHex, ChainID: resp.ChainID}, nil
 }

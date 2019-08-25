@@ -299,3 +299,55 @@ func (e Endpoints) WalletValidate(ctx context.Context, chainName string, address
 	}
 	return response.(WalletValidateResponse).Err
 }
+
+// ConstructTxETHRequest collects the request parameters for the ConstructTxETH method.
+type ConstructTxETHRequest struct {
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount string `json:"amount"`
+}
+
+// ConstructTxETHResponse collects the response parameters for the ConstructTxETH method.
+type ConstructTxETHResponse struct {
+	UnsignedTxHex string `json:"unsigned_tx_hex"`
+	ChainID string `json:"chain_id"`
+	Err           error  `json:"err"`
+}
+
+// MakeConstructTxETHEndpoint returns an endpoint that invokes ConstructTxETH on the service.
+func MakeConstructTxETHEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ConstructTxETHRequest)
+		unsignedTxHex, chainID, err := s.ConstructTxETH(ctx, req.From, req.To, req.Amount)
+		if err != nil {
+			return ConstructTxETHResponse{
+				Err:           err,
+			}, err
+		}
+		return ConstructTxETHResponse{
+			UnsignedTxHex: unsignedTxHex,
+			ChainID: chainID,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r ConstructTxETHResponse) Failed() error {
+	return r.Err
+}
+
+// ConstructTxETH implements Service. Primarily useful in a client.
+func (e Endpoints) ConstructTxETH(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, chainID string, err error) {
+	request := ConstructTxETHRequest{
+		Amount: amount,
+		From:   from,
+		To:     to,
+	}
+	response, err := e.ConstructTxETHEndpoint(ctx, request)
+	if err != nil {
+		return "", "", err
+	}
+	return response.(ConstructTxETHResponse).UnsignedTxHex,
+		response.(ConstructTxETHResponse).ChainID,
+		nil
+}

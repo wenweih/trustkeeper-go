@@ -15,6 +15,7 @@ type Endpoints struct {
 	ERC20TokenInfoEndpoint    endpoint.Endpoint
 	ConstructTxBTCEndpoint    endpoint.Endpoint
 	SendBTCTxEndpoint         endpoint.Endpoint
+	ConstructTxETHEndpoint    endpoint.Endpoint
 	QueryBalanceEndpoint      endpoint.Endpoint
 	WalletValidateEndpoint    endpoint.Endpoint
 }
@@ -25,6 +26,7 @@ func New(s service.ChainsQueryService, mdw map[string][]endpoint.Middleware) End
 	eps := Endpoints{
 		BitcoincoreBlockEndpoint:  MakeBitcoincoreBlockEndpoint(s),
 		ConstructTxBTCEndpoint:    MakeConstructTxBTCEndpoint(s),
+		ConstructTxETHEndpoint:    MakeConstructTxETHEndpoint(s),
 		ERC20TokenInfoEndpoint:    MakeERC20TokenInfoEndpoint(s),
 		QueryBalanceEndpoint:      MakeQueryBalanceEndpoint(s),
 		QueryOmniPropertyEndpoint: MakeQueryOmniPropertyEndpoint(s),
@@ -45,6 +47,9 @@ func New(s service.ChainsQueryService, mdw map[string][]endpoint.Middleware) End
 	}
 	for _, m := range mdw["SendBTCTx"] {
 		eps.SendBTCTxEndpoint = m(eps.SendBTCTxEndpoint)
+	}
+	for _, m := range mdw["ConstructTxETH"] {
+		eps.ConstructTxETHEndpoint = m(eps.ConstructTxETHEndpoint)
 	}
 	for _, m := range mdw["QueryBalance"] {
 		eps.QueryBalanceEndpoint = m(eps.QueryBalanceEndpoint)

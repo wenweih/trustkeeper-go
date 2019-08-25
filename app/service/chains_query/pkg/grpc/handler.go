@@ -138,7 +138,6 @@ func decodeConstructTxBTCRequest(_ context.Context, r interface{}) (interface{},
 
 // encodeConstructTxBTCResponse is a transport/grpc.EncodeResponseFunc that converts
 // a user-domain response to a gRPC reply.
-// TODO implement the encoder
 func encodeConstructTxBTCResponse(_ context.Context, r interface{}) (interface{}, error) {
 	resp, ok := r.(endpoint.ConstructTxBTCResponse)
 	if !ok {
@@ -267,4 +266,40 @@ func (g *grpcServer) WalletValidate(ctx context1.Context, req *pb.WalletValidate
 		return nil, err
 	}
 	return rep.(*pb.WalletValidateReply), nil
+}
+
+// makeConstructTxETHHandler creates the handler logic
+func makeConstructTxETHHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.ConstructTxETHEndpoint, decodeConstructTxETHRequest, encodeConstructTxETHResponse, options...)
+}
+
+// decodeConstructTxETHResponse is a transport/grpc.DecodeRequestFunc that converts a
+// gRPC request to a user-domain ConstructTxETH request.
+func decodeConstructTxETHRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.ConstructTxETHRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb ConstructTxETHRequest type assersion error")
+	}
+	return endpoint.ConstructTxETHRequest{From: req.From, To: req.To, Amount: req.Amount}, nil
+}
+
+// encodeConstructTxETHResponse is a transport/grpc.EncodeResponseFunc that converts
+// a user-domain response to a gRPC reply.
+func encodeConstructTxETHResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.ConstructTxETHResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint ConstructTxETHResponse type assertion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.ConstructTxETHReply{UnsignedTxHex: resp.UnsignedTxHex, ChainID: resp.ChainID}, nil
+}
+
+func (g *grpcServer) ConstructTxETH(ctx context1.Context, req *pb.ConstructTxETHRequest) (*pb.ConstructTxETHReply, error) {
+	_, rep, err := g.constructTxETH.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.ConstructTxETHReply), nil
 }

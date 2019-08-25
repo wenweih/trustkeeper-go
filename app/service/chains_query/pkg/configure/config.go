@@ -14,6 +14,7 @@ type Conf struct {
 	BTCconnCfg    *rpcclient.ConnConfig
 	OmniconnCfg    *rpcclient.ConnConfig
 	ETHRPC        string
+	ETHWS         string
 	MQ            string
 }
 
@@ -48,6 +49,7 @@ func New() (*Conf, error) {
 	omniPass := data.Data["omnipass"].(string)
 
 	eth_rpc := data.Data["eth_rpc"].(string)
+	eth_ws := data.Data["eth_ws"].(string)
 
 	return &Conf{
 		DBInfo:			dbInfo,
@@ -55,6 +57,7 @@ func New() (*Conf, error) {
 		Redis: redis,
 		MQ: mq,
 		ETHRPC: eth_rpc,
+		ETHWS: eth_ws,
 		BTCconnCfg: &rpcclient.ConnConfig{
 			Host: bitcoinHost,
 			User: bitcoinUsr,

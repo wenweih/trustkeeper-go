@@ -87,6 +87,13 @@ func New(consulAddr string, logger log.Logger) (service.ChainsQueryService, erro
     retry := lb.Retry(retryMax, retryTimeout, balancer)
     endpoints.WalletValidateEndpoint = retry
   }
+  {
+    factory := factoryFor(chainsquerytEndpoint.MakeConstructTxETHEndpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.ConstructTxETHEndpoint = retry
+  }
   return endpoints, nil
 }
 

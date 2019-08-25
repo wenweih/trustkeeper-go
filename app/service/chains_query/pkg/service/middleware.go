@@ -74,3 +74,10 @@ func (l loggingMiddleware) WalletValidate(ctx context.Context, chainName string,
 	}()
 	return l.next.WalletValidate(ctx, chainName, address)
 }
+
+func (l loggingMiddleware) ConstructTxETH(ctx context.Context, from string, to string, amount string) (unsignedTxHex string, chainID string, err error) {
+	defer func() {
+		l.logger.Log("method", "ConstructTxETH", "from", from, "to", to, "amount", amount, "unsignedTxHex", unsignedTxHex, "err", err)
+	}()
+	return l.next.ConstructTxETH(ctx, from, to, amount)
+}

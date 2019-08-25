@@ -13,6 +13,7 @@ service ChainsQuery {
  rpc SendBTCTx         (SendBTCTxRequest        ) returns (SendBTCTxReply        );
  rpc QueryBalance      (QueryBalanceRequest     ) returns (QueryBalanceReply     );
  rpc WalletValidate    (WalletValidateRequest   ) returns (WalletValidateReply   );
+ rpc ConstructTxETH    (ConstructTxETHRequest   ) returns (ConstructTxETHReply   );
 }
 
 message BitcoincoreBlockRequest {}
@@ -86,8 +87,19 @@ message QueryBalanceReply {
 }
 
 message WalletValidateRequest {
-  string chainName = 1;
-  string address = 2;
+ string chainName = 1;
+ string address   = 2;
 }
 
 message WalletValidateReply {}
+
+message ConstructTxETHRequest {
+  string From   = 1;
+  string To     = 2;
+  string Amount = 3;
+}
+
+message ConstructTxETHReply {
+  string UnsignedTxHex = 1;
+  string ChainID = 2;
+}
