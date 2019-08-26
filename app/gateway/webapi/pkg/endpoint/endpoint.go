@@ -769,3 +769,47 @@ func (e Endpoints) WalletValidate(ctx context.Context, chainName string, address
 	}
 	return response.(WalletValidateResponse).Err
 }
+
+// SendETHTxRequest collects the request parameters for the SendETHTx method.
+type SendETHTxRequest struct {
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount string `json:"amount"`
+}
+
+// SendETHTxResponse collects the response parameters for the SendETHTx method.
+type SendETHTxResponse struct {
+	Txid string `json:"txid"`
+	Err  error  `json:"err"`
+}
+
+// MakeSendETHTxEndpoint returns an endpoint that invokes SendETHTx on the service.
+func MakeSendETHTxEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SendETHTxRequest)
+		txid, err := s.SendETHTx(ctx, req.From, req.To, req.Amount)
+		return SendETHTxResponse{
+			Err:  err,
+			Txid: txid,
+		}, err
+	}
+}
+
+// Failed implements Failer.
+func (r SendETHTxResponse) Failed() error {
+	return r.Err
+}
+
+// SendETHTx implements Service. Primarily useful in a client.
+func (e Endpoints) SendETHTx(ctx context.Context, from string, to string, amount string) (txid string, err error) {
+	request := SendETHTxRequest{
+		Amount: amount,
+		From:   from,
+		To:     to,
+	}
+	response, err := e.SendETHTxEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(SendETHTxResponse).Txid, nil
+}

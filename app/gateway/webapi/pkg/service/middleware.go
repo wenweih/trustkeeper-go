@@ -147,3 +147,10 @@ func (l loggingMiddleware) WalletValidate(ctx context.Context, chainName string,
 	}()
 	return l.next.WalletValidate(ctx, chainName, address)
 }
+
+func (l loggingMiddleware) SendETHTx(ctx context.Context, from string, to string, amount string) (txid string, err error) {
+	defer func() {
+		l.logger.Log("method", "SendETHTx", "from", from, "to", to, "amount", amount, "txid", txid, "err", err)
+	}()
+	return l.next.SendETHTx(ctx, from, to, amount)
+}
