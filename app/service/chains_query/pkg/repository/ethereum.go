@@ -80,3 +80,8 @@ func (repo *repo) ERC20TokenInfo(ctx context.Context, tokenHex string) (*ERC20To
 func (repo *repo) QueryEthereumTxReceipt(ctx context.Context, txid string) (*types.Receipt, error) {
   return repo.ethClient.TransactionReceipt(ctx, common.HexToHash(txid))
 }
+
+func (repo *repo) QueryEthereumTx(ctx context.Context, txid string) (*types.Transaction, error) {
+  tx, _, err := repo.ethClient.TransactionByHash(ctx, common.HexToHash(txid))
+  return tx, err
+}

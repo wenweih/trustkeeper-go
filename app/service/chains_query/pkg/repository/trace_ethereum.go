@@ -8,6 +8,7 @@ import (
   "math/big"
   "encoding/gob"
   "encoding/hex"
+  "github.com/shopspring/decimal"
   "github.com/ethereum/go-ethereum/common"
   "github.com/ethereum/go-ethereum/common/hexutil"
   "trustkeeper-go/app/service/chains_query/pkg/model"
@@ -145,18 +146,34 @@ func (repo *repo) UpdateEthereumTx(ctx context.Context) {
         if !result {
           repo.logger.Log("Fail to extract transfer amount")
         }
+        transferAmountDecimal := decimal.NewFromBigInt(transferAmount, 0)
         balance := model.Balance{}
         ts.Model(&tx).Related(&balance)
         balanceAmount, result := new(big.Int).SetString(balance.Amount, 10)
         if !result {
           repo.logger.Log("Fail to extract balance amount")
         }
-        if tx.TxType == model.TxTypeDeposit {
-          balanceAmount = balanceAmount.Add(balanceAmount, transferAmount)
+        balanceAmountDecimal := decimal.NewFromBigInt(balanceAmount, 0)
+        withdrawLock, result := new(big.Int).SetString(balance.WithdrawLock, 10)
+        if !result {
+          repo.logger.Log("Fail to extract withdrawLock")
         }
-        balanceAmountStr := balanceAmount.String()
+        withdrawLockDecimal := decimal.NewFromBigInt(withdrawLock, 0)
+        if tx.TxType == model.TxTypeDeposit {
+          balanceAmountDecimal = balanceAmountDecimal.Add(transferAmountDecimal)
+        } else if (tx.TxType == model.TxTypeWithdraw) {
+          rawTx, err := repo.QueryEthereumTx(ctx, tx.TxID)
+          if err != nil {
+            repo.logger.Log("Fail to query ethereum tx %s", err.Error())
+          }
+          fee := decimal.NewFromBigInt(rawTx.GasPrice(), 0).Mul(decimal.New(int64(receipt.CumulativeGasUsed), 0))
+          withdrawLockDecimal = withdrawLockDecimal.Sub(decimal.NewFromBigInt(transferAmount, 0))
+          balanceAmountDecimal = balanceAmountDecimal.Sub(transferAmountDecimal).Sub(fee)
+        }
+        balanceAmountStr := balanceAmountDecimal.String()
+        withdrawLockStr := withdrawLockDecimal.String()
         ts.Create(&model.BalanceLog{TxID: tx.TxID, From: balance.Amount, To: balanceAmountStr, BalanceID: balance.ID})
-        ts.Model(&balance).UpdateColumn("amount", balanceAmountStr)
+        ts.Model(&balance).UpdateColumns(model.Balance{Amount: balanceAmountStr, WithdrawLock: withdrawLockStr})
       }else {
         state = model.StateConfirming
       }
@@ -167,6 +184,7 @@ func (repo *repo) UpdateEthereumTx(ctx context.Context) {
       ts.Model(&tx).UpdateColumn("state", model.StateFail)
     }
     if err := ts.Commit().Error; err != nil {
+      ts.Rollback()
       repo.logger.Log("UpdateEthereumTx:", err.Error())
     }
   }

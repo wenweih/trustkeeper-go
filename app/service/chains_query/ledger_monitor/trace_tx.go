@@ -167,7 +167,6 @@ func onBitcoinMessage(d amqp.Delivery) {
   isTracking := true
   trackHeight := mqdata.Height - 1
   for isTracking {
-    isTracking, trackHeight = svc.TrackBtcBlockPipeline(
-      ctx, trackHeight, mqdata.Height, isTracking)
+    isTracking, trackHeight = svc.TrackBtcBlockPipeline(ctx, trackHeight, mqdata.Height, isTracking)
   }
 }
