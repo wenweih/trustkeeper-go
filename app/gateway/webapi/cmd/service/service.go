@@ -20,7 +20,6 @@ import (
 	lightsteptracergo "github.com/lightstep/lightstep-tracer-go"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
-	zipkingoopentracing "github.com/openzipkin/zipkin-go-opentracing"
 	prometheus1 "github.com/prometheus/client_golang/prometheus"
 	promhttp "github.com/prometheus/client_golang/prometheus/promhttp"
 	appdash "sourcegraph.com/sourcegraph/appdash"
@@ -38,8 +37,6 @@ var logger log.Logger
 var fs = flag.NewFlagSet("webapi", flag.ExitOnError)
 var debugAddr = fs.String("debug.addr", ":7979", "Debug and metrics listen address")
 var httpAddr = fs.String("http-addr", ":8081", "HTTP listen address")
-
-var zipkinURL = fs.String("zipkin-url", "", "Enable Zipkin tracing via a collector URL e.g. http://localhost:9411/api/v1/spans")
 var lightstepToken = fs.String("lightstep-token", "", "Enable LightStep tracing via a LightStep access token")
 var appdashAddr = fs.String("appdash-addr", "", "Enable Appdash tracing via an Appdash server host:port")
 
@@ -53,21 +50,7 @@ func Run() {
 
 	//  Determine which tracer to use. We'll pass the tracer to all the
 	// components that use it, as a dependency
-	if *zipkinURL != "" {
-		logger.Log("tracer", "Zipkin", "URL", *zipkinURL)
-		collector, err := zipkingoopentracing.NewHTTPCollector(*zipkinURL)
-		if err != nil {
-			logger.Log("err", err)
-			os.Exit(1)
-		}
-		defer collector.Close()
-		recorder := zipkingoopentracing.NewRecorder(collector, false, "localhost:80", "webapi")
-		tracer, err = zipkingoopentracing.NewTracer(recorder)
-		if err != nil {
-			logger.Log("err", err)
-			os.Exit(1)
-		}
-	} else if *lightstepToken != "" {
+	if *lightstepToken != "" {
 		logger.Log("tracer", "LightStep")
 		tracer = lightsteptracergo.NewTracer(lightsteptracergo.Options{AccessToken: *lightstepToken})
 		defer lightsteptracergo.FlushLightStepTracer(tracer)

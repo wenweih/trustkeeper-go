@@ -370,7 +370,7 @@ func MakeSendETHTxEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
 		txID, err := s.SendETHTx(ctx, req.SignedTxHex)
 		if err != nil {
 			return SendETHTxResponse{
-				Err:  err,
+				Err: err,
 			}, err
 		}
 		return SendETHTxResponse{
@@ -392,4 +392,56 @@ func (e Endpoints) SendETHTx(ctx context.Context, signedTxHex string) (txID stri
 		return "", err
 	}
 	return response.(SendETHTxResponse).TxID, nil
+}
+
+// ConstructTxERC20Request collects the request parameters for the ConstructTxERC20 method.
+type ConstructTxERC20Request struct {
+	From     string `json:"from"`
+	To       string `json:"to"`
+	Amount   string `json:"amount"`
+	Contract string `json:"contract"`
+}
+
+// ConstructTxERC20Response collects the response parameters for the ConstructTxERC20 method.
+type ConstructTxERC20Response struct {
+	UnsignedTxHex string `json:"unsigned_tx_hex"`
+	ChainID       string `json:"chain_id"`
+	Err           error  `json:"err"`
+}
+
+// MakeConstructTxERC20Endpoint returns an endpoint that invokes ConstructTxERC20 on the service.
+func MakeConstructTxERC20Endpoint(s service.ChainsQueryService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ConstructTxERC20Request)
+		unsignedTxHex, chainID, err := s.ConstructTxERC20(ctx, req.From, req.To, req.Amount, req.Contract)
+		if err != nil {
+			return ConstructTxERC20Response{
+				Err:           err,
+			}, err
+		}
+		return ConstructTxERC20Response{
+			ChainID:       chainID,
+			UnsignedTxHex: unsignedTxHex,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r ConstructTxERC20Response) Failed() error {
+	return r.Err
+}
+
+// ConstructTxERC20 implements Service. Primarily useful in a client.
+func (e Endpoints) ConstructTxERC20(ctx context.Context, from string, to string, amount string, contract string) (unsignedTxHex string, chainID string, err error) {
+	request := ConstructTxERC20Request{
+		Amount:   amount,
+		Contract: contract,
+		From:     from,
+		To:       to,
+	}
+	response, err := e.ConstructTxERC20Endpoint(ctx, request)
+	if err != nil {
+		return "", "", err
+	}
+	return response.(ConstructTxERC20Response).UnsignedTxHex, response.(ConstructTxERC20Response).ChainID, nil
 }

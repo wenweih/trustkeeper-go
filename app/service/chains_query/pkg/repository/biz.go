@@ -41,6 +41,7 @@ type IBiz interface {
   SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error)
 
   ConstructTxETH(ctx context.Context, from, to, amount string) (unsignedTxHex, chainID string, err error)
+  ConstructTxERC20(ctx context.Context, from, to, amount, contract string) (unsignedTxHex, chainID string, err error)
   SendETHTx(ctx context.Context, signedTxHex string) (txID string, err error)
 
   WalletValidate(ctx context.Context, chainName, address string) (err error)

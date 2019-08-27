@@ -88,3 +88,10 @@ func (l loggingMiddleware) SendETHTx(ctx context.Context, signedTxHex string) (t
 	}()
 	return l.next.SendETHTx(ctx, signedTxHex)
 }
+
+func (l loggingMiddleware) ConstructTxERC20(ctx context.Context, from string, to string, amount string, contract string) (unsignedTxHex string, chainID string, err error) {
+	defer func() {
+		l.logger.Log("method", "ConstructTxERC20", "from", from, "to", to, "amount", amount, "contract", contract, "unsignedTxHex", unsignedTxHex, "chainID", chainID, "err", err)
+	}()
+	return l.next.ConstructTxERC20(ctx, from, to, amount, contract)
+}

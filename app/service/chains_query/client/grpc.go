@@ -73,9 +73,16 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 			encodeSendETHTxRequest, decodeSendETHTxResponse, pb.SendETHTxReply{}, options...).Endpoint()
 	}
 
+	var constructTxERC20Endpoint endpoint.Endpoint
+	{
+		constructTxERC20Endpoint = grpc1.NewClient(conn, "pb.ChainsQuery", "ConstructTxERC20",
+			encodeConstructTxERC20Request, decodeConstructTxERC20Response, pb.ConstructTxERC20Reply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		BitcoincoreBlockEndpoint:  bitcoincoreBlockEndpoint,
 		ConstructTxBTCEndpoint:    constructTxBTCEndpoint,
+		ConstructTxERC20Endpoint:  constructTxERC20Endpoint,
 		ConstructTxETHEndpoint:    constructTxETHEndpoint,
 		ERC20TokenInfoEndpoint:    eRC20TokenInfoEndpoint,
 		QueryBalanceEndpoint:      queryBalanceEndpoint,
@@ -270,4 +277,25 @@ func decodeConstructTxETHResponse(_ context.Context, reply interface{}) (interfa
 		return endpoint1.ConstructTxETHResponse{Err: e}, e
 	}
 	return endpoint1.ConstructTxETHResponse{UnsignedTxHex: resp.UnsignedTxHex, ChainID: resp.ChainID}, nil
+}
+
+// encodeConstructTxERC20Request is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain ConstructTxERC20 request to a gRPC request.
+func encodeConstructTxERC20Request(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.ConstructTxERC20Request)
+	if !ok {
+		return nil, fmt.Errorf("endpoint ConstructTxERC20Request type assertion error")
+	}
+	return &pb.ConstructTxERC20Request{Amount: r.Amount, From: r.From, To: r.To, Contract: r.Contract}, nil
+}
+
+// decodeConstructTxERC20Response is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeConstructTxERC20Response(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.ConstructTxERC20Reply)
+	if !ok {
+		e := fmt.Errorf("pb ConstructTxERC20Reply type assertion error")
+		return endpoint1.ConstructTxERC20Response{Err: e}, e
+	}
+	return endpoint1.ConstructTxERC20Response{UnsignedTxHex: resp.UnsignedTxHex, ChainID: resp.ChainID}, nil
 }

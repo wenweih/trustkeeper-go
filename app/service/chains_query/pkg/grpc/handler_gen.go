@@ -16,6 +16,7 @@ type grpcServer struct {
 	sendBTCTx         grpc.Handler
 	constructTxETH    grpc.Handler
 	sendETHTx         grpc.Handler
+	constructTxERC20  grpc.Handler
 	queryBalance      grpc.Handler
 	walletValidate    grpc.Handler
 }
@@ -24,6 +25,7 @@ func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.Serve
 	return &grpcServer{
 		bitcoincoreBlock:  makeBitcoincoreBlockHandler(endpoints, options["BitcoincoreBlock"]),
 		constructTxBTC:    makeConstructTxBTCHandler(endpoints, options["ConstructTxBTC"]),
+		constructTxERC20:  makeConstructTxERC20Handler(endpoints, options["ConstructTxERC20"]),
 		constructTxETH:    makeConstructTxETHHandler(endpoints, options["ConstructTxETH"]),
 		eRC20TokenInfo:    makeERC20TokenInfoHandler(endpoints, options["ERC20TokenInfo"]),
 		queryBalance:      makeQueryBalanceHandler(endpoints, options["QueryBalance"]),

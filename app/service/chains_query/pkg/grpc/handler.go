@@ -337,3 +337,40 @@ func (g *grpcServer) SendETHTx(ctx context1.Context, req *pb.SendETHTxRequest) (
 	}
 	return rep.(*pb.SendETHTxReply), nil
 }
+
+// makeConstructTxERC20Handler creates the handler logic
+func makeConstructTxERC20Handler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.ConstructTxERC20Endpoint, decodeConstructTxERC20Request, encodeConstructTxERC20Response, options...)
+}
+
+// decodeConstructTxERC20Response is a transport/grpc.DecodeRequestFunc that converts a
+// gRPC request to a user-domain ConstructTxERC20 request.
+// TODO implement the decoder
+func decodeConstructTxERC20Request(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.ConstructTxERC20Request)
+	if !ok {
+		return nil, fmt.Errorf("pb ConstructTxERC20Request type assersion error")
+	}
+	return endpoint.ConstructTxERC20Request{From: req.From, To: req.To, Amount: req.Amount, Contract: req.Contract}, nil
+}
+
+// encodeConstructTxERC20Response is a transport/grpc.EncodeResponseFunc that converts
+// a user-domain response to a gRPC reply.
+func encodeConstructTxERC20Response(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.ConstructTxERC20Response)
+	if !ok {
+		return nil, fmt.Errorf("endpoint ConstructTxERC20Response type assertion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.ConstructTxERC20Reply{UnsignedTxHex: resp.UnsignedTxHex, ChainID: resp.ChainID}, nil
+}
+
+func (g *grpcServer) ConstructTxERC20(ctx context1.Context, req *pb.ConstructTxERC20Request) (*pb.ConstructTxERC20Reply, error) {
+	_, rep, err := g.constructTxERC20.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.ConstructTxERC20Reply), nil
+}

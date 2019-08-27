@@ -33,3 +33,5 @@ var coinbase_token = contract_object.balanceOf(eth.coinbase).div(1e18)
 
 contract_object.transfer.sendTransaction('0x6F485F869706a658399A2d5839dC01acc80dD315', 10000000000000000000, {from: web3.eth.accounts[0]})
 ```
+
+- dev miner: --dev --dev.period 1

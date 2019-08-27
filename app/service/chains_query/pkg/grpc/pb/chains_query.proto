@@ -15,6 +15,7 @@ service ChainsQuery {
  rpc WalletValidate    (WalletValidateRequest   ) returns (WalletValidateReply   );
  rpc ConstructTxETH    (ConstructTxETHRequest   ) returns (ConstructTxETHReply   );
  rpc SendETHTx         (SendETHTxRequest        ) returns (SendETHTxReply        );
+ rpc ConstructTxERC20  (ConstructTxERC20Request ) returns (ConstructTxERC20Reply );
 }
 
 message BitcoincoreBlockRequest {}
@@ -106,9 +107,22 @@ message ConstructTxETHReply {
 }
 
 message SendETHTxRequest {
-  string SignedTxHex = 1;
+ string SignedTxHex = 1;
 }
 
 message SendETHTxReply {
-  string TxID = 1;
+ string TxID = 1;
+}
+
+// ConstructTxERC20(ctx context.Context, from, to, amount, contract string) (unsignedTxHex, chainID string, err error)
+message ConstructTxERC20Request {
+  string From   = 1;
+  string To     = 2;
+  string Amount = 3;
+  string Contract = 4;
+}
+
+message ConstructTxERC20Reply {
+  string UnsignedTxHex = 1;
+  string ChainID       = 2;
 }

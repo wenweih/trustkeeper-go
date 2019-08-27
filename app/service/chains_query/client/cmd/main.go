@@ -63,9 +63,14 @@ func main()  {
   //   fmt.Println("ConstructTxETH err: ", err.Error())
   // }
   // fmt.Println("ConstructTxETH:", ethUnsignedTxHex, chainID)
-  ethTxID, err := s.SendETHTx(ctxWithAuthInfo, "0xf8698001825208942cf0bbc1244f7957627c3df49d5b9e79f7b95e9688016345785d8a000080820a96a0f4c0aa937a137bb5cb1beaee0eb80f30b7c8f71458a25d5a11b47cd6df6c83eca07fb577604e08a4c204df6352efbcfebcdb585875d022276400a965f408ad85b6")
+  // ethTxID, err := s.SendETHTx(ctxWithAuthInfo, "0xf8698001825208942cf0bbc1244f7957627c3df49d5b9e79f7b95e9688016345785d8a000080820a96a0f4c0aa937a137bb5cb1beaee0eb80f30b7c8f71458a25d5a11b47cd6df6c83eca07fb577604e08a4c204df6352efbcfebcdb585875d022276400a965f408ad85b6")
+  // if err != nil {
+  //   fmt.Println("SendETHTx error:", err.Error())
+  // }
+  // fmt.Println("SendETHTx:", ethTxID)
+  erc20UnsignedTxHex, chainID, err := s.ConstructTxERC20(ctxWithAuthInfo, "0x34dc63E7f716034b21E6E8dB5A8829D0b9d9927b", "0x2CF0Bbc1244f7957627c3dF49D5B9e79F7b95E96", "0.1", "test")
   if err != nil {
-    fmt.Println("SendETHTx error:", err.Error())
+    fmt.Println("ConstructTxERC20 error:", err.Error())
   }
-  fmt.Println("SendETHTx:", ethTxID)
+  fmt.Println("ConstructTxERC20:", erc20UnsignedTxHex, chainID)
 }

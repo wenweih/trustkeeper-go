@@ -101,6 +101,13 @@ func New(consulAddr string, logger log.Logger) (service.ChainsQueryService, erro
     retry := lb.Retry(retryMax, retryTimeout, balancer)
     endpoints.SendETHTxEndpoint = retry
   }
+  {
+    factory := factoryFor(chainsquerytEndpoint.MakeConstructTxERC20Endpoint)
+    endpointer := sd.NewEndpointer(instancer, factory, logger)
+    balancer := lb.NewRoundRobin(endpointer)
+    retry := lb.Retry(retryMax, retryTimeout, balancer)
+    endpoints.ConstructTxERC20Endpoint = retry
+  }
   return endpoints, nil
 }
 

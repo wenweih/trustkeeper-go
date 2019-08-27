@@ -9,9 +9,11 @@ import(
   "math/big"
   "github.com/ybbus/jsonrpc"
   "github.com/shopspring/decimal"
+  "github.com/ethereum/go-ethereum"
   "github.com/ethereum/go-ethereum/common"
-  "trustkeeper-go/app/service/chains_query/pkg/model"
   "github.com/ethereum/go-ethereum/core/types"
+  "golang.org/x/crypto/sha3"
+  "trustkeeper-go/app/service/chains_query/pkg/model"
 )
 
 func (repo *repo) ConstructTxETH(ctx context.Context, from, to, amount string) (string, string, error) {
@@ -98,6 +100,121 @@ func (repo *repo) ConstructTxETH(ctx context.Context, from, to, amount string) (
   return rawTxHex, chainID.String(), nil
 }
 
+
+func (repo *repo) ConstructTxERC20(ctx context.Context, from, to, amount, contract string) (unsignedTxHex, chainID string, err error) {
+  _, transferAmountDecimal, withdrawLockAmountDecimal, gasPrice, value, tokenBalance, err := repo.constructTxParamsValidate(ctx, from, to, amount, contract)
+  if err != nil {
+    return "", "", err
+  }
+  // ethbalance data
+  ethBalance := model.Balance{}
+  err = repo.db.Where("address = ? AND symbol = ?", from, model.ETHSymbol).First(&ethBalance).Error
+  if err != nil {
+    return "", "", fmt.Errorf("Fail to query eth balance %s", err.Error())
+  }
+  ethAmountDecimal, err := decimal.NewFromString(ethBalance.Amount)
+  if err != nil {
+    return "", "", fmt.Errorf("Fail to extract fee %s", err.Error())
+  }
+
+  // construct data
+  transferFunSignature := []byte("transfer(address,uint256)")
+  hash := sha3.NewLegacyKeccak256()
+  hash.Write(transferFunSignature)
+  methodID := hash.Sum(nil)[:4]
+  paddedAddress := common.LeftPadBytes(common.HexToAddress(to).Bytes(), 32)
+  tokenAmount, ok := new(big.Int).SetString(transferAmountDecimal.String(), 10)
+  if !ok {
+    return "", "", fmt.Errorf("Set amount error")
+  }
+  paddedAmount := common.LeftPadBytes(tokenAmount.Bytes(), 32)
+
+  var data []byte
+  data = append(data, methodID...)
+  data = append(data, paddedAddress...)
+  data = append(data, paddedAmount...)
+  tokenAddress := common.HexToAddress(tokenBalance.Identify)
+  gasLimit, err := repo.ethClient.EstimateGas(ctx, ethereum.CallMsg{
+    From: common.HexToAddress(from),  // https://github.com/paritytech/parity-ethereum/issues/10147#issuecomment-462177568
+    To: &tokenAddress,
+    Data: data,
+  })
+  if err != nil {
+    return "", "", fmt.Errorf("EstimateGas %s", err)
+  }
+  value = big.NewInt(0)
+  // tx fee
+  txFee := new(big.Int)
+  txFee = txFee.Mul(gasPrice, big.NewInt(int64(gasLimit)))
+  feeDecimal, err := decimal.NewFromString(txFee.String())
+  if err != nil {
+    return "", "", fmt.Errorf("Fail to extract fee %s", err.Error())
+  }
+  if ethAmountDecimal.LessThan(feeDecimal) {
+    return "", "", fmt.Errorf("Insufficient ETH balance for fee %s : %s", ethAmountDecimal.String(), feeDecimal.String())
+  }
+
+  // pendingNonceAt account
+  pendingNonaceAt, err := repo.ethClient.PendingNonceAt(ctx, common.HexToAddress(from))
+  if err != nil {
+    return "", "", fmt.Errorf("Fail to query pending nonce for address %s", err.Error())
+  }
+  // get real nonce in mempool
+  rpcClient := jsonrpc.NewClient(repo.conf.ETHRPC)
+  response, err := rpcClient.Call("txpool_inspect")
+  if err != nil {
+    return "", "", fmt.Errorf("Fail to query txpool inspect %s", err.Error())
+  }
+  if response.Error != nil {
+    return "", "", response.Error
+  }
+
+  // nonce for account
+  var (
+    txPoolInspect *model.TxPoolInspect
+    txPoolMaxCount uint64
+  )
+  if err = response.GetObject(&txPoolInspect); err != nil {
+    return "", "", err
+  }
+  pending := reflect.ValueOf(txPoolInspect.Pending)
+  if pending.Kind() == reflect.Map {
+    for _, key := range pending.MapKeys() {
+      address := key.Interface().(string)
+      tx := reflect.ValueOf(pending.MapIndex(key).Interface())
+      if tx.Kind() == reflect.Map && strings.ToLower(from) == strings.ToLower(address){
+        for _, key := range tx.MapKeys() {
+          count := key.Interface().(uint64)
+          if count > txPoolMaxCount {
+            txPoolMaxCount = count
+          }
+        }
+      }
+    }
+  }
+  pendingNonce := pendingNonaceAt
+  if pendingNonaceAt !=0 && txPoolMaxCount + 1 > pendingNonaceAt {
+    pendingNonce = txPoolMaxCount + 1
+  }
+
+  tx := types.NewTransaction(pendingNonce, tokenAddress, value, gasLimit, gasPrice, data)
+  rawTxHex, err := model.EncodeETHTx(tx)
+  if err != nil {
+    return "", "", fmt.Errorf("Encode raw tx %s", err)
+  }
+
+  chainIDBig, err :=  repo.ethClient.ChainID(ctx)
+  if err != nil {
+    return "", "", err
+  }
+  if err := repo.db.Model(&tokenBalance).
+  UpdateColumn("withdraw_lock", withdrawLockAmountDecimal.Add(transferAmountDecimal).String()).Error;
+  err != nil {
+    return "", "", fmt.Errorf("Fail to update withdrawLock row %s", err.Error())
+  }
+  return rawTxHex, chainIDBig.String(), nil
+}
+
 func (repo *repo) SendETHTx(ctx context.Context, signedTxHex string) (txID string, err error) {
   tx, err := model.DecodeETHTx(signedTxHex)
   if err != nil {
@@ -134,10 +251,6 @@ func (repo *repo) SendETHTx(ctx context.Context, signedTxHex string) (txID strin
   return tx.Hash().String(), nil
 }
 
-func (repo *repo) ConstructTxERC20(ctx context.Context, from, to, amount, contract string) (unsignedTxHex, chainID string, err error) {
-  return "", "", nil
-}
-
 func (repo *repo) rollbackETHTx(ms types.Message) error {
   sender := ms.From().String()
   balance := model.Balance{}
@@ -168,7 +281,7 @@ func (repo *repo) constructTxParamsValidate(ctx context.Context, from, to, amoun
 
   // balance data
   balance = model.Balance{}
-  err := repo.db.Where("address = ? AND symbol = ?", from, model.ETHSymbol).First(&balance).Error
+  err := repo.db.Where("address = ? AND symbol = ?", from, symbol).First(&balance).Error
   if err != nil {
     return decimal.Decimal{}, decimal.Decimal{}, decimal.Decimal{}, nil, nil, model.Balance{}, fmt.Errorf("Fail to query balance %s", err.Error())
   }
