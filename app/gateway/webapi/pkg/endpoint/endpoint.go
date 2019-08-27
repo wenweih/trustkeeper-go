@@ -813,3 +813,53 @@ func (e Endpoints) SendETHTx(ctx context.Context, from string, to string, amount
 	}
 	return response.(SendETHTxResponse).Txid, nil
 }
+
+// SendERC20TxRequest collects the request parameters for the SendERC20Tx method.
+type SendERC20TxRequest struct {
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount string `json:"amount"`
+	Symbol string `json:"symbol"`
+}
+
+// SendERC20TxResponse collects the response parameters for the SendERC20Tx method.
+type SendERC20TxResponse struct {
+	Txid string `json:"txid"`
+	Err  error  `json:"err"`
+}
+
+// MakeSendERC20TxEndpoint returns an endpoint that invokes SendERC20Tx on the service.
+func MakeSendERC20TxEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SendERC20TxRequest)
+		txid, err := s.SendERC20Tx(ctx, req.From, req.To, req.Amount, req.Symbol)
+		if err != nil {
+			return SendERC20TxResponse{
+				Err:  err,
+			}, err
+		}
+		return SendERC20TxResponse{
+			Txid: txid,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r SendERC20TxResponse) Failed() error {
+	return r.Err
+}
+
+// SendERC20Tx implements Service. Primarily useful in a client.
+func (e Endpoints) SendERC20Tx(ctx context.Context, from string, to string, amount string, symbol string) (txid string, err error) {
+	request := SendERC20TxRequest{
+		Amount: amount,
+		From:   from,
+		Symbol: symbol,
+		To:     to,
+	}
+	response, err := e.SendERC20TxEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(SendERC20TxResponse).Txid, nil
+}

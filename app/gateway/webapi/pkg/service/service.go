@@ -55,6 +55,7 @@ type WebapiService interface {
 	CreateToken(ctx context.Context, groupid, chainid, symbol, identify, decimal, chainName string) (asset *repository.SimpleAsset, err error)
 	SendBTCTx(ctx context.Context, from, to, amount string) (txid string, err error)
 	SendETHTx(ctx context.Context, from, to, amount string) (txid string, err error)
+	SendERC20Tx(ctx context.Context, from, to, amount, symbol string) (txid string, err error)
 	QueryBalance(ctx context.Context, symbol, address string) (balance string, err error)
 	WalletValidate(ctx context.Context, chainName, address string) (err error)
 }
@@ -512,6 +513,35 @@ func (b *basicWebapiService) SendETHTx(ctx context.Context, from string, to stri
 		return "", err
 	}
 	unsignedTxHex, chainID, err := b.chainsQuerySrv.ConstructTxETH(ctxWithAuthInfo, from, to, amount)
+	if err != nil {
+		return "", err
+	}
+	walletHD := walletKeyRepository.WalletHD{}
+	if err := copier.Copy(&walletHD, hd); err != nil {
+		return "", err
+	}
+	signedTxHex, err := b.KeySrv.SignedEthereumTx(ctxWithAuthInfo, walletHD, unsignedTxHex, chainID)
+	if err != nil {
+		return "", err
+	}
+	txid, err := b.chainsQuerySrv.SendETHTx(ctxWithAuthInfo, signedTxHex)
+	if err != nil {
+		return "", err
+	}
+	return txid, err
+}
+
+func (b *basicWebapiService) SendERC20Tx(ctx context.Context, from string, to string, amount string, symbol string) (string, error) {
+	uid, nid, roles, err := b.auth(ctx)
+	if err != nil {
+		return "", err
+	}
+	ctxWithAuthInfo := constructAuthInfoContext(ctx, roles, uid, nid)
+	hd, err := b.WalletSrv.QueryWalletHD(ctxWithAuthInfo, from)
+	if err != nil {
+		return "", err
+	}
+	unsignedTxHex, chainID, err := b.chainsQuerySrv.ConstructTxERC20(ctxWithAuthInfo, from, to, amount, symbol)
 	if err != nil {
 		return "", err
 	}

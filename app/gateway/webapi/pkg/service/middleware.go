@@ -154,3 +154,10 @@ func (l loggingMiddleware) SendETHTx(ctx context.Context, from string, to string
 	}()
 	return l.next.SendETHTx(ctx, from, to, amount)
 }
+
+func (l loggingMiddleware) SendERC20Tx(ctx context.Context, from string, to string, amount string, symbol string) (txid string, err error) {
+	defer func() {
+		l.logger.Log("method", "SendERC20Tx", "from", from, "to", to, "amount", amount, "symbol", symbol, "txid", txid, "err", err)
+	}()
+	return l.next.SendERC20Tx(ctx, from, to, amount, symbol)
+}
