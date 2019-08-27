@@ -2,10 +2,13 @@ package repository
 
 import(
   "fmt"
+  // "bytes"
+  // "encoding/gob"
   "strconv"
   "reflect"
   "context"
   "strings"
+  "encoding/hex"
   "math/big"
   "github.com/ybbus/jsonrpc"
   "github.com/shopspring/decimal"
@@ -229,20 +232,36 @@ func (repo *repo) SendETHTx(ctx context.Context, signedTxHex string) (txID strin
     repo.logger.Log("Fail to rollbackETHTx", e.Error())
     return "", fmt.Errorf("Fail to SendETHTx %s", err)
   }
-  // ts := repo.db.Begin()
+
+  amount := new(big.Int)
   sender := ms.From().String()
   balance := model.Balance{}
-  txRecord := model.Tx{}
-  if err := repo.db.Where("address = ? AND symbol = ?", sender, model.ETHSymbol).First(&balance).Error; err != nil {
-    return "", fmt.Errorf("Fail to find sender address in balance table %s", err.Error())
+  inputData := "0x" + common.Bytes2Hex(ms.Data())
+  if strings.Contains(inputData, "0xa9059cbb") {
+    amountData := inputData[74:138]
+    amountBytes, err := hex.DecodeString(amountData)
+    if err != nil {
+      return "", err
+    }
+    amount = amount.SetBytes(amountBytes)
+    tokenIdendify := strings.ToLower(ms.To().String())
+    if err := repo.db.Where("address = ? AND identify = ?", sender, tokenIdendify).First(&balance).Error; err != nil {
+      return "", fmt.Errorf("Fail to query erc20 sender balance record, address:" + sender + "identify:" + tokenIdendify + err.Error())
+    }
+  } else {
+    if err := repo.db.Where("address = ? AND symbol = ?", sender, model.ETHSymbol).First(&balance).Error; err != nil {
+      return "", fmt.Errorf("Fail to find sender address in balance table %s", err.Error())
+    }
+    amount = tx.Value()
   }
+  txRecord := model.Tx{}
   if err := repo.db.FirstOrCreate(&txRecord,
     model.Tx{
       TxID: tx.Hash().String(),
       TxType: model.TxTypeWithdraw,
       Address: balance.Address,
       Asset: balance.Symbol,
-      Amount: tx.Value().String(),
+      Amount: amount.String(),
       BalanceID: balance.ID,
       ChainName: model.ChainEthereum,
   }).Error; err != nil {
