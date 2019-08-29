@@ -120,72 +120,137 @@ func (repo *repo) UpdateEthereumTx(ctx context.Context) {
   err := repo.db.Where("chain_name = ?", model.ChainEthereum).
     Not("state", []string{model.StateSuccess, model.StateFail}).Find(&txes).Error
   if err != nil {
-    repo.logger.Log("UpdateEthereumTx:", err.Error())
+    repo.logger.Log("UpdateEthereumTx fail to query txed:", err.Error())
+    return
   }
   bestBlockHead, err := repo.ethClient.HeaderByNumber(ctx, nil)
   if err != nil {
-    repo.logger.Log("UpdateEthereumTx:", err.Error())
+    repo.logger.Log("UpdateEthereumTx fail to query bestBlockHead:", err.Error())
+    return
   }
   for _, tx := range txes {
-    ts := repo.db.Begin()
     receipt, err := repo.QueryEthereumTxReceipt(ctx, tx.TxID)
     if err != nil {
-      repo.logger.Log("UpdateEthereumTx:", err.Error())
+      repo.logger.Log("UpdateEthereumTx fail to query ethereum tx receipt:", err.Error())
+      return
     }
+    // pending tx: update tx record state row only
     if receipt.BlockNumber == nil {
       // blockNumber field will be null until the transaction is included into a mined block
       repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "To", model.StatePending)
-      ts.Model(&tx).UpdateColumn("state", model.StatePending)
+      if err := repo.db.Model(&tx).UpdateColumn("state", model.StatePending).Error; err != nil {
+        repo.logger.Log("Fail to tx state txid", tx.TxID, "err", err.Error())
+      }
     } else if receipt.Status == 1 {
+      // valid tx
       // Since block 4370000 (Byzantium), a status indicator has been added to receipts. 1 mean success, 0 mean fail
       confirmations := bestBlockHead.Number.Int64() - receipt.BlockNumber.Int64() + 1
-      var state string
+      // confirmations account greater than min setting confirmations, update tx state to success and balance record amount and withdrawLock rows
       if confirmations >= DepositEthereumComfirmation {
-        state = model.StateSuccess
+        // transfer amount
         transferAmount, result := new(big.Int).SetString(tx.Amount, 10)
         if !result {
           repo.logger.Log("Fail to extract transfer amount")
+          return
         }
         transferAmountDecimal := decimal.NewFromBigInt(transferAmount, 0)
+
+        // query tx related balance record
         balance := model.Balance{}
-        ts.Model(&tx).Related(&balance)
+        repo.db.Model(&tx).Related(&balance)
         balanceAmount, result := new(big.Int).SetString(balance.Amount, 10)
         if !result {
           repo.logger.Log("Fail to extract balance amount")
+          return
         }
+
+        // balance amount
         balanceAmountDecimal := decimal.NewFromBigInt(balanceAmount, 0)
         withdrawLock, result := new(big.Int).SetString(balance.WithdrawLock, 10)
         if !result {
           repo.logger.Log("Fail to extract withdrawLock")
+          return
         }
-        withdrawLockDecimal := decimal.NewFromBigInt(withdrawLock, 0)
+
+        ethBalance := model.Balance{}
+        ethAmountDecimal := decimal.New(0, 0)
+        withdrawLockDecimal := decimal.NewFromBigInt(withdrawLock, 0) // withdrawLock amount
         if tx.TxType == model.TxTypeDeposit {
+          // deposit tx, add trans amount to balance amount
           balanceAmountDecimal = balanceAmountDecimal.Add(transferAmountDecimal)
         } else if (tx.TxType == model.TxTypeWithdraw) {
+          // query raw tx from blockchain
           rawTx, err := repo.QueryEthereumTx(ctx, tx.TxID)
           if err != nil {
-            repo.logger.Log("Fail to query ethereum tx %s", err.Error())
+            repo.logger.Log("Fail to query ethereum tx", err.Error())
+            return
           }
+
+          // calculate tx fee
           fee := decimal.NewFromBigInt(rawTx.GasPrice(), 0).Mul(decimal.New(int64(receipt.CumulativeGasUsed), 0))
+          inputData := "0x" + common.Bytes2Hex(rawTx.Data()) // tx input field data
+          if strings.Contains(inputData, ERC20TransferMethodHex) {
+            // erc20 tx
+            // calculate erc20 balance record's amount
+            balanceAmountDecimal = balanceAmountDecimal.Sub(transferAmountDecimal)
+
+            // query eth balance by sender address
+            if err := repo.db.Where("address = ? AND symbol = ?", tx.Address, model.ETHSymbol).First(&ethBalance).Error; err != nil {
+              repo.logger.Log("Fail to query ethereum balance record", err.Error())
+              return
+            }
+            ethBalanceAmount, err := decimal.NewFromString(ethBalance.Amount)
+            if err != nil {
+              repo.logger.Log("Fail to extract amount row for eth balance", err.Error())
+              return
+            }
+            ethAmountDecimal = ethBalanceAmount.Sub(fee)
+          } else {
+            // eth transfer
+            // calculate erc20 balance record's amount
+            balanceAmountDecimal = balanceAmountDecimal.Sub(transferAmountDecimal).Sub(fee)
+          }
+
+          // calculate withdrawLock
           withdrawLockDecimal = withdrawLockDecimal.Sub(decimal.NewFromBigInt(transferAmount, 0))
-          balanceAmountDecimal = balanceAmountDecimal.Sub(transferAmountDecimal).Sub(fee)
         }
         balanceAmountStr := balanceAmountDecimal.String()
         withdrawLockStr := withdrawLockDecimal.String()
+
+        // 1. create balance update log record
+        // 2. update amount and withdrawLock rows for balance
+        // 3. update state and confirmations rows for tx
+        ts := repo.db.Begin()
         ts.Create(&model.BalanceLog{TxID: tx.TxID, From: balance.Amount, To: balanceAmountStr, BalanceID: balance.ID})
         ts.Model(&balance).UpdateColumns(model.Balance{Amount: balanceAmountStr, WithdrawLock: withdrawLockStr})
+        repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "To", model.StateSuccess, "ConfirmationsFrom", tx.Confirmations, "To", confirmations)
+        ts.Model(&tx).UpdateColumns(model.Tx{State: model.StateSuccess, Confirmations: confirmations})
+
+        // erc20 transfer, update eth balance record's amount  for fee
+        if len(ethBalance.Address) > 1 {
+          ts.Create(&model.BalanceLog{TxID: tx.TxID, From: ethBalance.Amount, To: ethAmountDecimal.String(), BalanceID: ethBalance.ID})
+          ts.Model(&ethBalance).UpdateColumns(model.Balance{Amount: ethAmountDecimal.String()})
+        }
+        // commit ts
+        if err := ts.Commit().Error; err != nil {
+          ts.Rollback()
+          repo.logger.Log("UpdateEthereumTx fail to commit data:", err.Error())
+          return
+        }
       }else {
-        state = model.StateConfirming
+        // Confirming tx, update state and confirmations rows for tx
+        repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "To", model.StateConfirming, "ConfirmationsFrom", tx.Confirmations, "To", confirmations)
+        err := repo.db.Model(&tx).UpdateColumns(model.Tx{State: model.StateConfirming, Confirmations: confirmations}).Error
+        if err != nil {
+          repo.logger.Log("Fail to update tx txid", tx.TxID, "Err", err.Error())
+        }
       }
-      repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "To", state, "ConfirmationsFrom", tx.Confirmations, "To", confirmations)
-      ts.Model(&tx).UpdateColumns(model.Tx{State: state, Confirmations: confirmations})
     } else if (receipt.Status == 0) {
+      // Invalid tx, update state row for tx
       repo.logger.Log("UpdateEthereumTx", tx.TxID, "StateFrom", tx.State, "To", model.StateFail)
-      ts.Model(&tx).UpdateColumn("state", model.StateFail)
-    }
-    if err := ts.Commit().Error; err != nil {
-      ts.Rollback()
-      repo.logger.Log("UpdateEthereumTx:", err.Error())
+      if err := repo.db.Model(&tx).UpdateColumn("state", model.StateFail).Error; err != nil {
+        repo.logger.Log("Fail to update tx txid", tx.TxID, "err", err.Error())
+      }
     }
   }
 }

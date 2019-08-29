@@ -16,6 +16,8 @@ const (
   DepositEthereumComfirmation int64 = 12
 
   ChainNameEthereum string = "Ethereum"
+
+  ERC20TransferMethodHex = "0xa9059cbb"
 )
 
 // ERC20Token Ethereum erc20 token info

@@ -237,7 +237,7 @@ func (repo *repo) SendETHTx(ctx context.Context, signedTxHex string) (txID strin
   sender := ms.From().String()
   balance := model.Balance{}
   inputData := "0x" + common.Bytes2Hex(ms.Data())
-  if strings.Contains(inputData, "0xa9059cbb") {
+  if strings.Contains(inputData, ERC20TransferMethodHex) {
     amountData := inputData[74:138]
     amountBytes, err := hex.DecodeString(amountData)
     if err != nil {
