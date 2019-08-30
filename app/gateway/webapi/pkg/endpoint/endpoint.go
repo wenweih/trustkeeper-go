@@ -835,7 +835,7 @@ func MakeSendERC20TxEndpoint(s service.WebapiService) endpoint.Endpoint {
 		txid, err := s.SendERC20Tx(ctx, req.From, req.To, req.Amount, req.Symbol)
 		if err != nil {
 			return SendERC20TxResponse{
-				Err:  err,
+				Err: err,
 			}, err
 		}
 		return SendERC20TxResponse{
@@ -862,4 +862,50 @@ func (e Endpoints) SendERC20Tx(ctx context.Context, from string, to string, amou
 		return "", err
 	}
 	return response.(SendERC20TxResponse).Txid, nil
+}
+
+// SendOmniTxRequest collects the request parameters for the SendOmniTx method.
+type SendOmniTxRequest struct {
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount string `json:"amount"`
+	Symbol string `json:"symbol"`
+}
+
+// SendOmniTxResponse collects the response parameters for the SendOmniTx method.
+type SendOmniTxResponse struct {
+	Txid string `json:"txid"`
+	Err  error  `json:"err"`
+}
+
+// MakeSendOmniTxEndpoint returns an endpoint that invokes SendOmniTx on the service.
+func MakeSendOmniTxEndpoint(s service.WebapiService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(SendOmniTxRequest)
+		txid, err := s.SendOmniTx(ctx, req.From, req.To, req.Amount, req.Symbol)
+		return SendOmniTxResponse{
+			Err:  err,
+			Txid: txid,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r SendOmniTxResponse) Failed() error {
+	return r.Err
+}
+
+// SendOmniTx implements Service. Primarily useful in a client.
+func (e Endpoints) SendOmniTx(ctx context.Context, from string, to string, amount string, symbol string) (txid string, err error) {
+	request := SendOmniTxRequest{
+		Amount: amount,
+		From:   from,
+		Symbol: symbol,
+		To:     to,
+	}
+	response, err := e.SendOmniTxEndpoint(ctx, request)
+	if err != nil {
+		return "", err
+	}
+	return response.(SendOmniTxResponse).Txid, nil
 }

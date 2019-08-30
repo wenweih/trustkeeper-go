@@ -35,6 +35,7 @@ func defaultHttpOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 		"SendBTCTx":         {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "SendBTCTx", logger))},
 		"SendERC20Tx":       {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "SendERC20Tx", logger))},
 		"SendETHTx":         {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "SendETHTx", logger))},
+		"SendOmniTx":        {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "SendOmniTx", logger))},
 		"Signin":            {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signin", logger))},
 		"Signout":           {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signout", logger))},
 		"Signup":            {http.ServerErrorEncoder(http1.ErrorEncoder), http.ServerErrorLogger(logger), http.ServerBefore(opentracing.HTTPToContext(tracer, "Signup", logger))},
@@ -61,6 +62,7 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["EthToken"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "EthToken")), endpoint.InstrumentingMiddleware(duration.With("method", "EthToken"))}
 	mw["CreateToken"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateToken")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateToken"))}
 	mw["SendBTCTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendBTCTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendBTCTx"))}
+	mw["SendOmniTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendOmniTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendOmniTx"))}
 	mw["SendETHTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendETHTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendETHTx"))}
 	mw["SendERC20Tx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendERC20Tx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendERC20Tx"))}
 	mw["QueryBalance"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryBalance")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryBalance"))}
@@ -70,7 +72,7 @@ func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []s
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"Signup", "Signin", "Signout", "GetRoles", "UserInfo", "GetGroups", "CreateGroup", "UpdateGroup", "GetGroupAssets", "ChangeGroupAssets", "CreateWallet", "GetWallets", "QueryOmniProperty", "EthToken", "CreateToken", "SendBTCTx", "SendETHTx", "SendERC20Tx", "QueryBalance", "WalletValidate"}
+	methods := []string{"Signup", "Signin", "Signout", "GetRoles", "UserInfo", "GetGroups", "CreateGroup", "UpdateGroup", "GetGroupAssets", "ChangeGroupAssets", "CreateWallet", "GetWallets", "QueryOmniProperty", "EthToken", "CreateToken", "SendBTCTx", "SendOmniTx", "SendETHTx", "SendERC20Tx", "QueryBalance", "WalletValidate"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

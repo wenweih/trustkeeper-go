@@ -26,6 +26,7 @@ type Endpoints struct {
 	EthTokenEndpoint          endpoint.Endpoint
 	CreateTokenEndpoint       endpoint.Endpoint
 	SendBTCTxEndpoint         endpoint.Endpoint
+	SendOmniTxEndpoint        endpoint.Endpoint
 	SendETHTxEndpoint         endpoint.Endpoint
 	SendERC20TxEndpoint       endpoint.Endpoint
 	QueryBalanceEndpoint      endpoint.Endpoint
@@ -50,6 +51,7 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 		SendBTCTxEndpoint:         MakeSendBTCTxEndpoint(s),
 		SendERC20TxEndpoint:       MakeSendERC20TxEndpoint(s),
 		SendETHTxEndpoint:         MakeSendETHTxEndpoint(s),
+		SendOmniTxEndpoint:        MakeSendOmniTxEndpoint(s),
 		SigninEndpoint:            MakeSigninEndpoint(s),
 		SignoutEndpoint:           MakeSignoutEndpoint(s),
 		SignupEndpoint:            MakeSignupEndpoint(s),
@@ -104,6 +106,9 @@ func New(s service.WebapiService, mdw map[string][]endpoint.Middleware) Endpoint
 	}
 	for _, m := range mdw["SendBTCTx"] {
 		eps.SendBTCTxEndpoint = m(eps.SendBTCTxEndpoint)
+	}
+	for _, m := range mdw["SendOmniTx"] {
+		eps.SendOmniTxEndpoint = m(eps.SendOmniTxEndpoint)
 	}
 	for _, m := range mdw["SendETHTx"] {
 		eps.SendETHTxEndpoint = m(eps.SendETHTxEndpoint)

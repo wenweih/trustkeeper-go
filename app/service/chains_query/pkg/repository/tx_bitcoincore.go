@@ -260,6 +260,7 @@ func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (string, er
     }{m: make(map[uint]decimal.Decimal)}
     for _, vin := range tx.MsgTx().TxIn {
       utxo := model.BtcUtxo{}
+      // rollback selected utxo using by vins
       ts.Preload("Balance").
       Where("txid = ? AND vout_index = ?", vin.PreviousOutPoint.Hash.String(), vin.PreviousOutPoint.Index).
       First(&utxo).UpdateColumn("state", model.UTXOStateUnSelected)

@@ -566,3 +566,28 @@ func encodeSendERC20TxResponse(ctx context.Context, w http.ResponseWriter, respo
 	err = json.NewEncoder(w).Encode(response)
 	return
 }
+
+// makeSendOmniTxHandler creates the handler logic
+func makeSendOmniTxHandler(m *http.ServeMux, endpoints endpoint.Endpoints, options []http1.ServerOption) {
+	m.Handle("/send-omni-tx", http1.NewServer(endpoints.SendOmniTxEndpoint, decodeSendOmniTxRequest, encodeSendOmniTxResponse, options...))
+}
+
+// decodeSendOmniTxRequest is a transport/http.DecodeRequestFunc that decodes a
+// JSON-encoded request from the HTTP request body.
+func decodeSendOmniTxRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	req := endpoint.SendOmniTxRequest{}
+	err := json.NewDecoder(r.Body).Decode(&req)
+	return req, err
+}
+
+// encodeSendOmniTxResponse is a transport/http.EncodeResponseFunc that encodes
+// the response as JSON to the response writer
+func encodeSendOmniTxResponse(ctx context.Context, w http.ResponseWriter, response interface{}) (err error) {
+	if f, ok := response.(endpoint.Failure); ok && f.Failed() != nil {
+		ErrorEncoder(ctx, f.Failed(), w)
+		return nil
+	}
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	err = json.NewEncoder(w).Encode(response)
+	return
+}

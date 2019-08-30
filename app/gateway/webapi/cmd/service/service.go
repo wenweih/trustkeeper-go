@@ -102,6 +102,7 @@ func initHttpHandler(endpoints endpoint.Endpoints, g *group.Group) {
 	options["WalletValidate"] = append(options["WalletValidate"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["SendETHTx"] = append(options["SendETHTx"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	options["SendERC20Tx"] = append(options["SendERC20Tx"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
+	options["SendOmniTx"] = append(options["SendOmniTx"], httptransport.ServerBefore(stdjwt.HTTPToContext()))
 	httpHandler := http.NewHTTPHandler(endpoints, options)
 	httpListener, err := net.Listen("tcp", *httpAddr)
 	if err != nil {
