@@ -24,6 +24,7 @@ type ChainsQueryService interface {
 
 	ConstructTxBTC(ctx context.Context, from, to, amount string) (unsignedTxHex string, vinAmount int64, err error)
 	SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error)
+	ConstructTxOmni(ctx context.Context, from, to, amount, symbol string) (unsignedTxHex string, vinAmount int64, err error)
 
 	ConstructTxETH(ctx context.Context, from, to, amount string) (unsignedTxHex, chainID string, err error)
 	SendETHTx(ctx context.Context, signedTxHex string) (txID string, err error)
@@ -126,4 +127,9 @@ func (b *basicChainsQueryService) SendETHTx(ctx context.Context, signedTxHex str
 func (b *basicChainsQueryService) ConstructTxERC20(ctx context.Context, from string, to string, amount string, contract string) (unsignedTxHex string, chainID string, err error) {
 	unsignedTxHex, chainID, err = b.biz.ConstructTxERC20(ctx, from, to, amount, contract)
 	return
+}
+
+func (b *basicChainsQueryService) ConstructTxOmni(ctx context.Context, from string, to string, amount string, symbol string) (unsignedTxHex string, vinAmount int64, err error) {
+	unsignedTxHex, vinAmount, err = b.biz.ConstructTxOmni(ctx, from, to, amount, symbol)
+	return 
 }

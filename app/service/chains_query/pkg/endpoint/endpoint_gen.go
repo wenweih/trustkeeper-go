@@ -15,6 +15,7 @@ type Endpoints struct {
 	ERC20TokenInfoEndpoint    endpoint.Endpoint
 	ConstructTxBTCEndpoint    endpoint.Endpoint
 	SendBTCTxEndpoint         endpoint.Endpoint
+	ConstructTxOmniEndpoint   endpoint.Endpoint
 	ConstructTxETHEndpoint    endpoint.Endpoint
 	SendETHTxEndpoint         endpoint.Endpoint
 	ConstructTxERC20Endpoint  endpoint.Endpoint
@@ -30,6 +31,7 @@ func New(s service.ChainsQueryService, mdw map[string][]endpoint.Middleware) End
 		ConstructTxBTCEndpoint:    MakeConstructTxBTCEndpoint(s),
 		ConstructTxERC20Endpoint:  MakeConstructTxERC20Endpoint(s),
 		ConstructTxETHEndpoint:    MakeConstructTxETHEndpoint(s),
+		ConstructTxOmniEndpoint:   MakeConstructTxOmniEndpoint(s),
 		ERC20TokenInfoEndpoint:    MakeERC20TokenInfoEndpoint(s),
 		QueryBalanceEndpoint:      MakeQueryBalanceEndpoint(s),
 		QueryOmniPropertyEndpoint: MakeQueryOmniPropertyEndpoint(s),
@@ -51,6 +53,9 @@ func New(s service.ChainsQueryService, mdw map[string][]endpoint.Middleware) End
 	}
 	for _, m := range mdw["SendBTCTx"] {
 		eps.SendBTCTxEndpoint = m(eps.SendBTCTxEndpoint)
+	}
+	for _, m := range mdw["ConstructTxOmni"] {
+		eps.ConstructTxOmniEndpoint = m(eps.ConstructTxOmniEndpoint)
 	}
 	for _, m := range mdw["ConstructTxETH"] {
 		eps.ConstructTxETHEndpoint = m(eps.ConstructTxETHEndpoint)

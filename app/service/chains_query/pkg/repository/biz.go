@@ -39,6 +39,7 @@ type IBiz interface {
 
   ConstructTxBTC(ctx context.Context, from, to, amount string) (unsignedTxHex string, vinAmount int64, err error)
   SendBTCTx(ctx context.Context, signedTxHex string) (txID string, err error)
+  ConstructTxOmni(ctx context.Context, from, to, amount, symbol string) (unsignedTxHex string, vinAmount int64, err error)
 
   ConstructTxETH(ctx context.Context, from, to, amount string) (unsignedTxHex, chainID string, err error)
   ConstructTxERC20(ctx context.Context, from, to, amount, contract string) (unsignedTxHex, chainID string, err error)

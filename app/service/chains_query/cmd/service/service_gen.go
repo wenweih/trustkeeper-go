@@ -24,6 +24,7 @@ func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 		"ConstructTxBTC":    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "ConstructTxBTC", logger))},
 		"ConstructTxERC20":  {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "ConstructTxERC20", logger))},
 		"ConstructTxETH":    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "ConstructTxETH", logger))},
+		"ConstructTxOmni":   {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "ConstructTxOmni", logger))},
 		"ERC20TokenInfo":    {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "ERC20TokenInfo", logger))},
 		"QueryBalance":      {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryBalance", logger))},
 		"QueryOmniProperty": {grpc.ServerErrorLogger(logger), grpc.ServerBefore(opentracing.GRPCToContext(tracer, "QueryOmniProperty", logger))},
@@ -39,6 +40,7 @@ func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summar
 	mw["ERC20TokenInfo"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ERC20TokenInfo")), endpoint.InstrumentingMiddleware(duration.With("method", "ERC20TokenInfo"))}
 	mw["ConstructTxBTC"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxBTC")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxBTC"))}
 	mw["SendBTCTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendBTCTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendBTCTx"))}
+	mw["ConstructTxOmni"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxOmni")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxOmni"))}
 	mw["ConstructTxETH"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxETH")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxETH"))}
 	mw["SendETHTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendETHTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendETHTx"))}
 	mw["ConstructTxERC20"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxERC20")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxERC20"))}
@@ -49,7 +51,7 @@ func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []s
 	return append(mw, service.LoggingMiddleware(logger))
 }
 func addEndpointMiddlewareToAllMethods(mw map[string][]endpoint1.Middleware, m endpoint1.Middleware) {
-	methods := []string{"BitcoincoreBlock", "QueryOmniProperty", "ERC20TokenInfo", "ConstructTxBTC", "SendBTCTx", "ConstructTxETH", "SendETHTx", "ConstructTxERC20", "QueryBalance", "WalletValidate"}
+	methods := []string{"BitcoincoreBlock", "QueryOmniProperty", "ERC20TokenInfo", "ConstructTxBTC", "SendBTCTx", "ConstructTxOmni", "ConstructTxETH", "SendETHTx", "ConstructTxERC20", "QueryBalance", "WalletValidate"}
 	for _, v := range methods {
 		mw[v] = append(mw[v], m)
 	}

@@ -416,7 +416,7 @@ func MakeConstructTxERC20Endpoint(s service.ChainsQueryService) endpoint.Endpoin
 		unsignedTxHex, chainID, err := s.ConstructTxERC20(ctx, req.From, req.To, req.Amount, req.Contract)
 		if err != nil {
 			return ConstructTxERC20Response{
-				Err:           err,
+				Err: err,
 			}, err
 		}
 		return ConstructTxERC20Response{
@@ -444,4 +444,56 @@ func (e Endpoints) ConstructTxERC20(ctx context.Context, from string, to string,
 		return "", "", err
 	}
 	return response.(ConstructTxERC20Response).UnsignedTxHex, response.(ConstructTxERC20Response).ChainID, nil
+}
+
+// ConstructTxOmniRequest collects the request parameters for the ConstructTxOmni method.
+type ConstructTxOmniRequest struct {
+	From   string `json:"from"`
+	To     string `json:"to"`
+	Amount string `json:"amount"`
+	Symbol string `json:"symbol"`
+}
+
+// ConstructTxOmniResponse collects the response parameters for the ConstructTxOmni method.
+type ConstructTxOmniResponse struct {
+	UnsignedTxHex string `json:"unsigned_tx_hex"`
+	VinAmount     int64  `json:"vin_amount"`
+	Err           error  `json:"err"`
+}
+
+// MakeConstructTxOmniEndpoint returns an endpoint that invokes ConstructTxOmni on the service.
+func MakeConstructTxOmniEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(ConstructTxOmniRequest)
+		unsignedTxHex, vinAmount, err := s.ConstructTxOmni(ctx, req.From, req.To, req.Amount, req.Symbol)
+		if err != nil {
+			return ConstructTxOmniResponse{
+				Err:           err,
+			}, err
+		}
+		return ConstructTxOmniResponse{
+			UnsignedTxHex: unsignedTxHex,
+			VinAmount:     vinAmount,
+		}, nil
+	}
+}
+
+// Failed implements Failer.
+func (r ConstructTxOmniResponse) Failed() error {
+	return r.Err
+}
+
+// ConstructTxOmni implements Service. Primarily useful in a client.
+func (e Endpoints) ConstructTxOmni(ctx context.Context, from string, to string, amount string, symbol string) (unsignedTxHex string, vinAmount int64, err error) {
+	request := ConstructTxOmniRequest{
+		Amount: amount,
+		From:   from,
+		Symbol: symbol,
+		To:     to,
+	}
+	response, err := e.ConstructTxOmniEndpoint(ctx, request)
+	if err != nil {
+		return "", 0, err
+	}
+	return response.(ConstructTxOmniResponse).UnsignedTxHex, response.(ConstructTxOmniResponse).VinAmount, nil
 }

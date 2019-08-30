@@ -95,3 +95,10 @@ func (l loggingMiddleware) ConstructTxERC20(ctx context.Context, from string, to
 	}()
 	return l.next.ConstructTxERC20(ctx, from, to, amount, contract)
 }
+
+func (l loggingMiddleware) ConstructTxOmni(ctx context.Context, from string, to string, amount string, symbol string) (unsignedTxHex string, vinAmount int64, err error) {
+	defer func() {
+		l.logger.Log("method", "ConstructTxOmni", "from", from, "to", to, "amount", amount, "symbol", symbol, "unsignedTxHex", unsignedTxHex, "vinAmount", vinAmount, "err", err)
+	}()
+	return l.next.ConstructTxOmni(ctx, from, to, amount, symbol)
+}

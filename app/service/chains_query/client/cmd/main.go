@@ -68,9 +68,14 @@ func main()  {
   //   fmt.Println("SendETHTx error:", err.Error())
   // }
   // fmt.Println("SendETHTx:", ethTxID)
-  erc20UnsignedTxHex, chainID, err := s.ConstructTxERC20(ctxWithAuthInfo, "0x34dc63E7f716034b21E6E8dB5A8829D0b9d9927b", "0x2CF0Bbc1244f7957627c3dF49D5B9e79F7b95E96", "0.1", "test")
+  // erc20UnsignedTxHex, chainID, err := s.ConstructTxERC20(ctxWithAuthInfo, "0x34dc63E7f716034b21E6E8dB5A8829D0b9d9927b", "0x2CF0Bbc1244f7957627c3dF49D5B9e79F7b95E96", "0.1", "test")
+  // if err != nil {
+  //   fmt.Println("ConstructTxERC20 error:", err.Error())
+  // }
+  // fmt.Println("ConstructTxERC20:", erc20UnsignedTxHex, chainID)
+  rawTxHex, vinAmount, err := s.ConstructTxOmni(ctxWithAuthInfo, "n1ChkyW3QJGc2KapTMVWuBabmhKm6sTgoU", "mysn3mNym5Jt8N5aJ9tQPxkEjCVnYDCGQq", "1.1", "omni_first_token")
   if err != nil {
-    fmt.Println("ConstructTxERC20 error:", err.Error())
+    fmt.Println("ConstructTxOmni:", err.Error())
   }
-  fmt.Println("ConstructTxERC20:", erc20UnsignedTxHex, chainID)
+  fmt.Println("ConstructTxOmni:", rawTxHex, vinAmount)
 }

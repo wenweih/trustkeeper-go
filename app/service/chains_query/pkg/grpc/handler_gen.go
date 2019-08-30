@@ -14,6 +14,7 @@ type grpcServer struct {
 	eRC20TokenInfo    grpc.Handler
 	constructTxBTC    grpc.Handler
 	sendBTCTx         grpc.Handler
+	constructTxOmni   grpc.Handler
 	constructTxETH    grpc.Handler
 	sendETHTx         grpc.Handler
 	constructTxERC20  grpc.Handler
@@ -27,6 +28,7 @@ func NewGRPCServer(endpoints endpoint.Endpoints, options map[string][]grpc.Serve
 		constructTxBTC:    makeConstructTxBTCHandler(endpoints, options["ConstructTxBTC"]),
 		constructTxERC20:  makeConstructTxERC20Handler(endpoints, options["ConstructTxERC20"]),
 		constructTxETH:    makeConstructTxETHHandler(endpoints, options["ConstructTxETH"]),
+		constructTxOmni:   makeConstructTxOmniHandler(endpoints, options["ConstructTxOmni"]),
 		eRC20TokenInfo:    makeERC20TokenInfoHandler(endpoints, options["ERC20TokenInfo"]),
 		queryBalance:      makeQueryBalanceHandler(endpoints, options["QueryBalance"]),
 		queryOmniProperty: makeQueryOmniPropertyHandler(endpoints, options["QueryOmniProperty"]),

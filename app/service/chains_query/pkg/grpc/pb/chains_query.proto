@@ -16,6 +16,7 @@ service ChainsQuery {
  rpc ConstructTxETH    (ConstructTxETHRequest   ) returns (ConstructTxETHReply   );
  rpc SendETHTx         (SendETHTxRequest        ) returns (SendETHTxReply        );
  rpc ConstructTxERC20  (ConstructTxERC20Request ) returns (ConstructTxERC20Reply );
+ rpc ConstructTxOmni   (ConstructTxOmniRequest  ) returns (ConstructTxOmniReply  );
 }
 
 message BitcoincoreBlockRequest {}
@@ -114,15 +115,28 @@ message SendETHTxReply {
  string TxID = 1;
 }
 
+
 // ConstructTxERC20(ctx context.Context, from, to, amount, contract string) (unsignedTxHex, chainID string, err error)
 message ConstructTxERC20Request {
-  string From   = 1;
-  string To     = 2;
-  string Amount = 3;
-  string Contract = 4;
+ string From     = 1;
+ string To       = 2;
+ string Amount   = 3;
+ string Contract = 4;
 }
 
 message ConstructTxERC20Reply {
+ string UnsignedTxHex = 1;
+ string ChainID       = 2;
+}
+
+message ConstructTxOmniRequest {
+  string From     = 1;
+  string To       = 2;
+  string Amount   = 3;
+  string Symbol = 4;
+}
+
+message ConstructTxOmniReply {
   string UnsignedTxHex = 1;
-  string ChainID       = 2;
+  int64  VinAmount     = 2;
 }

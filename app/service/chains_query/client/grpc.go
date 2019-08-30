@@ -79,11 +79,18 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 			encodeConstructTxERC20Request, decodeConstructTxERC20Response, pb.ConstructTxERC20Reply{}, options...).Endpoint()
 	}
 
+	var constructTxOmniEndpoint endpoint.Endpoint
+	{
+		constructTxOmniEndpoint = grpc1.NewClient(conn, "pb.ChainsQuery", "ConstructTxOmni",
+			encodeConstructTxOmniRequest, decodeConstructTxOmniResponse, pb.ConstructTxOmniReply{}, options...).Endpoint()
+	}
+
 	return endpoint1.Endpoints{
 		BitcoincoreBlockEndpoint:  bitcoincoreBlockEndpoint,
 		ConstructTxBTCEndpoint:    constructTxBTCEndpoint,
 		ConstructTxERC20Endpoint:  constructTxERC20Endpoint,
 		ConstructTxETHEndpoint:    constructTxETHEndpoint,
+		ConstructTxOmniEndpoint:   constructTxOmniEndpoint,
 		ERC20TokenInfoEndpoint:    eRC20TokenInfoEndpoint,
 		QueryBalanceEndpoint:      queryBalanceEndpoint,
 		QueryOmniPropertyEndpoint: queryOmniPropertyEndpoint,
@@ -298,4 +305,26 @@ func decodeConstructTxERC20Response(_ context.Context, reply interface{}) (inter
 		return endpoint1.ConstructTxERC20Response{Err: e}, e
 	}
 	return endpoint1.ConstructTxERC20Response{UnsignedTxHex: resp.UnsignedTxHex, ChainID: resp.ChainID}, nil
+}
+
+
+// encodeConstructTxOmniRequest is a transport/grpc.EncodeRequestFunc that converts a
+//  user-domain ConstructTxOmni request to a gRPC request.
+func encodeConstructTxOmniRequest(_ context.Context, request interface{}) (interface{}, error) {
+	r, ok := request.(endpoint1.ConstructTxOmniRequest)
+	if !ok {
+		return nil, fmt.Errorf("endpoint ConstructTxOmniRequest type assertion error")
+	}
+	return &pb.ConstructTxOmniRequest{Amount: r.Amount, From: r.From, To: r.To, Symbol: r.Symbol}, nil
+}
+
+// decodeConstructTxOmniResponse is a transport/grpc.DecodeResponseFunc that converts
+// a gRPC concat reply to a user-domain concat response.
+func decodeConstructTxOmniResponse(_ context.Context, reply interface{}) (interface{}, error) {
+	resp, ok := reply.(*pb.ConstructTxOmniReply)
+	if !ok {
+		e := fmt.Errorf("pb ConstructTxOmniReply type assertion error")
+		return endpoint1.ConstructTxOmniResponse{Err: e}, e
+	}
+	return endpoint1.ConstructTxOmniResponse{UnsignedTxHex: resp.UnsignedTxHex, VinAmount: resp.VinAmount}, nil
 }

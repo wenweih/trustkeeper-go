@@ -374,3 +374,40 @@ func (g *grpcServer) ConstructTxERC20(ctx context1.Context, req *pb.ConstructTxE
 	}
 	return rep.(*pb.ConstructTxERC20Reply), nil
 }
+
+// makeConstructTxOmniHandler creates the handler logic
+func makeConstructTxOmniHandler(endpoints endpoint.Endpoints, options []grpc.ServerOption) grpc.Handler {
+	return grpc.NewServer(endpoints.ConstructTxOmniEndpoint, decodeConstructTxOmniRequest, encodeConstructTxOmniResponse, options...)
+}
+
+// decodeConstructTxOmniResponse is a transport/grpc.DecodeRequestFunc that converts a
+// gRPC request to a user-domain ConstructTxOmni request.
+// TODO implement the decoder
+func decodeConstructTxOmniRequest(_ context.Context, r interface{}) (interface{}, error) {
+	req, ok := r.(*pb.ConstructTxOmniRequest)
+	if !ok {
+		return nil, fmt.Errorf("pb ConstructTxOmniRequest type assersion error")
+	}
+	return endpoint.ConstructTxOmniRequest{From: req.From, To: req.To, Amount: req.Amount, Symbol: req.Symbol}, nil
+}
+
+// encodeConstructTxOmniResponse is a transport/grpc.EncodeResponseFunc that converts
+// a user-domain response to a gRPC reply.
+// TODO implement the encoder
+func encodeConstructTxOmniResponse(_ context.Context, r interface{}) (interface{}, error) {
+	resp, ok := r.(endpoint.ConstructTxOmniResponse)
+	if !ok {
+		return nil, fmt.Errorf("endpoint ConstructTxOmniResponse type assertion error")
+	}
+	if resp.Err != nil {
+		return nil, resp.Err
+	}
+	return &pb.ConstructTxOmniReply{UnsignedTxHex: resp.UnsignedTxHex, VinAmount: resp.VinAmount}, nil
+}
+func (g *grpcServer) ConstructTxOmni(ctx context1.Context, req *pb.ConstructTxOmniRequest) (*pb.ConstructTxOmniReply, error) {
+	_, rep, err := g.constructTxOmni.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+	return rep.(*pb.ConstructTxOmniReply), nil
+}

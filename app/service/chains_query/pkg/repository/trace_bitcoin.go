@@ -73,6 +73,7 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
         if strings.Contains(voutScriptPubKeyHex, "6a146f6d6e6900000000") {
           // omni token transfer
           for _, vin := range tx.Vin {
+            // query previous vout for vin
             vinTx, err := repo.QueryBTCTx(ctx, vin.Txid)
             if err != nil {
               createBlockCh <- CreateBlockResult{Error: err}
@@ -105,6 +106,7 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
                   if !hasBalance {
                     continue
                   }
+                  // create omni deposit tx record
                   ts.FirstOrCreate(&txRecord,
                     model.Tx{
                       TxID: tx.Txid,
@@ -118,13 +120,15 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
             }
           }
         } else if (vout.Value != 0 && vout.ScriptPubKey.Addresses != nil) {
+          // btc transfer
           for _, address := range vout.ScriptPubKey.Addresses {
             var (
               balance model.Balance
               utxo model.BtcUtxo
               txRecord model.Tx
             )
-            if err := ts.Where("address = ? AND Symbol = ?", address, "BTC").
+            // query balance record
+            if err := ts.Where("address = ? AND Symbol = ?", address, model.BTCSymbol).
             First(&balance).Error;
             err != nil && err.Error() == "record not found" {
               continue
@@ -132,6 +136,8 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
               createBlockCh <- CreateBlockResult{Error: fmt.Errorf("Query sub address err: %s", err)}
               return
             }
+
+            // create utxo for btc balance record
             ts.FirstOrCreate(
               &utxo,
               model.BtcUtxo{
@@ -142,6 +148,8 @@ func (repo *repo) CreateBTCBlockWithUTXOs(ctx context.Context, queryBlockResultC
               BalanceID: balance.ID,
               BtcBlockID: block.ID,
             })
+
+            // create btc deposit tx record
             ts.FirstOrCreate(&txRecord,
               model.Tx{
                 TxID: tx.Txid,
@@ -279,13 +287,17 @@ func (repo *repo) UpdateBitcoincoreTx(ctx context.Context) {
       }
       withdrawLockDecimal := decimal.NewFromBigInt(withdrawLock, 0)
       if tx.TxType == model.TxTypeDeposit {
+        // calculate amount row for balance record
         balanceAmount = balanceAmount.Add(balanceAmount, transferAmount)
       } else if tx.TxType == model.TxTypeWithdraw {
+        // query raw tx
         rawTx, err := repo.QueryBTCTx(ctx, tx.TxID)
         if err != nil {
           repo.logger.Log("FailToQueryTxWhenWithdrawSuccess:", err.Error())
           continue
         }
+
+        // calculate withdrawLock and amount rows for balance record
         for _, vin := range rawTx.Vin {
           utxo := model.BtcUtxo{}
           ts.Preload("Balance").
