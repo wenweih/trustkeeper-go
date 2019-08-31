@@ -290,20 +290,26 @@ func (repo *repo) UpdateBitcoincoreTx(ctx context.Context) {
         // calculate amount row for balance record
         balanceAmount = balanceAmount.Add(balanceAmount, transferAmount)
       } else if tx.TxType == model.TxTypeWithdraw {
-        // query raw tx
-        rawTx, err := repo.QueryBTCTx(ctx, tx.TxID)
-        if err != nil {
-          repo.logger.Log("FailToQueryTxWhenWithdrawSuccess:", err.Error())
-          continue
-        }
+        if balance.Symbol == model.BTCSymbol {
+          // calculate btc transfer withdrawLock
+          // query raw tx
+          rawTx, err := repo.QueryBTCTx(ctx, tx.TxID)
+          if err != nil {
+            repo.logger.Log("FailToQueryTxWhenWithdrawSuccess:", err.Error())
+            continue
+          }
 
-        // calculate withdrawLock and amount rows for balance record
-        for _, vin := range rawTx.Vin {
-          utxo := model.BtcUtxo{}
-          ts.Preload("Balance").
-          Where("txid = ? AND vout_index = ?", vin.Txid, vin.Vout).First(&utxo)
-          utxoAmountDecimal := decimal.NewFromFloat(utxo.Amount).Mul(decimal.New(int64(utxo.Balance.Decimal), 0))
-          withdrawLockDecimal = withdrawLockDecimal.Sub(utxoAmountDecimal)
+          // calculate withdrawLock and amount rows for btc balance record
+          for _, vin := range rawTx.Vin {
+            utxo := model.BtcUtxo{}
+            ts.Preload("Balance").
+            Where("txid = ? AND vout_index = ?", vin.Txid, vin.Vout).First(&utxo)
+            utxoAmountDecimal := decimal.NewFromFloat(utxo.Amount).Mul(decimal.New(int64(utxo.Balance.Decimal), 0))
+            withdrawLockDecimal = withdrawLockDecimal.Sub(utxoAmountDecimal)
+          }
+        } else {
+          // calculate omni token transfer withdrawLock
+          withdrawLockDecimal = withdrawLockDecimal.Sub(decimal.NewFromBigInt(transferAmount, 0))
         }
         balanceAmount = balanceAmount.Sub(balanceAmount, transferAmount)
       }
@@ -322,7 +328,8 @@ func (repo *repo) UpdateBitcoincoreTx(ctx context.Context) {
       ts.Model(&tx).UpdateColumn("confirmations", rawtx.Confirmations)
     }
     if err := ts.Commit().Error; err != nil {
-      repo.logger.Log("UpdateBitcoincoreTx:", err.Error())
+      ts.Rollback()
+      repo.logger.Log("UpdateBitcoincoreTx commit ts:", err.Error())
     }
   }
 }
