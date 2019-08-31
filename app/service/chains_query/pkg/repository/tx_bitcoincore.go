@@ -5,6 +5,7 @@ import (
   "fmt"
   "sync"
   "bytes"
+  "strings"
   "strconv"
   "math/big"
   "context"
@@ -131,12 +132,12 @@ func (repo *repo) ConstructTxOmni(ctx context.Context, from, to, amount, symbol 
 
   // tx script builder
   b := txscript.NewScriptBuilder()
-  b.AddOp(txscript.OP_RETURN)
-  b.AddData([]byte("omni"))	// transaction maker
-  b.AddData(omniVersion)
-  b.AddData(txType)
-  b.AddData(tokenIdentifier)
-  b.AddData(tokenAmount)
+  b.AddOp(txscript.OP_RETURN)  // 2byte = 4 hex
+  b.AddData([]byte("omni"))	// transaction maker 4 byte = 8 hex
+  b.AddData(omniVersion)  // 2 byte = 4 hex
+  b.AddData(txType)       // 2 byte = 4 hex
+  b.AddData(tokenIdentifier) // 4 byte = 8 hex
+  b.AddData(tokenAmount)    // 8 byte = 16 hex
 
   // pk script
   pkScript, err := b.Script()
@@ -285,6 +286,22 @@ func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (string, er
         return "", fmt.Errorf("Extract originWithdrawLock error %s", err.Error())
       }
       ts.Model(&balance).UpdateColumn("withdraw_lock", vinWithdrawLock.Sub(v).String())
+
+      for _, vout := range msgTx.TxOut {
+        pkScriptHex := hex.EncodeToString(vout.PkScript)
+        if strings.Contains(pkScriptHex, "6f6d6e69") {
+          omniPropertyID := common.Hex2int(pkScriptHex[26:34])
+          transferAmount := common.Hex2int(pkScriptHex[36:])
+          omnibalance := model.Balance{}
+          ts.Where("address = ? AND identify = ?", balance.Address, strconv.FormatInt(omniPropertyID, 10)).First(&omnibalance)
+          omniWithdrawLock, err := decimal.NewFromString(omnibalance.WithdrawLock)
+          if err != nil {
+            ts.Rollback()
+            return "", fmt.Errorf("Extract omni balance WithdrawLock error %s", err.Error())
+          }
+          ts.Model(&omnibalance).UpdateColumn("withdraw_lock", omniWithdrawLock.Sub(decimal.New(transferAmount, 0)).String())
+        }
+      }
     }
     if err := ts.Commit().Error; err != nil {
       return "", fmt.Errorf("Fail to rollback utxo and balance withdrawLock row %s", err.Error())
@@ -297,6 +314,7 @@ func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (string, er
     sync.RWMutex
     m map[uint]decimal.Decimal
   }{m: make(map[uint]decimal.Decimal)}
+
   ts := repo.db.Begin()
   for _, vin := range tx.MsgTx().TxIn {
     utxo := model.BtcUtxo{}
@@ -338,6 +356,26 @@ func (repo *repo) SendBTCTx(ctx context.Context, signedTxHex string) (string, er
         BalanceID: balance.ID,
         ChainName: model.ChainBitcoin,
     })
+    for _, vout := range msgTx.TxOut {
+      pkScriptHex := hex.EncodeToString(vout.PkScript)
+      if strings.Contains(pkScriptHex, "6f6d6e69") {
+        omniPropertyID := common.Hex2int(pkScriptHex[26:34])
+        omniTransferAmount := common.Hex2int(pkScriptHex[36:])
+        omnibalance := model.Balance{}
+        omnitxRecord := model.Tx{}
+        ts.Where("address = ? AND identify = ?", balance.Address, strconv.FormatInt(omniPropertyID, 10)).First(&omnibalance)
+        ts.FirstOrCreate(&omnitxRecord,
+          model.Tx{
+            TxID: txid,
+            TxType: model.TxTypeWithdraw,
+            Address: omnibalance.Address,
+            Asset: omnibalance.Symbol,
+            Amount: strconv.FormatInt(omniTransferAmount, 10),
+            BalanceID: omnibalance.ID,
+            ChainName: model.ChainBitcoin,
+        })
+      }
+    }
   }
   if err := ts.Commit().Error; err != nil {
     ts.Rollback()
