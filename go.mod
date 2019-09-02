@@ -8,6 +8,7 @@ require (
 	github.com/OneOfOne/xxhash v1.2.5 // indirect
 	github.com/Pallinder/go-randomdata v1.2.0
 	github.com/Shopify/sarama v1.23.1 // indirect
+	github.com/afex/hystrix-go v0.0.0-20180502004556-fa1af6a1f4f5
 	github.com/allegro/bigcache v1.2.1 // indirect
 	github.com/aristanetworks/goarista v0.0.0-20190712234253-ed1100a1c015 // indirect
 	github.com/armon/circbuf v0.0.0-20190214190532-5111143e8da2 // indirect
@@ -119,6 +120,7 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v0.0.0-20180709203117-cd690d0c9e24
 	github.com/sirupsen/logrus v1.4.2 // indirect
+	github.com/sony/gobreaker v0.4.1 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/afero v1.2.2 // indirect
 	github.com/spf13/cobra v0.0.5
@@ -128,6 +130,7 @@ require (
 	github.com/steakknife/bloomfilter v0.0.0-20180922174646-6819c0d2a570 // indirect
 	github.com/steakknife/hamming v0.0.0-20180906055917-c99c65617cd3 // indirect
 	github.com/streadway/amqp v0.0.0-20190815230801-eade30b20f1d
+	github.com/streadway/handy v0.0.0-20190108123426-d5acb3125c2a // indirect
 	github.com/stretchr/objx v0.2.0 // indirect
 	github.com/stretchr/testify v1.4.0
 	github.com/syndtr/goleveldb v1.0.0

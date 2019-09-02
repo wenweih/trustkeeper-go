@@ -11,6 +11,7 @@ import (
 	opentracinggo "github.com/opentracing/opentracing-go"
 	endpoint "trustkeeper-go/app/service/chains_query/pkg/endpoint"
 	service "trustkeeper-go/app/service/chains_query/pkg/service"
+	"github.com/afex/hystrix-go/hystrix"
 )
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {
@@ -35,17 +36,62 @@ func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
-	mw["BitcoincoreBlock"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "BitcoincoreBlock")), endpoint.InstrumentingMiddleware(duration.With("method", "BitcoincoreBlock"))}
-	mw["QueryOmniProperty"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryOmniProperty")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryOmniProperty"))}
-	mw["ERC20TokenInfo"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ERC20TokenInfo")), endpoint.InstrumentingMiddleware(duration.With("method", "ERC20TokenInfo"))}
-	mw["ConstructTxBTC"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxBTC")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxBTC"))}
-	mw["SendBTCTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendBTCTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendBTCTx"))}
-	mw["ConstructTxOmni"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxOmni")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxOmni"))}
-	mw["ConstructTxETH"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxETH")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxETH"))}
-	mw["SendETHTx"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "SendETHTx")), endpoint.InstrumentingMiddleware(duration.With("method", "SendETHTx"))}
-	mw["ConstructTxERC20"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxERC20")), endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxERC20"))}
-	mw["QueryBalance"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryBalance")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryBalance"))}
-	mw["WalletValidate"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "WalletValidate")), endpoint.InstrumentingMiddleware(duration.With("method", "WalletValidate"))}
+	hystrix.ConfigureCommand("Lorem Request", hystrix.CommandConfig{Timeout: 1000})
+	mw["BitcoincoreBlock"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "BitcoincoreBlock")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "BitcoincoreBlock")),
+		endpoint.Hystrix("BitcoincoreBlock", "Service currently unavailable", logger),
+	}
+	mw["QueryOmniProperty"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "QueryOmniProperty")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "QueryOmniProperty")),
+		endpoint.Hystrix("QueryOmniProperty", "Service currently unavailable", logger),
+	}
+	mw["ERC20TokenInfo"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "ERC20TokenInfo")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "ERC20TokenInfo")),
+		endpoint.Hystrix("ERC20TokenInfo", "Service currently unavailable", logger),
+	}
+	mw["ConstructTxBTC"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxBTC")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxBTC")),
+		endpoint.Hystrix("ConstructTxBTC", "Service currently unavailable", logger),
+	}
+	mw["SendBTCTx"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "SendBTCTx")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "SendBTCTx")),
+		endpoint.Hystrix("SendBTCTx", "Service currently unavailable", logger),
+	}
+	mw["ConstructTxOmni"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxOmni")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxOmni")),
+		endpoint.Hystrix("ConstructTxOmni", "Service currently unavailable", logger),
+	}
+	mw["ConstructTxETH"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxETH")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxETH")),
+		endpoint.Hystrix("ConstructTxETH", "Service currently unavailable", logger),
+	}
+	mw["SendETHTx"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "SendETHTx")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "SendETHTx")),
+		endpoint.Hystrix("SendETHTx", "Service currently unavailable", logger),
+	}
+	mw["ConstructTxERC20"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "ConstructTxERC20")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "ConstructTxERC20")),
+		endpoint.Hystrix("ConstructTxERC20", "Service currently unavailable", logger),
+	}
+	mw["QueryBalance"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "QueryBalance")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "QueryBalance")),
+		endpoint.Hystrix("QueryBalance", "Service currently unavailable", logger),
+	}
+	mw["WalletValidate"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "WalletValidate")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "WalletValidate")),
+		endpoint.Hystrix("WalletValidate", "Service currently unavailable", logger),
+	}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))

@@ -27,7 +27,7 @@ func New(consulAddr string, logger log.Logger) (service.WalletManagementService,
     consulTags = []string{"wallet"}
     passingOnly = true
     retryMax = 1
-    retryTimeout = 500 * time.Millisecond
+    retryTimeout = 1000 * time.Millisecond
   )
 
   consulClient, err := libconsule.NewClient(consulAddr)

@@ -31,13 +31,36 @@ func defaultGRPCOptions(logger log.Logger, tracer opentracinggo.Tracer) map[stri
 	return options
 }
 func addDefaultEndpointMiddleware(logger log.Logger, duration *prometheus.Summary, mw map[string][]endpoint1.Middleware) {
-	mw["GetChains"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetChains")), endpoint.InstrumentingMiddleware(duration.With("method", "GetChains"))}
+	mw["GetChains"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "GetChains")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "GetChains")),
+	}
 	mw["CreateChain"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateChain")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateChain"))}
-	mw["AssignedXpubToGroup"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "AssignedXpubToGroup")), endpoint.InstrumentingMiddleware(duration.With("method", "AssignedXpubToGroup"))}
-	mw["CreateWallet"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "CreateWallet")), endpoint.InstrumentingMiddleware(duration.With("method", "CreateWallet"))}
-	mw["GetWallets"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "GetWallets")), endpoint.InstrumentingMiddleware(duration.With("method", "GetWallets"))}
-	mw["QueryWalletsForGroupByChainName"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryWalletsForGroupByChainName")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryWalletsForGroupByChainName"))}
-	mw["QueryWalletHD"] = []endpoint1.Middleware{endpoint.LoggingMiddleware(log.With(logger, "method", "QueryWalletHD")), endpoint.InstrumentingMiddleware(duration.With("method", "QueryWalletHD"))}
+	mw["AssignedXpubToGroup"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "AssignedXpubToGroup")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "AssignedXpubToGroup")),
+		endpoint.Hystrix("AssignedXpubToGroup", "Service currently unavailable", logger),
+	}
+	mw["CreateWallet"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "CreateWallet")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "CreateWallet")),
+		endpoint.Hystrix("CreateWallet", "Service currently unavailable", logger),
+	}
+	mw["GetWallets"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "GetWallets")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "GetWallets")),
+		endpoint.Hystrix("GetWallets", "Service currently unavailable", logger),
+	}
+	mw["QueryWalletsForGroupByChainName"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "QueryWalletsForGroupByChainName")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "QueryWalletsForGroupByChainName")),
+		endpoint.Hystrix("QueryWalletsForGroupByChainName", "Service currently unavailable", logger),
+	}
+	mw["QueryWalletHD"] = []endpoint1.Middleware{
+		endpoint.LoggingMiddleware(log.With(logger, "method", "QueryWalletHD")),
+		endpoint.InstrumentingMiddleware(duration.With("method", "QueryWalletHD")),
+		endpoint.Hystrix("QueryWalletHD", "Service currently unavailable", logger),
+	}
 }
 func addDefaultServiceMiddleware(logger log.Logger, mw []service.Middleware) []service.Middleware {
 	return append(mw, service.LoggingMiddleware(logger))
