@@ -1,0 +1,64 @@
+version: '2'
+
+services:
+  bitcoincore:
+    container_name: 'bitcoincore'
+    build:
+      context: ./bitcoincore
+      dockerfile: Dockerfile-prod
+    ports:
+      - "8331:8331"
+      - "8431:8431"
+    command:
+      -server=1
+      -listen=1
+      -port=8331
+      -rpcport=8431
+      -rpcuser=btcrpc
+      -rpcpassword=123456
+      -rpcallowip=0.0.0.0/0
+      -blocknotify='curl http://10.200.10.1:3001/btc-best-block-notify?hash=%s'
+      -txindex=1
+      -reindex
+    networks:
+      - chainnodes
+    volumes:
+      - ./bitcoincore/docker-entrypoint.sh:/entrypoint.sh
+      - ./bitcoincore/data://home/bitcoin/.bitcoin
+  omnicore:
+    container_name: 'omnicore'
+    build:
+      context: ./omnicore
+      dockerfile: Dockerfile-prod
+    ports:
+      - "8332:8332"
+      - "8432:8432"
+    command:
+      -server
+      -listen
+      -printtoconsole
+      -port=8332
+      -rpcport=8432
+      -rpcuser=btcrpc
+      -rpcpassword=123456
+      -rpcallowip=0.0.0.0/0
+      -txindex=1
+    networks:
+      - chainnodes
+    volumes:
+      - ./omnicore/docker-entrypoint.sh:/entrypoint.sh
+      - ./omnicore/data://home/bitcoin/.bitcoin
+  ethereum:
+    container_name: 'ethereum'
+    image: ethereum/client-go
+    ports:
+      - "30303:30303"
+      - "8545:8545"
+      - "8546:8546"
+    volumes:
+      - ./ethereum/data:/root/.ethereum
+    command: "--gcmode archive --rpc --datadir /root/.ethereum --txpool.accountqueue 1000 --rpcaddr 0.0.0.0 --rpcapi admin,db,eth,net,web3,personal,web3,miner,debug,sha3,txpool --ws --wsorigins * --wsaddr 0.0.0.0 --wsapi admin,db,eth,net,web3,personal,web3,miner,debug,sha3,txpool"
+    networks:
+      - chainnodes
+networks:
+  chainnodes:
