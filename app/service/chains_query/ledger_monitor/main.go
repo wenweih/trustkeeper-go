@@ -45,9 +45,15 @@ func main() {
 }
 
 func init()  {
+  // monitor blockchain ledger, and push data to mq broker
   rootCmd.AddCommand(blockMonitor)
+  // trace tx for system wallets
   rootCmd.AddCommand(traceTx)
+  // update tx status for system wallets
   rootCmd.AddCommand(updateTx)
+  // maintain utxo set
+  rootCmd.AddCommand(utxoSet)
+
   rootCmd.PersistentFlags().StringVarP(&chain, "chain", "c", "", "Support bitcoincore, ethereum")
   rootCmd.MarkFlagRequired("chain")
 }
