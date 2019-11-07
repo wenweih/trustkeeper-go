@@ -75,13 +75,11 @@ func MakeCreateGroupEndpoint(s service.DashboardService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateGroupRequest)
 		g, err := s.CreateGroup(ctx, req.UUID, req.Name, req.Desc, req.NamespaceID)
-		if err != nil {
-			return nil, err
-		}
 		return CreateGroupResponse{
 			Name: g.Name,
 			Desc: g.Desc,
 			ID:   g.ID,
+			Err: err,
 		}, nil
 	}
 }
@@ -127,13 +125,11 @@ func MakeUpdateGroupEndpoint(s service.DashboardService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req, ok := request.(UpdateGroupRequest)
 		if !ok {
-			return nil, errors.New("endpoint UpdateGroupRequest type assertion error")
+			err := errors.New("endpoint UpdateGroupRequest type assertion error")
+			return UpdateGroupResponse{Err: err}, nil
 		}
 		err := s.UpdateGroup(ctx, req.GroupID, req.Name, req.Desc)
-		if err != nil {
-			return nil, err
-		}
-		return UpdateGroupResponse{}, nil
+		return UpdateGroupResponse{Err: err}, nil
 	}
 }
 
@@ -168,13 +164,9 @@ func MakeGetGroupAssetsEndpoint(s service.DashboardService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GetGroupAssetRequest)
 		chainAssets, err := s.GetGroupAssets(ctx, req.GroupID)
-		if err != nil {
-			return GetGroupAssetResponse{
-				Err: err,
-			}, err
-		}
 		return GetGroupAssetResponse{
 			ChainAssets: chainAssets,
+			Err: err,
 		}, nil
 	}
 }
@@ -227,10 +219,7 @@ func MakeChangeGroupAssetsEndpoint(s service.DashboardService) endpoint.Endpoint
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ChangeGroupAssetsRequest)
 		resp, err := s.ChangeGroupAssets(ctx, req.ChainAssets, req.Groupid)
-		if err != nil {
-			return ChangeGroupAssetsResponse{Err: err}, err
-		}
-		return ChangeGroupAssetsResponse{ChainAssets: resp}, nil
+		return ChangeGroupAssetsResponse{ChainAssets: resp, Err: err}, nil
 	}
 }
 
@@ -269,11 +258,9 @@ func MakeAddAssetEndpoint(s service.DashboardService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(AddAssetRequest)
 		asset, err := s.AddAsset(ctx, req.Groupid, req.Chainid, req.Symbol, req.Identify, req.Decimal)
-		if err != nil {
-			return AddAssetResponse{Err: err}, err
-		}
 		return AddAssetResponse{
 			Asset: asset,
+			Err: err,
 		}, nil
 	}
 }

@@ -25,13 +25,9 @@ func MakeCreateEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateRequest)
 		uuid, err := s.Create(ctx, req.Email, req.Password, req.OrgName)
-		if err != nil {
-			return CreateResponse{
-				E1: err,
-			}, err
-		}
 		return CreateResponse{
 			UUID: uuid,
+			E1: err,
 		}, nil
 	}
 }
@@ -79,16 +75,7 @@ func MakeSigninEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SigninRequest)
 		s0, e1 := s.Signin(ctx, req.Email, req.Password)
-		if e1 != nil {
-			return SigninResponse{
-				E1: e1,
-				S0: "",
-			}, e1
-		}
-		return SigninResponse{
-			E1: e1,
-			S0: s0,
-		}, nil
+		return SigninResponse{E1: e1, S0: s0}, nil
 	}
 }
 
@@ -124,7 +111,7 @@ type SignoutResponse struct {
 func MakeSignoutEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		err := s.Signout(ctx)
-		return SignoutResponse{E0: err}, err
+		return SignoutResponse{E0: err}, nil
 	}
 }
 
@@ -158,7 +145,8 @@ func MakeRolesEndpoint(s service.AccountService) endpoint.Endpoint {
 		roles, err := s.Roles(ctx)
 		return RolesResponse{
 			S0: roles,
-		}, err
+			E1: err,
+		}, nil
 	}
 }
 
@@ -192,13 +180,11 @@ type AuthResponse struct {
 func MakeAuthEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		uuid, namespaceid, roles, err := s.Auth(ctx)
-		if err != nil {
-			return AuthResponse{Err: err}, err
-		}
 		return AuthResponse{
 			Uuid:        uuid,
 			NamespaceID: namespaceid,
 			Roles:       roles,
+			Err: err,
 		}, nil
 	}
 }
@@ -239,13 +225,10 @@ type UserInfoResponse struct {
 func MakeUserInfoEndpoint(s service.AccountService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		roles, orgName, err := s.UserInfo(ctx)
-		if err != nil {
-			return nil, err
-		}
-
 		return UserInfoResponse{
 			OrgName: orgName,
 			Roles:   roles,
+			Err: err,
 		}, nil
 	}
 }

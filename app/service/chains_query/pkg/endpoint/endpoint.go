@@ -71,10 +71,7 @@ func MakeQueryOmniPropertyEndpoint(s service.ChainsQueryService) endpoint.Endpoi
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(QueryOmniPropertyRequest)
 		resp, err := s.QueryOmniProperty(ctx, req.Propertyid)
-		if err != nil {
-			return QueryOmniPropertyResponse{Err: err}, err
-		}
-		return QueryOmniPropertyResponse{Property: resp}, nil
+		return QueryOmniPropertyResponse{Property: resp, Err: err}, nil
 	}
 }
 
@@ -109,12 +106,7 @@ func MakeERC20TokenInfoEndpoint(s service.ChainsQueryService) endpoint.Endpoint 
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ERC20TokenInfoRequest)
 		token, err := s.ERC20TokenInfo(ctx, req.TokenHex)
-		if err != nil {
-			return ERC20TokenInfoResponse{Err: err}, err
-		}
-		return ERC20TokenInfoResponse{
-			Token: token,
-		}, nil
+		return ERC20TokenInfoResponse{Token: token, Err: err}, nil
 	}
 }
 
@@ -152,10 +144,7 @@ func MakeConstructTxBTCEndpoint(s service.ChainsQueryService) endpoint.Endpoint 
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ConstructTxBTCRequest)
 		unsignedTxHex, vinAmount, err := s.ConstructTxBTC(ctx, req.From, req.To, req.Amount)
-		if err != nil {
-			return ConstructTxBTCResponse{Err: err}, err
-		}
-		return ConstructTxBTCResponse{UnsignedTxHex: unsignedTxHex, VinAmount: vinAmount}, nil
+		return ConstructTxBTCResponse{UnsignedTxHex: unsignedTxHex, VinAmount: vinAmount, Err: err}, nil
 	}
 }
 
@@ -194,10 +183,7 @@ func MakeSendBTCTxEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SendBTCTxRequest)
 		txID, err := s.SendBTCTx(ctx, req.SignedTxHex)
-		if err != nil {
-			return SendBTCTxResponse{Err: err}, err
-		}
-		return SendBTCTxResponse{TxID: txID}, nil
+		return SendBTCTxResponse{TxID: txID, Err: err}, nil
 	}
 }
 
@@ -233,14 +219,7 @@ func MakeQueryBalanceEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(QueryBalanceRequest)
 		balance, err := s.QueryBalance(ctx, req.Symbol, req.Address)
-		if err != nil {
-			return QueryBalanceResponse{
-				Err: err,
-			}, err
-		}
-		return QueryBalanceResponse{
-			Balance: balance,
-		}, nil
+		return QueryBalanceResponse{Balance: balance,Err: err}, nil
 	}
 }
 
@@ -278,7 +257,7 @@ func MakeWalletValidateEndpoint(s service.ChainsQueryService) endpoint.Endpoint 
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(WalletValidateRequest)
 		err := s.WalletValidate(ctx, req.ChainName, req.Address)
-		return WalletValidateResponse{Err: err}, err
+		return WalletValidateResponse{Err: err}, nil
 	}
 }
 
@@ -319,15 +298,7 @@ func MakeConstructTxETHEndpoint(s service.ChainsQueryService) endpoint.Endpoint 
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ConstructTxETHRequest)
 		unsignedTxHex, chainID, err := s.ConstructTxETH(ctx, req.From, req.To, req.Amount)
-		if err != nil {
-			return ConstructTxETHResponse{
-				Err: err,
-			}, err
-		}
-		return ConstructTxETHResponse{
-			UnsignedTxHex: unsignedTxHex,
-			ChainID:       chainID,
-		}, nil
+		return ConstructTxETHResponse{UnsignedTxHex: unsignedTxHex, ChainID: chainID,Err: err}, nil
 	}
 }
 
@@ -368,14 +339,7 @@ func MakeSendETHTxEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SendETHTxRequest)
 		txID, err := s.SendETHTx(ctx, req.SignedTxHex)
-		if err != nil {
-			return SendETHTxResponse{
-				Err: err,
-			}, err
-		}
-		return SendETHTxResponse{
-			TxID: txID,
-		}, nil
+		return SendETHTxResponse{TxID: txID,Err: err}, nil
 	}
 }
 
@@ -414,15 +378,7 @@ func MakeConstructTxERC20Endpoint(s service.ChainsQueryService) endpoint.Endpoin
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ConstructTxERC20Request)
 		unsignedTxHex, chainID, err := s.ConstructTxERC20(ctx, req.From, req.To, req.Amount, req.Contract)
-		if err != nil {
-			return ConstructTxERC20Response{
-				Err: err,
-			}, err
-		}
-		return ConstructTxERC20Response{
-			ChainID:       chainID,
-			UnsignedTxHex: unsignedTxHex,
-		}, nil
+		return ConstructTxERC20Response{ChainID: chainID,UnsignedTxHex: unsignedTxHex,Err: err}, nil
 	}
 }
 
@@ -466,15 +422,7 @@ func MakeConstructTxOmniEndpoint(s service.ChainsQueryService) endpoint.Endpoint
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ConstructTxOmniRequest)
 		unsignedTxHex, vinAmount, err := s.ConstructTxOmni(ctx, req.From, req.To, req.Amount, req.Symbol)
-		if err != nil {
-			return ConstructTxOmniResponse{
-				Err:           err,
-			}, err
-		}
-		return ConstructTxOmniResponse{
-			UnsignedTxHex: unsignedTxHex,
-			VinAmount:     vinAmount,
-		}, nil
+		return ConstructTxOmniResponse{UnsignedTxHex: unsignedTxHex,VinAmount: vinAmount, Err: err}, nil
 	}
 }
 

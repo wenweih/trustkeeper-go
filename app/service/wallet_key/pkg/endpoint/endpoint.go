@@ -24,13 +24,7 @@ func MakeGenerateMnemonicEndpoint(s service.WalletKeyService) endpoint.Endpoint 
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(GenerateMnemonicRequest)
 		xpubs, version, err := s.GenerateMnemonic(ctx, req.Namespaceid, req.Bip44ids, req.Bip44accountSize)
-		if err != nil {
-			return GenerateMnemonicResponse{
-				Err:         err,
-				ChainsXpubs: nil,
-			}, err
-		}
-		return GenerateMnemonicResponse{ChainsXpubs: xpubs, Version: version}, nil
+		return GenerateMnemonicResponse{ChainsXpubs: xpubs, Version: version, Err: err}, nil
 	}
 }
 
@@ -74,10 +68,7 @@ func MakeSignedBitcoincoreTxEndpoint(s service.WalletKeyService) endpoint.Endpoi
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SignedBitcoincoreTxRequest)
 		signedTxHex, err := s.SignedBitcoincoreTx(ctx, req.WalletHD, req.TxHex, req.VinAmount)
-		if err != nil {
-			return SignedBitcoincoreTxResponse{Err: err}, err
-		}
-		return SignedBitcoincoreTxResponse{SignedTxHex: signedTxHex}, nil
+		return SignedBitcoincoreTxResponse{SignedTxHex: signedTxHex, Err: err}, nil
 	}
 }
 
@@ -117,14 +108,7 @@ func MakeSignedEthereumTxEndpoint(s service.WalletKeyService) endpoint.Endpoint 
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SignedEthereumTxRequest)
 		signedTxHex, err := s.SignedEthereumTx(ctx, req.WalletHD, req.TxHex, req.ChainID)
-		if err != nil {
-			return SignedEthereumTxResponse{
-				Err:         err,
-			}, err
-		}
-		return SignedEthereumTxResponse{
-			SignedTxHex: signedTxHex,
-		}, nil
+		return SignedEthereumTxResponse{SignedTxHex: signedTxHex, Err: err}, nil
 	}
 }
 

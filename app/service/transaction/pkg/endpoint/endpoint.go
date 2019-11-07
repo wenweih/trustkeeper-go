@@ -29,10 +29,7 @@ func MakeAssignAssetsToWalletEndpoint(s service.TransactionService) endpoint.End
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(AssignAssetsToWalletRequest)
 		err := s.AssignAssetsToWallet(ctx, req.Address, req.Assets)
-		if err != nil {
-			return AssignAssetsToWalletResponse{Err: err}, err
-		}
-		return AssignAssetsToWalletResponse{}, nil
+		return AssignAssetsToWalletResponse{Err: err}, nil
 	}
 }
 
@@ -77,10 +74,7 @@ func MakeCreateBalancesForAssetEndpoint(s service.TransactionService) endpoint.E
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateBalancesForAssetRequest)
 		err := s.CreateBalancesForAsset(ctx, req.Wallets, req.Asset)
-		if err != nil {
-			return CreateBalancesForAssetResponse{Err: err}, err
-		}
-		return CreateBalancesForAssetResponse{}, nil
+		return CreateBalancesForAssetResponse{Err: err}, nil
 	}
 }
 

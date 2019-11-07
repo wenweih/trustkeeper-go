@@ -27,7 +27,7 @@ func MakeCreateChainEndpoint(s service.WalletManagementService) endpoint.Endpoin
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(CreateChainRequest)
 		err := s.CreateChain(ctx, req.Symbol, req.Bit44ID, req.Status)
-		return CreateChainResponse{Err: err}, err
+		return CreateChainResponse{Err: err}, nil
 	}
 }
 
@@ -76,12 +76,11 @@ func MakeAssignedXpubToGroupEndpoint(s service.WalletManagementService) endpoint
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req, ok := request.(AssignedXpubToGroupRequest)
 		if !ok {
-			return nil, errors.New("endpoint AssignedXpubToGroupRequest type assersion error")
+			err := errors.New("endpoint AssignedXpubToGroupRequest type assersion error")
+			return AssignedXpubToGroupResponse{Err: err}, nil
 		}
-		if err := s.AssignedXpubToGroup(ctx, req.GroupID); err != nil {
-			return nil, err
-		}
-		return AssignedXpubToGroupResponse{}, nil
+		err := s.AssignedXpubToGroup(ctx, req.GroupID)
+		return AssignedXpubToGroupResponse{Err: err}, nil
 	}
 }
 
@@ -113,10 +112,7 @@ type GetChainsResponse struct {
 func MakeGetChainsEndpoint(s service.WalletManagementService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		chains, err := s.GetChains(ctx)
-		if err != nil {
-			return GetChainsResponse{Err: err}, err
-		}
-		return GetChainsResponse{Chains: chains}, nil
+		return GetChainsResponse{Chains: chains, Err: err}, nil
 	}
 }
 
@@ -153,13 +149,11 @@ func MakeCreateWalletEndpoint(s service.WalletManagementService) endpoint.Endpoi
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req, ok := request.(CreateWalletRequest)
 		if !ok {
-			return nil, errors.New("endpoint CreateWalletRequest type assertion error")
+			err := errors.New("endpoint CreateWalletRequest type assertion error")
+			return CreateWalletResponse{Err: err}, nil
 		}
 		wallet, err := s.CreateWallet(ctx, req.Groupid, req.Chainname, req.Bip44change)
-		if err != nil {
-			return CreateWalletResponse{Err: err}, err
-		}
-		return CreateWalletResponse{Wallet: wallet}, nil
+		return CreateWalletResponse{Wallet: wallet, Err: err}, nil
 	}
 }
 
@@ -202,15 +196,10 @@ func MakeGetWalletsEndpoint(s service.WalletManagementService) endpoint.Endpoint
 		req, ok := request.(GetWalletsRequest)
 		if !ok {
 			e := errors.New("endpoint GetWalletsRequest type assertion error")
-			return GetWalletsResponse{Err: e}, e
+			return GetWalletsResponse{Err: e}, nil
 		}
 		wallets, err := s.GetWallets(ctx, req.Groupid, req.Page, req.Limit, req.Bip44Change)
-		if err != nil {
-			return GetWalletsResponse{Err: err}, err
-		}
-		return GetWalletsResponse{
-			ChainWithWallets: wallets,
-		}, nil
+		return GetWalletsResponse{ChainWithWallets: wallets, Err: err}, nil
 	}
 }
 
@@ -250,10 +239,7 @@ func MakeQueryWalletsForGroupByChainNameEndpoint(s service.WalletManagementServi
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(QueryWalletsForGroupByChainNameRequest)
 		wallets, err := s.QueryWalletsForGroupByChainName(ctx, req.Groupid, req.ChainName)
-		if err != nil {
-			return QueryWalletsForGroupByChainNameResponse{Err: err}, err
-		}
-		return QueryWalletsForGroupByChainNameResponse{Wallets: wallets}, nil
+		return QueryWalletsForGroupByChainNameResponse{Wallets: wallets, Err: err}, nil
 	}
 }
 
@@ -291,10 +277,7 @@ func MakeQueryWalletHDEndpoint(s service.WalletManagementService) endpoint.Endpo
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(QueryWalletHDRequest)
 		hd, err := s.QueryWalletHD(ctx, req.Address)
-		if err != nil {
-			return QueryWalletHDResponse{Err: err}, err
-		}
-		return QueryWalletHDResponse{Hd:  hd}, nil
+		return QueryWalletHDResponse{Hd:  hd, Err: err}, nil
 	}
 }
 
