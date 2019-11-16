@@ -3,6 +3,7 @@ package main
 import (
   "os"
   "github.com/spf13/cobra"
+  "github.com/go-kit/kit/log/level"
 )
 
 var utxoSet = &cobra.Command {
@@ -10,9 +11,9 @@ var utxoSet = &cobra.Command {
   Short: "maintain utxo set",
   Run: func(cmd *cobra.Command, args []string) {
     switch chain {
-    case "bitcoincore":
+    case "btc":
     default:
-      logger.Log("Only support utxo base blockchain:", "bitcoincore")
+      level.Warn(logger).Log("msg", "Only support utxo base blockchain", "Support", "btc")
       os.Exit(1)
     }
 	},

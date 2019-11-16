@@ -65,8 +65,9 @@ func Hystrix(commandName string, fallbackMesg string, logger log.Logger) endpoin
 				}{
 					fallbackMesg,
 				}
-				return nil
+				return err
 			}); err != nil {
+				logger.Log("Do Hystrix", err.Error())
 				return nil, err
 			}
 			return resp, nil

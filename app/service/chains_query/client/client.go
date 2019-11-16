@@ -23,7 +23,7 @@ func New(consulAddr string, logger log.Logger) (service.ChainsQueryService, erro
   var (
     consulTags = []string{"chainsquery"}
     passingOnly = true
-    retryMax = 1
+    retryMax = 3
     retryTimeout = 500 * time.Millisecond
   )
 

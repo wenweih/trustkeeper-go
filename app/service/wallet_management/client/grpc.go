@@ -236,7 +236,8 @@ func encodeQueryWalletHDRequest(_ context.Context, request interface{}) (interfa
 func decodeQueryWalletHDResponse(_ context.Context, reply interface{}) (interface{}, error) {
 	resp, ok := reply.(*pb.QueryWalletHDReply)
 	if !ok {
-		return nil, fmt.Errorf("pb QueryWalletHDReply type assertion error")
+		e := fmt.Errorf("pb QueryWalletHDReply type assertion error")
+		return endpoint1.QueryWalletHDResponse{Err: e}, e
 	}
 	walletHD := repository.WalletHD{}
 	if err := copier.Copy(&walletHD, resp.WalletHD); err != nil {

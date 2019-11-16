@@ -27,7 +27,7 @@ func New(consulAddr string, logger log.Logger) (service.DashboardService, error)
   var (
     consulTags = []string{"dashboard"}
     passingOnly = true
-    retryMax = 1
+    retryMax = 3
     retryTimeout = 500 * time.Millisecond
   )
 
