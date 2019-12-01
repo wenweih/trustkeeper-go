@@ -139,6 +139,25 @@ services:
       - ./script/db_setup.sh:/db_setup.sh
     entrypoint: "/bin/bash"
     command: /db_setup.sh
-
+  es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.4.2
+    container_name: 'tk_es'
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./data/es:/usr/share/elasticsearch/data
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - tk_net
 networks:
   tk_net:
