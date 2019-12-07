@@ -16,6 +16,7 @@ type Conf struct {
 	ETHRPC        string
 	ETHWS         string
 	MQ            string
+	ES            string
 }
 
 func New() (*Conf, error) {
@@ -51,6 +52,8 @@ func New() (*Conf, error) {
 	eth_rpc := data.Data["eth_rpc"].(string)
 	eth_ws := data.Data["eth_ws"].(string)
 
+	es_url := data.Data["es_url"].(string)
+
 	return &Conf{
 		DBInfo:			dbInfo,
 		ConsulAddress: consulAddr,
@@ -58,6 +61,7 @@ func New() (*Conf, error) {
 		MQ: mq,
 		ETHRPC: eth_rpc,
 		ETHWS: eth_ws,
+		ES: es_url,
 		BTCconnCfg: &rpcclient.ConnConfig{
 			Host: bitcoinHost,
 			User: bitcoinUsr,

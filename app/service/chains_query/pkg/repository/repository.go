@@ -6,6 +6,7 @@ import(
   "github.com/btcsuite/btcd/rpcclient"
   "github.com/ethereum/go-ethereum/ethclient"
   "trustkeeper-go/library/mq"
+  "github.com/olivere/elastic/v7"
   "trustkeeper-go/app/service/chains_query/pkg/model"
   "trustkeeper-go/app/service/chains_query/pkg/configure"
 
@@ -17,6 +18,7 @@ type repo struct {
   omniClient *rpcclient.Client
   ethClient     *ethclient.Client
   MQ            *mq.MessagingClient
+  ES            *elastic.Client
   db            *gorm.DB
   logger        log.Logger
   conf          configure.Conf
@@ -30,7 +32,9 @@ func New(
   mq *mq.MessagingClient,
   db *gorm.DB,
   logger log.Logger,
-  conf configure.Conf) IBiz {
+  conf configure.Conf,
+  es   *elastic.Client,
+  ) IBiz {
   db.AutoMigrate(
     model.BtcUtxo{},
     model.BtcBlock{},
@@ -44,6 +48,7 @@ func New(
     omniClient: omniClient,
     ethClient: ethClient,
     MQ: mq,
+    ES: es,
     db: db,
     logger: logger,
     conf: conf,

@@ -8,7 +8,7 @@ import (
 	"trustkeeper-go/app/service/chains_query/pkg/repository"
 	"trustkeeper-go/library/database/orm"
 	"trustkeeper-go/library/mq"
-
+	"github.com/olivere/elastic/v7"
 	"github.com/btcsuite/btcd/btcjson"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
 	"github.com/btcsuite/btcd/rpcclient"
@@ -64,8 +64,16 @@ func NewBasicChainsQueryService(conf configure.Conf, logger log.Logger) (*basicC
 	if err != nil {
 		return nil, err
 	}
+
+	es, err := elastic.NewClient(
+		elastic.SetURL(conf.ES),
+		elastic.SetSniff(false))
+	if err != nil {
+		return nil, err
+	}
+
 	return &basicChainsQueryService{
-		biz: repository.New(btcclient, omniClient, ethereumClient, messageClient, db, logger, conf),
+		biz: repository.New(btcclient, omniClient, ethereumClient, messageClient, db, logger, conf, es),
 	}, nil
 }
 
@@ -131,5 +139,5 @@ func (b *basicChainsQueryService) ConstructTxERC20(ctx context.Context, from str
 
 func (b *basicChainsQueryService) ConstructTxOmni(ctx context.Context, from string, to string, amount string, symbol string) (unsignedTxHex string, vinAmount int64, err error) {
 	unsignedTxHex, vinAmount, err = b.biz.ConstructTxOmni(ctx, from, to, amount, symbol)
-	return 
+	return
 }

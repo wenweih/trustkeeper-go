@@ -58,6 +58,7 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/oklog/oklog v0.3.2
 	github.com/olekukonko/tablewriter v0.0.3 // indirect
+	github.com/olivere/elastic/v7 v7.0.9
 	github.com/opentracing/basictracer-go v1.0.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0
 	github.com/pborman/uuid v1.2.0 // indirect
