@@ -2,9 +2,10 @@
 package grpc
 
 import (
-	grpc "github.com/go-kit/kit/transport/grpc"
 	endpoint "trustkeeper-go/app/service/transaction/pkg/endpoint"
 	pb "trustkeeper-go/app/service/transaction/pkg/grpc/pb"
+
+	grpc "github.com/go-kit/kit/transport/grpc"
 )
 
 // NewGRPCServer makes a set of endpoints available as a gRPC AddServer

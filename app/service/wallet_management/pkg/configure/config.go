@@ -7,8 +7,8 @@ import (
 )
 
 type Conf struct {
-	DBInfo				string
-	ConsulAddress	string
+	DBInfo        string
+	ConsulAddress string
 	Redis         string
 }
 
@@ -33,8 +33,8 @@ func New() (*Conf, error) {
 	consulAddr := data.Data["consuladdr"].(string)
 	redis := data.Data["redis"].(string)
 	return &Conf{
-		DBInfo:			dbInfo,
+		DBInfo:        dbInfo,
 		ConsulAddress: consulAddr,
-		Redis: redis,
+		Redis:         redis,
 	}, nil
 }

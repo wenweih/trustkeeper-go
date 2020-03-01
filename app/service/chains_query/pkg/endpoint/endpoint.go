@@ -219,7 +219,7 @@ func MakeQueryBalanceEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(QueryBalanceRequest)
 		balance, err := s.QueryBalance(ctx, req.Symbol, req.Address)
-		return QueryBalanceResponse{Balance: balance,Err: err}, nil
+		return QueryBalanceResponse{Balance: balance, Err: err}, nil
 	}
 }
 
@@ -298,7 +298,7 @@ func MakeConstructTxETHEndpoint(s service.ChainsQueryService) endpoint.Endpoint 
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ConstructTxETHRequest)
 		unsignedTxHex, chainID, err := s.ConstructTxETH(ctx, req.From, req.To, req.Amount)
-		return ConstructTxETHResponse{UnsignedTxHex: unsignedTxHex, ChainID: chainID,Err: err}, nil
+		return ConstructTxETHResponse{UnsignedTxHex: unsignedTxHex, ChainID: chainID, Err: err}, nil
 	}
 }
 
@@ -339,7 +339,7 @@ func MakeSendETHTxEndpoint(s service.ChainsQueryService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(SendETHTxRequest)
 		txID, err := s.SendETHTx(ctx, req.SignedTxHex)
-		return SendETHTxResponse{TxID: txID,Err: err}, nil
+		return SendETHTxResponse{TxID: txID, Err: err}, nil
 	}
 }
 
@@ -378,7 +378,7 @@ func MakeConstructTxERC20Endpoint(s service.ChainsQueryService) endpoint.Endpoin
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ConstructTxERC20Request)
 		unsignedTxHex, chainID, err := s.ConstructTxERC20(ctx, req.From, req.To, req.Amount, req.Contract)
-		return ConstructTxERC20Response{ChainID: chainID,UnsignedTxHex: unsignedTxHex,Err: err}, nil
+		return ConstructTxERC20Response{ChainID: chainID, UnsignedTxHex: unsignedTxHex, Err: err}, nil
 	}
 }
 
@@ -422,7 +422,7 @@ func MakeConstructTxOmniEndpoint(s service.ChainsQueryService) endpoint.Endpoint
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ConstructTxOmniRequest)
 		unsignedTxHex, vinAmount, err := s.ConstructTxOmni(ctx, req.From, req.To, req.Amount, req.Symbol)
-		return ConstructTxOmniResponse{UnsignedTxHex: unsignedTxHex,VinAmount: vinAmount, Err: err}, nil
+		return ConstructTxOmniResponse{UnsignedTxHex: unsignedTxHex, VinAmount: vinAmount, Err: err}, nil
 	}
 }
 

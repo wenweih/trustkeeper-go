@@ -131,5 +131,5 @@ func (b *basicChainsQueryService) ConstructTxERC20(ctx context.Context, from str
 
 func (b *basicChainsQueryService) ConstructTxOmni(ctx context.Context, from string, to string, amount string, symbol string) (unsignedTxHex string, vinAmount int64, err error) {
 	unsignedTxHex, vinAmount, err = b.biz.ConstructTxOmni(ctx, from, to, amount, symbol)
-	return 
+	return
 }

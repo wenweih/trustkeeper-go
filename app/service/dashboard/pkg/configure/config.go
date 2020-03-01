@@ -36,8 +36,8 @@ func New() (*Conf, error) {
 	consuladdr := data.Data["consuladdr"].(string)
 	redis := data.Data["redis"].(string)
 	return &Conf{
-		DBInfo:  dbInfo,
+		DBInfo:        dbInfo,
 		ConsulAddress: consuladdr,
-		Redis: redis,
+		Redis:         redis,
 	}, nil
 }

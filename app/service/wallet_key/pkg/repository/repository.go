@@ -1,30 +1,31 @@
 package repository
 
 import (
-  "github.com/syndtr/goleveldb/leveldb"
-  libLeveldb "trustkeeper-go/library/database/leveldb"
+	libLeveldb "trustkeeper-go/library/database/leveldb"
+
+	"github.com/syndtr/goleveldb/leveldb"
 )
 
 type repo struct {
-  ldb *leveldb.DB
+	ldb *leveldb.DB
 }
 
 // New new
 func New() (IBiz, error) {
-  ldb, err := libLeveldb.New()
-  if err != nil {
-    return nil, err
-  }
-  repo := repo{
-    ldb: ldb,
-  }
-  var biz IBiz = &repo
-  return biz, nil
+	ldb, err := libLeveldb.New()
+	if err != nil {
+		return nil, err
+	}
+	repo := repo{
+		ldb: ldb,
+	}
+	var biz IBiz = &repo
+	return biz, nil
 }
 
 func (repo *repo) close() error {
-  if err := repo.ldb.Close(); err != nil {
-    return err
-  }
-  return nil
+	if err := repo.ldb.Close(); err != nil {
+		return err
+	}
+	return nil
 }

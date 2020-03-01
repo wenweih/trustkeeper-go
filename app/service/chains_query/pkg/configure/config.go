@@ -4,15 +4,16 @@ import (
 	"fmt"
 	"strings"
 	"trustkeeper-go/library/vault"
+
 	"github.com/btcsuite/btcd/rpcclient"
 )
 
 type Conf struct {
-	DBInfo				string
-	ConsulAddress	string
+	DBInfo        string
+	ConsulAddress string
 	Redis         string
 	BTCconnCfg    *rpcclient.ConnConfig
-	OmniconnCfg    *rpcclient.ConnConfig
+	OmniconnCfg   *rpcclient.ConnConfig
 	ETHRPC        string
 	ETHWS         string
 	MQ            string
@@ -52,25 +53,25 @@ func New() (*Conf, error) {
 	eth_ws := data.Data["eth_ws"].(string)
 
 	return &Conf{
-		DBInfo:			dbInfo,
+		DBInfo:        dbInfo,
 		ConsulAddress: consulAddr,
-		Redis: redis,
-		MQ: mq,
-		ETHRPC: eth_rpc,
-		ETHWS: eth_ws,
+		Redis:         redis,
+		MQ:            mq,
+		ETHRPC:        eth_rpc,
+		ETHWS:         eth_ws,
 		BTCconnCfg: &rpcclient.ConnConfig{
-			Host: bitcoinHost,
-			User: bitcoinUsr,
-			Pass: bitcoinPass,
+			Host:         bitcoinHost,
+			User:         bitcoinUsr,
+			Pass:         bitcoinPass,
 			HTTPPostMode: true,
-			DisableTLS: true,
+			DisableTLS:   true,
 		},
 		OmniconnCfg: &rpcclient.ConnConfig{
-			Host: omniHost,
-			User: omniUsr,
-			Pass: omniPass,
+			Host:         omniHost,
+			User:         omniUsr,
+			Pass:         omniPass,
 			HTTPPostMode: true,
-			DisableTLS: true,
+			DisableTLS:   true,
 		},
 	}, nil
 }

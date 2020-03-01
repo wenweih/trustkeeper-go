@@ -2,6 +2,9 @@
 package service
 
 import (
+	endpoint "trustkeeper-go/app/service/wallet_key/pkg/endpoint"
+	service "trustkeeper-go/app/service/wallet_key/pkg/service"
+
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
@@ -9,8 +12,6 @@ import (
 	grpc "github.com/go-kit/kit/transport/grpc"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
-	endpoint "trustkeeper-go/app/service/wallet_key/pkg/endpoint"
-	service "trustkeeper-go/app/service/wallet_key/pkg/service"
 )
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {

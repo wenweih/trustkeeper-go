@@ -1,16 +1,17 @@
 package client
 
 import (
-	grpc1 "github.com/go-kit/kit/transport/grpc"
-	endpoint "github.com/go-kit/kit/endpoint"
-	grpc "google.golang.org/grpc"
 	endpoint1 "trustkeeper-go/app/service/account/pkg/endpoint"
 	pb "trustkeeper-go/app/service/account/pkg/grpc/pb"
 	service "trustkeeper-go/app/service/account/pkg/service"
 
-  "fmt"
-  "context"
-  "errors"
+	endpoint "github.com/go-kit/kit/endpoint"
+	grpc1 "github.com/go-kit/kit/transport/grpc"
+	grpc "google.golang.org/grpc"
+
+	"context"
+	"errors"
+	"fmt"
 )
 
 // New returns an AddService backed by a gRPC server at the other end
@@ -50,11 +51,11 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 	}
 
 	return endpoint1.Endpoints{
-		AuthEndpoint:    authEndpoint,
-		CreateEndpoint:        createEndpoint,
-		RolesEndpoint:         rolesEndpoint,
-		SigninEndpoint:        signinEndpoint,
-		SignoutEndpoint:       signoutEndpoint,
+		AuthEndpoint:     authEndpoint,
+		CreateEndpoint:   createEndpoint,
+		RolesEndpoint:    rolesEndpoint,
+		SigninEndpoint:   signinEndpoint,
+		SignoutEndpoint:  signoutEndpoint,
 		UserInfoEndpoint: userInfoEndpoint,
 	}, nil
 }
@@ -64,74 +65,74 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 func encodeCreateRequest(_ context.Context, request interface{}) (interface{}, error) {
 	r := request.(endpoint1.CreateRequest)
 	return &pb.CreateRequest{
-		Email: r.Email,
+		Email:    r.Email,
 		Password: r.Password,
-    Orgname: r.OrgName}, nil
+		Orgname:  r.OrgName}, nil
 }
 
 // decodeCreateResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeCreateResponse(_ context.Context, reply interface{}) (interface{}, error) {
-  resp, found := reply.(*pb.CreateReply)
-  if !found{
-    return nil, fmt.Errorf("pb CreateReply type assertion error")
-  }
-  return endpoint1.CreateResponse{E1: nil, UUID: resp.Uuid}, nil
+	resp, found := reply.(*pb.CreateReply)
+	if !found {
+		return nil, fmt.Errorf("pb CreateReply type assertion error")
+	}
+	return endpoint1.CreateResponse{E1: nil, UUID: resp.Uuid}, nil
 }
 
 // encodeSigninRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain Signin request to a gRPC request.
 func encodeSigninRequest(_ context.Context, request interface{}) (interface{}, error) {
-  r := request.(endpoint1.SigninRequest)
-  return &pb.SigninRequest{
-    Email: r.Email,
-    Password: r.Password}, nil
+	r := request.(endpoint1.SigninRequest)
+	return &pb.SigninRequest{
+		Email:    r.Email,
+		Password: r.Password}, nil
 }
 
 // decodeSigninResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeSigninResponse(_ context.Context, reply interface{}) (interface{}, error) {
-  r, found := reply.(*pb.SigninReply)
-  if !found {
-    e := fmt.Errorf("pb CreateReply type assertion error")
-    return &endpoint1.SigninResponse{
-      E1: e,
-    }, e
-  }
-  return endpoint1.SigninResponse{S0: r.Token,}, nil
+	r, found := reply.(*pb.SigninReply)
+	if !found {
+		e := fmt.Errorf("pb CreateReply type assertion error")
+		return &endpoint1.SigninResponse{
+			E1: e,
+		}, e
+	}
+	return endpoint1.SigninResponse{S0: r.Token}, nil
 }
 
 // encodeSignoutRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain Signout request to a gRPC request.
 func encodeSignoutRequest(_ context.Context, request interface{}) (interface{}, error) {
-  return nil, nil
+	return nil, nil
 }
 
 // decodeSignoutResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeSignoutResponse(_ context.Context, reply interface{}) (interface{}, error) {
-  r := reply.(*pb.SignoutReply)
-  if r.Result{
-    return &endpoint1.SignoutResponse{E0: nil}, nil
-  }
+	r := reply.(*pb.SignoutReply)
+	if r.Result {
+		return &endpoint1.SignoutResponse{E0: nil}, nil
+	}
 	return nil, errors.New("'Account' Decoder is not impelemented")
 }
 
 // encodeRolesRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain Roles request to a gRPC request.
 func encodeRolesRequest(_ context.Context, request interface{}) (interface{}, error) {
-  return nil, nil
+	return nil, nil
 }
 
 // decodeRolesResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeRolesResponse(_ context.Context, reply interface{}) (interface{}, error) {
-  r, ok := reply.(*pb.RolesReply)
-  if !ok {
-    e := errors.New("'Account' Decoder is not impelemented")
-    return endpoint1.RolesResponse{E1: e}, e
-  }
-  return endpoint1.RolesResponse{S0: r.Roles}, nil
+	r, ok := reply.(*pb.RolesReply)
+	if !ok {
+		e := errors.New("'Account' Decoder is not impelemented")
+		return endpoint1.RolesResponse{E1: e}, e
+	}
+	return endpoint1.RolesResponse{S0: r.Roles}, nil
 }
 
 // encodeUserInfoRequest is a transport/grpc.EncodeRequestFunc that converts a
@@ -145,26 +146,26 @@ func encodeUserInfoRequest(_ context.Context, request interface{}) (interface{},
 // a gRPC concat reply to a user-domain concat response.
 func decodeUserInfoResponse(_ context.Context, reply interface{}) (interface{}, error) {
 	r, ok := reply.(*pb.UserInfoReply)
-  if !ok {
-    e := errors.New("pb UserInfoReply type assertion error")
-    return nil, e
-  }
-  return endpoint1.UserInfoResponse{Roles: r.Roles, OrgName: r.OrgName}, nil
+	if !ok {
+		e := errors.New("pb UserInfoReply type assertion error")
+		return nil, e
+	}
+	return endpoint1.UserInfoResponse{Roles: r.Roles, OrgName: r.OrgName}, nil
 }
 
 // encodeAuthRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain Auth request to a gRPC request.
 func encodeAuthRequest(_ context.Context, request interface{}) (interface{}, error) {
-  return &pb.AuthRequest{}, nil
+	return &pb.AuthRequest{}, nil
 }
 
 // decodeAuthResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeAuthResponse(_ context.Context, reply interface{}) (interface{}, error) {
-  r, ok := reply.(*pb.AuthReply)
-  if !ok {
-    e := errors.New("'AuthReply' Decoder is not impelemented")
-    return endpoint1.AuthResponse{Err: e}, e
-  }
-  return endpoint1.AuthResponse{Uuid: r.Uuid, NamespaceID: r.NamespaceID, Roles: r.Roles}, nil
+	r, ok := reply.(*pb.AuthReply)
+	if !ok {
+		e := errors.New("'AuthReply' Decoder is not impelemented")
+		return endpoint1.AuthResponse{Err: e}, e
+	}
+	return endpoint1.AuthResponse{Uuid: r.Uuid, NamespaceID: r.NamespaceID, Roles: r.Roles}, nil
 }

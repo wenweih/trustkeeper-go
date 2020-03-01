@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"time"
+
 	"github.com/afex/hystrix-go/hystrix"
 	endpoint "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
@@ -52,7 +53,7 @@ func Hystrix(commandName string, fallbackMesg string, logger log.Logger) endpoin
 	return func(next endpoint.Endpoint) endpoint.Endpoint {
 		return func(ctx context.Context, request interface{}) (response interface{}, err error) {
 			hystrix.ConfigureCommand(commandName, hystrix.CommandConfig{
-				Timeout: 1000,
+				Timeout:               1000,
 				MaxConcurrentRequests: 1000,
 			})
 			var resp interface{}

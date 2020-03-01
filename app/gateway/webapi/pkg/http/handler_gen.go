@@ -2,9 +2,10 @@
 package http
 
 import (
-	http "github.com/go-kit/kit/transport/http"
 	http1 "net/http"
 	endpoint "trustkeeper-go/app/gateway/webapi/pkg/endpoint"
+
+	http "github.com/go-kit/kit/transport/http"
 )
 
 // NewHTTPHandler returns a handler that makes a set of endpoints available on

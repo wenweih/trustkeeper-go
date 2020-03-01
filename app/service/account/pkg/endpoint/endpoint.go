@@ -27,7 +27,7 @@ func MakeCreateEndpoint(s service.AccountService) endpoint.Endpoint {
 		uuid, err := s.Create(ctx, req.Email, req.Password, req.OrgName)
 		return CreateResponse{
 			UUID: uuid,
-			E1: err,
+			E1:   err,
 		}, nil
 	}
 }
@@ -184,7 +184,7 @@ func MakeAuthEndpoint(s service.AccountService) endpoint.Endpoint {
 			Uuid:        uuid,
 			NamespaceID: namespaceid,
 			Roles:       roles,
-			Err: err,
+			Err:         err,
 		}, nil
 	}
 }
@@ -228,7 +228,7 @@ func MakeUserInfoEndpoint(s service.AccountService) endpoint.Endpoint {
 		return UserInfoResponse{
 			OrgName: orgName,
 			Roles:   roles,
-			Err: err,
+			Err:     err,
 		}, nil
 	}
 }

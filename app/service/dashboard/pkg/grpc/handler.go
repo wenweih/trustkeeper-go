@@ -178,11 +178,11 @@ func decodeAddAssetRequest(_ context.Context, r interface{}) (interface{}, error
 		return nil, fmt.Errorf("interface{} to pb AddAssetRequest type assertion error")
 	}
 	return endpoint.AddAssetRequest{
-		Groupid: req.Groupid,
-		Chainid: req.Chainid,
-		Symbol: req.Symbol,
+		Groupid:  req.Groupid,
+		Chainid:  req.Chainid,
+		Symbol:   req.Symbol,
 		Identify: req.Identify,
-		Decimal: req.Decimal}, nil
+		Decimal:  req.Decimal}, nil
 }
 
 func encodeAddAssetResponse(_ context.Context, r interface{}) (interface{}, error) {

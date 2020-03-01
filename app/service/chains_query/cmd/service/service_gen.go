@@ -2,6 +2,10 @@
 package service
 
 import (
+	endpoint "trustkeeper-go/app/service/chains_query/pkg/endpoint"
+	service "trustkeeper-go/app/service/chains_query/pkg/service"
+
+	"github.com/afex/hystrix-go/hystrix"
 	endpoint1 "github.com/go-kit/kit/endpoint"
 	log "github.com/go-kit/kit/log"
 	prometheus "github.com/go-kit/kit/metrics/prometheus"
@@ -9,9 +13,6 @@ import (
 	grpc "github.com/go-kit/kit/transport/grpc"
 	group "github.com/oklog/oklog/pkg/group"
 	opentracinggo "github.com/opentracing/opentracing-go"
-	endpoint "trustkeeper-go/app/service/chains_query/pkg/endpoint"
-	service "trustkeeper-go/app/service/chains_query/pkg/service"
-	"github.com/afex/hystrix-go/hystrix"
 )
 
 func createService(endpoints endpoint.Endpoints) (g *group.Group) {

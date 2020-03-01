@@ -277,7 +277,7 @@ func MakeQueryWalletHDEndpoint(s service.WalletManagementService) endpoint.Endpo
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(QueryWalletHDRequest)
 		hd, err := s.QueryWalletHD(ctx, req.Address)
-		return QueryWalletHDResponse{Hd:  hd, Err: err}, nil
+		return QueryWalletHDResponse{Hd: hd, Err: err}, nil
 	}
 }
 

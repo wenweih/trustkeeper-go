@@ -1,16 +1,17 @@
 package client
 
 import (
-	"fmt"
 	"context"
-	"github.com/jinzhu/copier"
-	endpoint "github.com/go-kit/kit/endpoint"
-	grpc1 "github.com/go-kit/kit/transport/grpc"
-	grpc "google.golang.org/grpc"
+	"fmt"
 	endpoint1 "trustkeeper-go/app/service/wallet_management/pkg/endpoint"
 	pb "trustkeeper-go/app/service/wallet_management/pkg/grpc/pb"
-	service "trustkeeper-go/app/service/wallet_management/pkg/service"
 	"trustkeeper-go/app/service/wallet_management/pkg/repository"
+	service "trustkeeper-go/app/service/wallet_management/pkg/service"
+
+	endpoint "github.com/go-kit/kit/endpoint"
+	grpc1 "github.com/go-kit/kit/transport/grpc"
+	"github.com/jinzhu/copier"
+	grpc "google.golang.org/grpc"
 )
 
 // New returns an AddService backed by a gRPC server at the other end
@@ -62,11 +63,11 @@ func newGRPCClient(conn *grpc.ClientConn, options []grpc1.ClientOption) (service
 	}
 
 	return endpoint1.Endpoints{
-		CreateChainEndpoint: createChainEndpoint,
-		AssignedXpubToGroupEndpoint: assignedXpubToGroupEndpoint,
-		CreateWalletEndpoint:        createWalletEndpoint,
-		GetChainsEndpoint:           getChainsEndpoint,
-		GetWalletsEndpoint:          getWalletsEndpoint,
+		CreateChainEndpoint:                     createChainEndpoint,
+		AssignedXpubToGroupEndpoint:             assignedXpubToGroupEndpoint,
+		CreateWalletEndpoint:                    createWalletEndpoint,
+		GetChainsEndpoint:                       getChainsEndpoint,
+		GetWalletsEndpoint:                      getWalletsEndpoint,
 		QueryWalletHDEndpoint:                   queryWalletHDEndpoint,
 		QueryWalletsForGroupByChainNameEndpoint: queryWalletsForGroupByChainNameEndpoint,
 	}, nil
@@ -81,19 +82,19 @@ func encodeCreateChainRequest(_ context.Context, request interface{}) (interface
 	}
 	return &pb.CreateChainRequest{
 		Symbol: r.Symbol,
-		Bitid: 	r.Bit44ID,
-    Status: r.Status}, nil
+		Bitid:  r.Bit44ID,
+		Status: r.Status}, nil
 }
 
 // decodeCreateChainResponse is a transport/grpc.DecodeResponseFunc that converts
 // a gRPC concat reply to a user-domain concat response.
 func decodeCreateChainResponse(_ context.Context, reply interface{}) (interface{}, error) {
 	_, ok := reply.(*pb.CreateChainReply)
-  if !ok{
+	if !ok {
 		e := fmt.Errorf("pb CreateChainReply type assertion error")
-    return &endpoint1.CreateChainResponse{Err: e}, e
-  }
-  return &endpoint1.CreateChainResponse{}, nil
+		return &endpoint1.CreateChainResponse{Err: e}, e
+	}
+	return &endpoint1.CreateChainResponse{}, nil
 }
 
 // encodeUpdateXpubStateRequest is a transport/grpc.EncodeRequestFunc that converts a
@@ -130,22 +131,22 @@ func encodeGetChainsRequest(_ context.Context, request interface{}) (interface{}
 // a gRPC concat reply to a user-domain concat response.
 func decodeGetChainsResponse(_ context.Context, reply interface{}) (interface{}, error) {
 	resp, ok := reply.(*pb.GetChainsReply)
-  if !ok{
-    return nil, fmt.Errorf("pb GetChainsReply type assertion error")
-  }
+	if !ok {
+		return nil, fmt.Errorf("pb GetChainsReply type assertion error")
+	}
 
-  chainsResp := make([]*repository.SimpleChain, len(resp.Chains))
-  for i, c := range resp.Chains {
-    chainsResp[i] = &repository.SimpleChain{
-			ID: c.Id,
-			Name: c.Name,
-			Coin: c.Coin,
+	chainsResp := make([]*repository.SimpleChain, len(resp.Chains))
+	for i, c := range resp.Chains {
+		chainsResp[i] = &repository.SimpleChain{
+			ID:      c.Id,
+			Name:    c.Name,
+			Coin:    c.Coin,
 			Bip44id: uint(c.Bip44Id),
-			Status: c.Status,
+			Status:  c.Status,
 			Decimal: c.Decimal}
-  }
+	}
 
-  return endpoint1.GetChainsResponse{Chains: chainsResp}, nil
+	return endpoint1.GetChainsResponse{Chains: chainsResp}, nil
 }
 
 // encodeCreateWalletRequest is a transport/grpc.EncodeRequestFunc that converts a

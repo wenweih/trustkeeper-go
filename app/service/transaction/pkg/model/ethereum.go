@@ -1,21 +1,22 @@
 package model
 
-import(
-  "github.com/jinzhu/gorm"
-  "bytes"
-  "math/big"
-  "encoding/gob"
-  "github.com/ethereum/go-ethereum/common/hexutil"
-  "github.com/ethereum/go-ethereum/common"
-  "github.com/ethereum/go-ethereum/core/types"
+import (
+	"bytes"
+	"encoding/gob"
+	"math/big"
+
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/jinzhu/gorm"
 )
 
 // EthBlock notify block info
 type EthBlock struct {
-  gorm.Model
-  Hash    string    `gorm:"not null;unique_index:idx_hash_height"`
-  Height  int64     `gorm:"type:bigint;unique_index:idx_hash_height;not null"`
-  ReOrg   bool      `gorm:"default:false"`
+	gorm.Model
+	Hash   string `gorm:"not null;unique_index:idx_hash_height"`
+	Height int64  `gorm:"type:bigint;unique_index:idx_hash_height;not null"`
+	ReOrg  bool   `gorm:"default:false"`
 }
 
 // ETHSimpleTx ethereum transaction
@@ -27,30 +28,30 @@ type ETHSimpleTx struct {
 	HeightHex string `json:"height"`
 	ValueHex  string `json:"value"`
 	FeeHex    string `json:"fee"`
-  Data      string `json:"data"`
+	Data      string `json:"data"`
 }
 
 // EthereumBlock custom ethereum block struct
 type EthereumBlock struct {
-  Hash   common.Hash
-  Header *types.Header
-  Tx     []*ETHSimpleTx
+	Hash   common.Hash
+	Header *types.Header
+	Tx     []*ETHSimpleTx
 }
 
 func EncodeETHBlock(block types.Block) ([]byte, error) {
-  buf := new(bytes.Buffer)
-  buf.Reset()
-  txs := block.Transactions()
+	buf := new(bytes.Buffer)
+	buf.Reset()
+	txs := block.Transactions()
 	txes := make([]*ETHSimpleTx, 0)
 	for _, tx := range txs {
 		ms, err := tx.AsMessage(types.NewEIP155Signer(tx.ChainId()))
-    if err != nil {
-      return nil, err
-    }
+		if err != nil {
+			return nil, err
+		}
 		var txFee = new(big.Int)
 		txFee = txFee.Mul(tx.GasPrice(), big.NewInt(int64(tx.Gas())))
-    // tx.Data()
-    inputeData := hexutil.Encode(ms.Data())
+		// tx.Data()
+		inputeData := hexutil.Encode(ms.Data())
 		txes = append(txes, &ETHSimpleTx{
 			THash:     tx.Hash().String(),
 			To:        tx.To().Hex(),
@@ -59,18 +60,18 @@ func EncodeETHBlock(block types.Block) ([]byte, error) {
 			ValueHex:  hexutil.EncodeBig(tx.Value()),
 			FeeHex:    hexutil.EncodeBig(txFee),
 			Txid:      tx.Hash().String(),
-      Data:      inputeData,
+			Data:      inputeData,
 		})
 	}
 
-  ethereumBlock := EthereumBlock{
-    Hash: block.Hash(),
-    Header: block.Header(),
-    Tx: txes,
-  }
-  e := gob.NewEncoder(buf)
-  if err := e.Encode(ethereumBlock); err != nil {
-    return nil, err
-  }
-  return buf.Bytes(), nil
+	ethereumBlock := EthereumBlock{
+		Hash:   block.Hash(),
+		Header: block.Header(),
+		Tx:     txes,
+	}
+	e := gob.NewEncoder(buf)
+	if err := e.Encode(ethereumBlock); err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

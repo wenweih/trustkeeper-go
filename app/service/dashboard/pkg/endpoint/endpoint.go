@@ -79,7 +79,7 @@ func MakeCreateGroupEndpoint(s service.DashboardService) endpoint.Endpoint {
 			Name: g.Name,
 			Desc: g.Desc,
 			ID:   g.ID,
-			Err: err,
+			Err:  err,
 		}, nil
 	}
 }
@@ -166,7 +166,7 @@ func MakeGetGroupAssetsEndpoint(s service.DashboardService) endpoint.Endpoint {
 		chainAssets, err := s.GetGroupAssets(ctx, req.GroupID)
 		return GetGroupAssetResponse{
 			ChainAssets: chainAssets,
-			Err: err,
+			Err:         err,
 		}, nil
 	}
 }
@@ -260,7 +260,7 @@ func MakeAddAssetEndpoint(s service.DashboardService) endpoint.Endpoint {
 		asset, err := s.AddAsset(ctx, req.Groupid, req.Chainid, req.Symbol, req.Identify, req.Decimal)
 		return AddAssetResponse{
 			Asset: asset,
-			Err: err,
+			Err:   err,
 		}, nil
 	}
 }

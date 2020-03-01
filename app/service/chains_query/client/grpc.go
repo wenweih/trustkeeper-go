@@ -1,17 +1,18 @@
 package client
 
 import (
-	"fmt"
 	"context"
 	"errors"
-	"github.com/jinzhu/copier"
-	endpoint "github.com/go-kit/kit/endpoint"
-	grpc1 "github.com/go-kit/kit/transport/grpc"
-	grpc "google.golang.org/grpc"
+	"fmt"
 	endpoint1 "trustkeeper-go/app/service/chains_query/pkg/endpoint"
 	pb "trustkeeper-go/app/service/chains_query/pkg/grpc/pb"
-	service "trustkeeper-go/app/service/chains_query/pkg/service"
 	"trustkeeper-go/app/service/chains_query/pkg/repository"
+	service "trustkeeper-go/app/service/chains_query/pkg/service"
+
+	endpoint "github.com/go-kit/kit/endpoint"
+	grpc1 "github.com/go-kit/kit/transport/grpc"
+	"github.com/jinzhu/copier"
+	grpc "google.golang.org/grpc"
 )
 
 // New returns an AddService backed by a gRPC server at the other end
@@ -306,7 +307,6 @@ func decodeConstructTxERC20Response(_ context.Context, reply interface{}) (inter
 	}
 	return endpoint1.ConstructTxERC20Response{UnsignedTxHex: resp.UnsignedTxHex, ChainID: resp.ChainID}, nil
 }
-
 
 // encodeConstructTxOmniRequest is a transport/grpc.EncodeRequestFunc that converts a
 //  user-domain ConstructTxOmni request to a gRPC request.

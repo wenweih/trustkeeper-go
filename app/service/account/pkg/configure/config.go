@@ -7,9 +7,9 @@ import (
 )
 
 type Conf struct {
-	Redis				string
-	DBInfo			string
-	JWTKey 			string
+	Redis         string
+	DBInfo        string
+	JWTKey        string
 	ConsulAddress string
 }
 
@@ -35,9 +35,9 @@ func New() (*Conf, error) {
 	redis := data.Data["redis"].(string)
 	consuladdr := data.Data["consuladdr"].(string)
 	return &Conf{
-		Redis: redis,
-		DBInfo:			dbInfo,
-		JWTKey: 		jwtkey,
+		Redis:         redis,
+		DBInfo:        dbInfo,
+		JWTKey:        jwtkey,
 		ConsulAddress: consuladdr,
 	}, nil
 }
